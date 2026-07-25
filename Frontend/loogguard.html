@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOGGUARD AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #3b82f6;
+            margin: 0;
+        }
+        .tagline {
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+        .card h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .card p {
+            margin: 10px 0 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .red {
+            color: #ef4444;
+        }
+        .yellow {
+            color: #facc15;
+        }
+        .green {
+            color: #22c55e;
+        }
+        .upload-box {
+            background: #1e293b;
+            padding: 50px;
+            border-radius: 12px;
+            border: 2px dashed #334155;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-box h2 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .upload-box p {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+        th {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        .ERROR {
+            color: #ef4444;
+        }
+        .WARN {
+            color: #facc15;
+        }
+        .INFO {
+            color: #22c55e;
+        }
+        /* Loader */
+        #loader {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #3b82f6;
+            font-size: 18px;
+        }
+        /* Filter + Search Bar */
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .controls label {
+            color: #94a3b8;
+            margin-right: 10px;
+        }
+        .controls select, .controls input {
+            padding: 8px;
+            border-radius: 6px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <h1>LOGGUARD AI</h1>
+    <p class="tagline">Detective for Server Logs - Find root cause in 10 seconds</p>
+    <!-- STARS Cards -->
+    <div class="stats">
+        <div class="card">
+            <h3>Critical Errors</h3>
+            <p id="errorCount" class="red">23</p>
+        </div>
+        <div class="card">
+            <h3>Avg Response Time</h3>
+            <p id="responseTime" class="yellow">342ms</p>
+        </div>
+        <div class="card">
+            <h3>System Health</h3>
+            <p id="systemHealth" class="green">98%</p>
+        </div>
+    </div>
+    <!-- Upload Section -->
+    <input type="file" id="fileInput" style="display: none;" onchange="handleFileUpload(event)">
+    <div class="upload-box">
+        <h2>Upload Log File</h2>
+        <p>Drag & Drop or click to select .log, .txt, .zip files up to 50GB</p>
+        <button class="btn" onclick="document.getElementById('fileInput').click()">Select File</button>
+    </div>
+    <!-- Loader -->
+    <div id="loader">Processing file... ⌛ Analyzing logs</div>
+    <!-- Filter + Search Bar -->
+    <div class="controls">
+        <div>
+            <labe><b>Filter:</b></label>
+                <select id="levelFilter" onchange="filterLogs()">
+                    <option value="ALL">ALL</option>
+                    <option value="ERROR">ERROR</option>
+                    <option value="WARN">WARN</option>
+                    <option value="INFO">INFO</option>
+                </select>
+        </div>
+        <div>
+            <label><b>Search:</b></label>
+            <input type="text" id="searchBox" oninput="filterLogs()" placeholder="Search logs...">
+        </div>
+    </div>
+    <!-- Error Log Table -->
+    <table id="logTable">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Level</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>10:32:11</td>
+                <td class="ERROR">ERROR</td>
+                <td>Database connection failed</td>
+            </tr>
+            <tr>
+                <td>10:31:45</td>
+                <td class="WARN">WARN</td>
+                <td>High memory usage detected</td>
+            </tr>
+            <tr>
+                <td>10:30:02</td>
+                <td class="ERROR">ERROR</td>
+                <td>API timeout on /user/login/</td>
+            </tr>
+        </tbody>
+    </table>
+    <script>
+        // Make Stats Dynamic
+        function randomStats() {
+            const errorCount = Math.floor(Math.random() * 41) + 10; // 10 to 50
+            const responseTime = Math.floor(Math.random() * 200) + 200; // 200 to 400ms
+            const health = Math.floor(Math.random() * 5) + 95; // 95% to 99%
+            document.getElementById("errorCount").innerText = errorCount;
+            document.getElementById("responseTime").innerText = responseTime + "ms";
+            document.getElementById("systemHealth").innerText = health + "%";
+        }
+        // Auto-Add new log row
+        function addLogRow() {
+            const table = document.getElementById("logTable").getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow(0); // add at top
+            newRow.insertCell(0).innerText = "Just Now";
+            newRow.insertCell(1).innerHTML = `<span class="INFO">INFO</span>`;
+            newRow.insertCell(2).innerText = "Page loaded successfully";
+        }
+        // Show loader
+        function showLoader() {
+            document.getElementById('loader').style.display = 'block';
+        }
+        // Hide loader
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+        // Handle file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            showLoader(); // Show spinner
+            // Simulate 2 second processing
+            setTimeout(() => {
+                addLogRowsFromFile(file.name);
+                updateStats();
+                hideLoader(); // Hide spinner
+            }, 2000);
+        }
+        // Add new log rows from uploaded file
+        function addLogRowsFromFile(fileName) {
+            const table = document.getElementById("logTable").getElementsByTagName('tbody')[0];
+            const logs = [
+                {level: "INFO", class: "INFO", msg: `File ${fileName} uploaded successfully`},
+                {level: "WARN", class: "WARN", msg: `High memory usage detected in ${fileName}`},
+                {level: "ERROR", class: "ERROR", msg: `Failed to parse line 42 in ${fileName}`}
+            ];
+            logs.forEach(log => {
+                const newRow = table.insertRow(0);
+                newRow.insertCell(0).innerText = "Just Now";
+                newRow.insertCell(1).innerHTML = `<span class="${log.class}">${log.level}</span>`;
+                newRow.insertCell(2).innerText = log.msg;
+            });
+        }
+        // Update stats after upload
+        function updateStats() {
+            let errors = parseInt(document.getElementById("errorCount").innerText) + 1;
+            let health = parseInt(document.getElementById("systemHealth").innerText.replace('%','')) - 1;
+            if(health < 90) health = 90;
+            document.getElementById("errorCount").innerText = errors;
+            document.getElementById("systemHealth").innerText = health + "%";
+        }
+        // Filter + Search Function
+        function filterLogs() {
+            const level = document.getElementById('levelFilter').value;
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            const rows = document.querySelectorAll('#logTable tbody tr');
+            rows.forEach(row => {
+                const rowLevel = row.cells[1].innerText;
+                const rowMsg = row.cells[2].innerText.toLowerCase();
+                const levelMatch = (level === 'ALL') || (rowLevel === level);
+                const searchMatch = rowMsg.includes(search);
+                row.style.display = (levelMatch && searchMatch)? '' : 'none';
+            });
+        }
+        // Run on page load
+        window.onload = function() {
+            randomStats();
+            addLogRow();
+        };
+    </script>
+</body>
+</html>
