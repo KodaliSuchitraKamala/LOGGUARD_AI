@@ -1,16 +1,38 @@
-# React + Vite
+# LOGGUARD AI - Frontend Folder
+### Detective for Server Logs - Find root in 10 seconds
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+LogGuard AI Frontend is a React + Vite based dashboard UI to upload, filter, search, and visualize server logs. This folder contains only the client-side application.
 
-Currently, two official plugins are available:
+## ✨ Features Completed
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Dashboard Overview**
+- Critical Errors count
+- Average Response Time
+- System Health percentage
 
-## React Compiler
+**Log Upload**
+- Drag & Drop or Click to upload
+- Supports `.log`, `.txt`, `.zip` files up to 50GB
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Log Analysis Table**
+- Colums: Time, Level, Message
+- Color-coded levels: ERROR, WARN, INFO
+- Auto "ROOT CAUSE" badge on critical error
 
-## Expanding the Oxlint configuration
+**Controls**
+- Filters logs by level: ALL, ERROR, WARN, INFO
+- Search logs by keyword
+- Clear Filters button
+- Download filtered logs as CSV
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## 🛠️ Tech Stack
+- **Framework**: React 18 + Vite
+- **Styling**: Tailwind CSS / Custom CSS
+- **State Management**: React useState, useEffect
+
+## 🚀 Getting Started
+
+1. Clone the repo
+    ```bash
+    git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI
+    cd LOGGUARD_AI
