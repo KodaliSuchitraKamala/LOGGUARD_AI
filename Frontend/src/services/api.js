@@ -1,23 +1,14 @@
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL; // http://localhost:5000
+const api = axios.create({
+  baseURL: 'http://localhost:5000/api',
+});
 
-export const uploadLog = async (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    return axios.post(`${API}/api/upload`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-    });
-};
+// attach token automatically
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
-export const getLogs = async ({ level = 'ALL', search ='', page = 1 }) => {
-    const { data } = await axios.get(`${API}/api/logs`, {
-        params: { level, search, page }
-    });
-    return data;
-};
-
-export const getStats = async () => {
-    const { data } = await axios.get(`${API}/api/stats`);
-    return data;
-};
+export default api;

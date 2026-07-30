@@ -44,22 +44,23 @@ This folder contains only the client-side application. The backend API handles p
 ## Folder Sturcture
 ```
 LOGGUARD_AI
+├── Backend
 └── Frontend
-    ├── node_modules/ # Installed packages
-    ├── public/ # Static files
-    ├── src/ # React components, pages, services
-    |   ├── components/ # Dashboard, LogTable, Upload, Charts
-    |   ├── pages/ # DashboardPage.jsx
-    |   ├── services/ # api.js - all axios calls
-    |   ├── hooks/ # custom hooks
+    ├── node_modules/            # Installed packages
+    ├── public/                  # Static files
+    ├── src/                     # React components, pages, services
+    |   ├── components/          # Dashboard, LogTable, Upload, Charts
+    |   ├── pages/               # DashboardPage.jsx
+    |   ├── services/            # api.js - all axios calls
+    |   ├── hooks/               # custom hooks
     |   ├── App.jsx
     |   └── main.jsx
-    ├── .oxlintrc.json # Linter config for OxLint
+    ├── .oxlintrc.json           # Linter config for OxLint
     ├── .gitignore
     ├── index.html
     ├── package-lock.json
-    ├── package.json
-    ├── README.md
+    ├── package.json             # Dependencies
+    ├── README.md                # This file for Frontend
     └── vite.config.js
 ```
 
@@ -68,47 +69,48 @@ LOGGUARD_AI
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js v18+
-- Backend server running on `http://localhost:5000`
+    - Node.js v18+
+    - Backend server running on `http://localhost:5000`
 
 ### 1. Install Dependencies
-Install all required packages:
-```bash
-npm install
-```
+    Install all required packages:
+    ```bash
+    npm install
+    ```
 ### 2. Setup Environment Variables
-Create a .env file inside the /Frontend folder:
-```bash
-VITE_API_URL=https://localhost:5000
-```
-This tells the frontend where your backend API is running
+    Create a .env file inside the /Frontend folder:
+    ```bash
+    VITE_API_URL=https://localhost:5000
+    ```
+    This tells the frontend where your backend API is running
 ### 3. Run Development Server
-Start the app:
-```bash 
-npm run dev
-```
-App will run on http://localhost:5173
+    Start the app:
+    ```bash 
+    npm run dev
+    ```
+    App will run on http://localhost:5173
 ### 4. API Integration 
-The Frontend connects to the backend using Axios. Base URL comes from .env.
-| Method | EndPoint | Purpose |
-| --- | --- | ---|
-| `POST` | `/api/upload` | Upload log file. FormDate key: `file` |
-| `GET` | `/api/logs/` | Fetch logs. Query: `level`, `search`, `page` |
-| `GET` | `/api/stats` | Fetch dashboard stats |
-**Example:**
-```
-import axios from 'axios';
-const API = import.meta.env.VITE_API_URL;
+    The Frontend connects to the backend using Axios. Base URL comes from .env.
+    | Method | EndPoint | Purpose |
+    | --- | --- | ---|
+    | `POST` | `/api/upload` | Upload log file. FormDate key: `file` |
+    | `GET` | `/api/logs/` | Fetch logs. Query: `level`, `search`, `page` |
+    | `GET` | `/api/stats` | Fetch dashboard stats |
+    **Example:**
+    ```
+    import axios from 'axios';
+    const API = import.meta.env.VITE_API_URL;
 
-// Upload log
-const formData = new FormData();
-formData.append("file", file);
-await axios.post(`${API}/api/upload`, formData);
+    // Upload log
+    const formData = new FormData();
+    formData.append("file", file);
+    await axios.post(`${API}/api/upload`, formData);
 
-// Get logs
-const res = await axios.get(`${API}/api/logs?level=ERROR`);
-```
+    // Get logs
+    const res = await axios.get(`${API}/api/logs?level=ERROR`);
+    ```
 ### 5. Clone the repository
-```bash
-git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
-cd LOGGUARD_AI/Frontend
+    ```bash
+    git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
+    cd LOGGUARD_AI/Frontend
+    ```
