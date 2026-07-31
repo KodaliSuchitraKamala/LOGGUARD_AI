@@ -7,6 +7,7 @@ Backend server for LogGuard AI. Handles log file uploads, parsing, filtering and
 ## Tech Stack
 - **Node.js + Express**
 - **File Upload**: Multer
+- **Real-time**: Socket.io
 - **CORS** for frontend connection
 
 ---
@@ -16,6 +17,7 @@ Backend server for LogGuard AI. Handles log file uploads, parsing, filtering and
 1. **Install dependencies**
     ```bash
     npm install
+    npm install express socket.io cors multer
     ```
 
 2. **Start Server**
@@ -32,6 +34,7 @@ Backend server for LogGuard AI. Handles log file uploads, parsing, filtering and
     POST /api/upload
     - Uploads a log file using FormData
     - Body: file: <logfile.txt>
+    - Parses file and emits logs via Socket.io
 
 2. **Get Logs**
     GET /api/logs?level=ERROR&search=keyword
@@ -39,7 +42,12 @@ Backend server for LogGuard AI. Handles log file uploads, parsing, filtering and
     - Query Params:
         * level: INFO, WARN, ERROR
         * search: keyword to search in log message
-### 5. Clone the repository
+
+3. **Get Stats**
+    GET /api/stats
+    - Returns {criticalErrors, avgResponseTime, systemHealth}
+
+4. **Clone the repository**
     ```bash
     git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
     cd LOGGUARD_AI/Backend
@@ -58,3 +66,8 @@ LOGGUARD_AI
     ├── package.json             # Dependencies
     └── README.md                # This file for Backend
 ```
+
+---
+
+## Socket Events
+- newLog: Emit {id: timestamp, level, message, isAnomal}

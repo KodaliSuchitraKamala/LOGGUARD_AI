@@ -1,68 +1,56 @@
 import express from 'express';
 import http from 'http';
-import cors from 'cors';
-import jwt from 'jsonwebtoken';
 import { Server } from 'socket.io';
-import 'dotenv/config';
+import cors from 'cors';
+import multer from 'multer'; // 1. Import multer
+import fs from 'fs'; // 2. Import fs
 
-const app = express();
+const app = express(); // 3. app must come first
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, {
+  cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] }
+});
 
 app.use(cors());
 app.use(express.json());
 
-const JWT_SECRET = process.env.JWT_SECRET || "logguard_secret";
+// 4. Setup multer AFTER app is defined
+const upload = multer({ dest: 'uploads/' });
 
-// --- FAKE DB ---
-const users = [];
-
-// --- MIDDLEWARE ---
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "No token" });
-  try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
-  } catch {
-    res.status(401).json({ message: "Invalid token" });
-  }
-};
-
-// --- AUTH ROUTES ---
-app.post('/api/auth/register', (req, res) => {
-  const { email, password } = req.body;
-  const user = { id: Date.now(), email, password };
-  users.push(user);
-  const token = jwt.sign({ id: user.id }, JWT_SECRET);
-  res.json({ token, user: { email } });
+// 5. Upload endpoint
+app.post('/upload', upload.single('logfile'), (req, res) => {
+  const data = fs.readFileSync(req.file.path, 'utf8');
+  const lines = data.split('\n').slice(0, 200); // read first 200 lines
+  
+  lines.forEach(line => {
+    if(line.trim() !== '') {
+      const level = line.includes('ERROR') ? 'ERROR' : 'INFO';
+      io.emit('newLog', { 
+        id: Date.now() + Math.random(), 
+        timestamp: new Date().toLocaleTimeString(), 
+        level: level, 
+        message: line.substring(0, 150),
+        isAnomaly: line.includes('DDOS') || line.includes('Failed')
+      });
+    }
+  });
+  res.json({ message: 'File processed', lines: lines.length });
 });
 
-app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
-  const user = users.find(u => u.email === email && u.password === password);
-  if (!user) return res.status(400).json({ message: "Invalid credentials" });
-  const token = jwt.sign({ id: user.id }, JWT_SECRET);
-  res.json({ token, user: { email } });
-});
 
-// --- PROTECTED LOG ROUTES ---
-app.get('/api/logs', authMiddleware, (req, res) => {
-  res.json({ logs: [] });
-});
-
-// --- SOCKET.IO ---
 io.on('connection', (socket) => {
-  console.log("Client connected:", socket.id);
-  setInterval(() => {
-    socket.emit("newLog", {
-      id: Date.now(),
-      level: "ERROR",
-      message: "Live error from server",
-      timestamp: new Date()
-    });
-  }, 5000);
+  console.log('Client connected');
 });
 
-const PORT = 5000;
-server.listen(PORT, () => console.log(`Server running on ${PORT}`));
+// Fake logs - delete this later
+setInterval(() => {
+  io.emit('newLog', { 
+    id: Date.now(), 
+    timestamp: new Date().toLocaleTimeString(), 
+    level: 'INFO', 
+    message: 'Waiting for file upload...',
+    isAnomaly: false
+  });
+}, 10000);
+
+server.listen(5000, () => console.log('Backend on 5000'));

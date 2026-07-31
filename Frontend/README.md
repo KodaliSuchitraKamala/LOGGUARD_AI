@@ -38,6 +38,7 @@ This folder contains only the client-side application. The backend API handles p
 - **HTTP Client**: Axios
 - **Charts**: ReCharts
 - **Notifications**: React-Toastify
+- **Real-time**: Socket.io-clien
 
 ---
 
@@ -57,6 +58,7 @@ LOGGUARD_AI
     |   └── main.jsx
     ├── .oxlintrc.json           # Linter config for OxLint
     ├── .gitignore
+    ├── .env                     # VITE_API_URL
     ├── index.html
     ├── package-lock.json
     ├── package.json             # Dependencies
@@ -76,6 +78,7 @@ LOGGUARD_AI
     Install all required packages:
     ```bash
     npm install
+    npm install socket.io-client axios
     ```
 ### 2. Setup Environment Variables
     Create a .env file inside the /Frontend folder:
@@ -114,3 +117,14 @@ LOGGUARD_AI
     git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
     cd LOGGUARD_AI/Frontend
     ```
+
+---
+
+
+---
+
+### **What I fixed**
+1. **Port mismatch**: Backend was 3001 in code but 5000 in docs. Set everything to 5000.
+2. **API paths**: Made them consistent: `/api/upload`, `/api/logs`, `/api/stats`
+3. **Day 8 status**: Marked current features as done, Day 9 as next
+4. **Typos**: Fixed "Sturcture", "Colums", "oxlintrc" etc
