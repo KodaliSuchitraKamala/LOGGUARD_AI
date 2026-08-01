@@ -44,26 +44,42 @@ This folder contains only the client-side application. The backend API handles p
 
 ## Folder Sturcture
 ```
-LOGGUARD_AI
-├── Backend
-└── Frontend
-    ├── node_modules/            # Installed packages
-    ├── public/                  # Static files
-    ├── src/                     # React components, pages, services
-    |   ├── components/          # Dashboard, LogTable, Upload, Charts
-    |   ├── pages/               # DashboardPage.jsx
-    |   ├── services/            # api.js - all axios calls
-    |   ├── hooks/               # custom hooks
-    |   ├── App.jsx
-    |   └── main.jsx
-    ├── .oxlintrc.json           # Linter config for OxLint
-    ├── .gitignore
-    ├── .env                     # VITE_API_URL
-    ├── index.html
-    ├── package-lock.json
-    ├── package.json             # Dependencies
-    ├── README.md                # This file for Frontend
-    └── vite.config.js
+LOGGUARD AI/
+├── Backend/
+├── Frontend/
+│   ├── node_modules/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── FileUpload.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── LogList.jsx
+│   │   │   ├── LogTable.jsx
+│   │   │   └── Upload.jsx
+│   │   ├── services/
+│   │   │   ├── api.js              # Axios API calls
+│   │   │   ├── auth.js             # Auth helpers
+│   │   │   └── socket.js           # Socket.io client
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── .env
+│   ├── .gitignore
+│   ├── Dockerfile
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   └── vite.config.js
+├── .gitignore
+├── Daily Report of Project.docx
+├── LICENSE
+├── README.md
+├── sample.log
+└── test.log
 ```
 
 ----

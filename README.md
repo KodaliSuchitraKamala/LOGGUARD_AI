@@ -70,30 +70,49 @@ The system has 2 main parts:
 
 ## Folder Structure
 ```
-LOGGUARD_AI
-├── Backend
-|   ├── node_modules/            # Installed packages
-|   ├── uploads/                 # Uploaded log files
-|   ├── server.js                # Main server file
-|   ├── package.json             # Dependencies
-|   └── README.md                # This file for Backend
-├── Frontend
-|   ├── node_modules/            # Installed packages
-|   ├── public/                  # Static files
-|   ├── src/                     # React components, pages, services
-|   |   ├── components/          # Dashboard, LogTable, Upload, Charts
-|   |   ├── pages/               # DashboardPage.jsx
-|   |   ├── services/            # api.js - all axios calls
-|   |   ├── hooks/               # custom hooks
-|   |   ├── App.jsx
-|   |   └── main.jsx
-|   ├── .oxlintrc.json           # Linter config for OxLint
-|   ├── .gitignore
-|   ├── index.html
-|   ├── package-lock.json
-|   ├── package.json             # Dependencies
-|   ├── README.md                # This file for Frontend
-|   └── vite.config.js
+LOGGUARD AI/
+├── Backend/
+│   ├── node_modules/
+│   ├── uploads/                    # Uploaded log files stored here
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── server.js                   # Express + Socket.io server
+│   └── README.md
+├── Frontend/
+│   ├── node_modules/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── FileUpload.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── LogList.jsx
+│   │   │   ├── LogTable.jsx
+│   │   │   └── Upload.jsx
+│   │   ├── services/
+│   │   │   ├── api.js              # Axios API calls
+│   │   │   ├── auth.js             # Auth helpers
+│   │   │   └── socket.js           # Socket.io client
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── .env
+│   ├── .gitignore
+│   ├── Dockerfile
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   └── vite.config.js
+├── .gitignore
+├── Daily Report of Project.docx
+├── LICENSE
+├── README.md
+├── sample.log
+└── test.log 
 ```
 
 ---
@@ -154,6 +173,7 @@ LOGGUARD_AI
 | **Day 7** | **Auth + Real-time + Deployment** | 1. Authentication: JWT `/api/auth/login` and `/api/auth/register` <br> 2. Protect API routes with middleware <br> 3. Add Logout + store token in `localStorage` <br> 4. Real-time Logs: WebSocket/Socket.io for live streaming <br> 5. Auto-refresh table + "New logs: 5" badge <br> 6. Dashboard: User-specific logs, Date range picker `start/end` <br> 7. Dark mode toggle <br> 8. Deployment: `.env` for `API_URL`, `JWT_SECRET` + `Dockerfile` for FE/BE <br> 9. Test production build <br> 10. Update README with Auth + WebSocket info | Node.js, JWT, Socket.io, Docker, React | Target: Secure, multi-user, real-time, deployable LogGuard |
 | **Day 8** | **Live Dashboard + Tailwind UI** | 1. Fixed Tailwind CSS setup with Vite + PostCSS <br> 2. Built dark theme dashboard: Header, 3 Stat Cards, Upload Box, Live Log Table <br> 3. Integrated Socket.io-client to receive logs in real-time <br> 4. Implemented color-coded logs: ERROR=Red, WARN=Yellow, INFO=Blue <br> 5. Added "ROOT CAUSE" badge and red border for anomaly logs <br> 6. Updated stats cards to react to live incoming logs <br> 7. Tested E2E: Backend emits → Frontend renders instantly <br> 8. Updated all 3 README files with current setup | React, Vite, Tailwind CSS, Socket.io, Node.js, Express | Deliverable: Fully working live dashboard. Real-time logs streaming with professional dark UI. Ready for Day 9 file upload. |
 | **Day 9** | **File Upload + Parse + Display** | 1. Backend: Created /api/upload with Multer to accept .log/.txt files <br> 2. Backend: Parse each line timestamp/LEVEL/message and append to allLogs array <br> 3. Backend: /api/logs returns full log list as JSON <br> 4. Frontend: Built FileUpload.jsx with drag-drop + "Choose File" button <br> 5. Frontend: Used axios to POST file and GET logs <br> 6. Frontend: Connected upload to state → LogList.jsx updates instantly <br> 7. Tested E2E: Upload file → Backend parses → Dashboard shows logs without refresh <br> 8. Fixed bug: Changed allLogs = newLogs to allLogs = [...allLogs, ...newLogs] for appending | Node.js, Express, Multer, React, Axios, Vite, Tailwind | Deliverable: Working file upload pipeline. Users can upload logs and see them parsed + displayed in the dashboard. Backend + Frontend fully connected. |
+| **Day 10** | **Real-Time Logs + UI Polish** | 1. Backend: Emit newLog event via Socket.io on file upload and test alert <br> 2. Frontend: Integrated socket.io-client to listen for live logs and prepend to table <br> 3. UI: Designed attractive LogTable with color badges, icons, hover effects, and row highlighting <br> 4. Added filter buttons: ALL, INFO, WARNING, ERROR, CRITICAL with active state <br> 5. Dashboard stats now auto-update on new incoming logs <br> 6. Converted timestamps to relative time format "2s ago" <br> 7. Added auto-scroll to newest log for live streaming feel <br> 8. Fixed CORS and 404 issues for /api/upload route | React, Vite, Tailwind CSS, Socket.io, Lucide-react, Node.js, Express | Deliverable: Fully live dashboard like Datadog. Logs stream instantly. Professional UI with filters and real-time stats. Ready for Day 11 AI Anomaly Detection. |
 
 ---
 
