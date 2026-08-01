@@ -1,56 +1,78 @@
 import express from 'express';
-import http from 'http';
-import { Server } from 'socket.io';
+import multer from 'multer';
+import fs from 'fs';
+import readline from 'readline';
 import cors from 'cors';
-import multer from 'multer'; // 1. Import multer
-import fs from 'fs'; // 2. Import fs
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
-const app = express(); // 3. app must come first
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] }
-});
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-app.use(cors());
+const app = express();
+const httpServer = createServer(app);
+
+// 1. MIDDLEWARE
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
-// 4. Setup multer AFTER app is defined
-const upload = multer({ dest: 'uploads/' });
+// 2. IN-MEMORY DB + SEED DATA
+let allLogs = [
+  {id: 1, timestamp: "2025-04-05 10:00:01", level: "INFO", message: "Server started on port 5000"},
+  {id: 2, timestamp: "2025-04-05 10:00:05", level: "ERROR", message: "Database connection failed"},
+  {id: 3, timestamp: "2025-04-05 10:00:10", level: "WARN", message: "High memory usage: 85%"},
+  {id: 4, timestamp: "2025-04-05 10:00:15", level: "INFO", message: "User login: rahul@guntur.com"},
+];
 
-// 5. Upload endpoint
-app.post('/upload', upload.single('logfile'), (req, res) => {
-  const data = fs.readFileSync(req.file.path, 'utf8');
-  const lines = data.split('\n').slice(0, 200); // read first 200 lines
-  
-  lines.forEach(line => {
-    if(line.trim() !== '') {
-      const level = line.includes('ERROR') ? 'ERROR' : 'INFO';
-      io.emit('newLog', { 
-        id: Date.now() + Math.random(), 
-        timestamp: new Date().toLocaleTimeString(), 
-        level: level, 
-        message: line.substring(0, 150),
-        isAnomaly: line.includes('DDOS') || line.includes('Failed')
-      });
+// 3. MULTER SETUP
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+});
+const upload = multer({ storage });
+
+// 4. ROUTES
+// GET all logs
+app.get('/api/logs', (req, res) => {
+    res.json({ success: true, logs: allLogs.slice(-500) });
+});
+
+// UPLOAD and parse log file
+app.post('/api/upload', upload.single('logfile'), async (req, res) => {
+    try {
+        const filePath = req.file.path;
+        const newLogs = [];
+        const rl = readline.createInterface({ input: fs.createReadStream(filePath), crlfDelay: Infinity });
+
+        for await (const line of rl) {
+            if (!line.trim()) continue;
+            const parts = line.split('|');
+            const log = {
+                id: allLogs.length + newLogs.length + 1,
+                timestamp: parts[0]?.trim() || new Date().toISOString(),
+                level: parts[1]?.trim().toUpperCase() || 'INFO',
+                message: parts[2]?.trim() || line
+            };
+            newLogs.push(log);
+            io.emit('newLog', log); // stream live
+        }
+        allLogs = [...allLogs,...newLogs]; // APPEND
+        fs.unlinkSync(filePath);
+        res.json({ success: true, totalLogs: newLogs.length, logs: newLogs });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
-  });
-  res.json({ message: 'File processed', lines: lines.length });
 });
 
-
-io.on('connection', (socket) => {
-  console.log('Client connected');
+// 5. SOCKET.IO
+const io = new Server(httpServer, {
+  cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] }
 });
+io.on('connection', (socket) => console.log('Client connected:', socket.id));
 
-// Fake logs - delete this later
-setInterval(() => {
-  io.emit('newLog', { 
-    id: Date.now(), 
-    timestamp: new Date().toLocaleTimeString(), 
-    level: 'INFO', 
-    message: 'Waiting for file upload...',
-    isAnomaly: false
-  });
-}, 10000);
-
-server.listen(5000, () => console.log('Backend on 5000'));
+const PORT = 5000;
+httpServer.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

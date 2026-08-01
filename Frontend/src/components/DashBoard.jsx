@@ -1,7 +1,7 @@
-import { getStats } from "../services/api";
+    import FileUpload from '../components/FileUpload';
+    import { useState } from 'react';
 
-const [stats, setStats] = useState({});
-
-useEffect(() => {
-    getStats().then(setStats).finally(() => setLoading(false));
-}, []);
+    function Dashboard() {
+      const [logs, setLogs] = useState([]);
+      return <FileUpload onLogsLoaded={setLogs} />
+    }
