@@ -1,6 +1,6 @@
 function LogList({ logs }) {
   return (
-    <div className="bg-gray-800 p-4 rounded-lg">
+    <div className="bg-gray-800 p-4 mt-6 rounded-lg">
       <h2 className="text-xl font-bold mb-2">Live Logs</h2>
       <div className="space-y-2 max-h-96 overflow-y-auto">
         {logs.map(log => (

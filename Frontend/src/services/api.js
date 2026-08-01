@@ -1,14 +1,7 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
-});
+const API = axios.create({ baseURL: 'http://localhost:5000/api' });
 
-// attach token automatically
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-export default api;
+export const getLatestLogs = () => API.get('/logs/latest');
+export const uploadLogFile = (formData) => API.post('/logs/upload', formData);
+export const sendAlert = (data) => API.post('/alerts', data);
