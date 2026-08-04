@@ -57,22 +57,24 @@ Backend server for LogGuard AI. Handles log file uploads, parsing, filtering and
 
 ## Folder Structure
 ```
-LOGGUARD AI/
+
+LOGGUARD_AI/
 ├── Frontend/
 ├── Backend/
-│   ├── node_modules/
-│   ├── uploads/                    # Uploaded log files stored here
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── server.js                   # Express + Socket.io server
-│   └── README.md
-├── .gitignore
-├── Daily Report of Project.docx
+│ ├── uploads/ # Temp files from multer
+│ ├── node_modules/
+│ ├── logs.json # Parsed logs storage
+│ ├──.env
+│ ├── Dockerfile
+│ ├── package.json
+│ ├── package-lock.json
+│ ├── README.md
+│ └── server.js # Express API + Anomaly Detection│
+├──.gitignore
 ├── LICENSE
 ├── README.md
 ├── sample.log
-└── test.log
+└── test.log # Sample log file for testing
 ```
 
 ---

@@ -44,42 +44,46 @@ This folder contains only the client-side application. The backend API handles p
 
 ## Folder Sturcture
 ```
-LOGGUARD AI/
+LOGGUARD_AI/
 ├── Backend/
 ├── Frontend/
-│   ├── node_modules/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── FileUpload.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── LogList.jsx
-│   │   │   ├── LogTable.jsx
-│   │   │   └── Upload.jsx
-│   │   ├── services/
-│   │   │   ├── api.js              # Axios API calls
-│   │   │   ├── auth.js             # Auth helpers
-│   │   │   └── socket.js           # Socket.io client
-│   │   ├── App.css
-│   │   ├── App.jsx
-│   │   ├── index.css
-│   │   └── main.jsx
-│   ├── .env
-│   ├── .gitignore
-│   ├── Dockerfile
-│   ├── index.html
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── postcss.config.js
-│   ├── tailwind.config.js
-│   └── vite.config.js
-├── .gitignore
-├── Daily Report of Project.docx
+│ ├── node_modules/
+│ ├── public/
+│ ├── src/
+│ │ ├── components/
+│ │ │ ├── Analytics.jsx # Analytics dashboard with charts
+│ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
+│ │ │ ├── FileUpload.jsx # Drag & Drop log upload
+│ │ │ ├── LogTable.jsx # Filterable log table
+│ │ │ ├── ErrorTrendChart.jsx # Line chart: Errors per day
+│ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
+│ │ │ ├── LogLevelPie.jsx # Pie chart: Log level distribution
+│ │ │ └── Login.jsx # Auth page
+│ │ ├── services/
+│ │ │ ├── api.js # All axios API calls
+│ │ │ ├── auth.js # Auth helpers
+│ │ │ └── socket.js # Socket.io client for real-time alerts
+│ │ ├── App.jsx # Main app with Dashboard/Analytics tabs
+│ │ ├── App.css
+│ │ ├── index.css
+│ │ ├── main.jsx
+│ │ └── socket.js
+│ ├──.env
+│ ├──.gitignore
+│ ├──.eslintrc.json
+│ ├── Dockerfile
+│ ├── index.html
+│ ├── package.json
+│ ├── package-lock.json
+│ ├── postcss.config.js
+│ ├── README.md
+│ ├── tailwind.config.js
+│ └── vite.config.js
+├──.gitignore
 ├── LICENSE
 ├── README.md
 ├── sample.log
-└── test.log
+└── test.log # Sample log file for testing
 ```
 
 ----

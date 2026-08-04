@@ -1,32 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FileUpload from './components/FileUpload';
 import LogTable from './components/LogTable';
 import Dashboard from './components/Dashboard';
+import Analytics from './components/Analytics'; // 1. Import Analytics
 
 function App() {
   const [logs, setLogs] = useState([]);
+  const [page, setPage] = useState('dashboard'); // 2. Track active tab
 
-  const handleLogsLoaded = (newLogs) => {
-    console.log("LOGS RECEIVED:", newLogs);
-    setLogs(Array.isArray(newLogs) ? newLogs : []);
-  }
+  // Load logs on start so Analytics has data
+  useEffect(() => {
+    fetch('http://localhost:5000/api/logs/latest')
+     .then(res => res.json())
+     .then(data => setLogs(data))
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <h1 className="text-3xl font-bold mb-6">LOGGUARD AI</h1>
-      <Dashboard logs={logs} /> {/* 1. Pass logs here */}
-      
-      <FileUpload onLogsLoaded={handleLogsLoaded} />
 
-      <div className="mt-8">
-        
-      <div className="mt-4 p-4 bg-gray-800 rounded">
-        <h2 className='text-3xl p-4'>Live Logs</h2>
-        <LogTable logs={logs} />
+      {/* 3. NAV TABS */}
+      <div className="flex gap-4 mb-6 border-b border-gray-700">
+        <button
+          onClick={() => setPage('dashboard')}
+          className={`pb-2 font-semibold ${page==='dashboard'? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400 hover:text-white'}`}>
+          Dashboard
+        </button>
+        <button
+          onClick={() => setPage('analytics')}
+          className={`pb-2 font-semibold ${page==='analytics'? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400 hover:text-white'}`}>
+          Analytics
+        </button>
       </div>
-      </div>
+
+      {/* 4. CONDITIONAL RENDER */}
+      {page === 'dashboard' && (
+        <>
+          <Dashboard logs={logs} />
+          <FileUpload onLogsLoaded={setLogs} />
+          <LogTable logs={logs} />
+        </>
+      )}
+
+      {page === 'analytics' && (
+        <Analytics />
+      )}
+
     </div>
   );
 }
-
 export default App;
