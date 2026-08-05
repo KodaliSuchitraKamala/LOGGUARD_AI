@@ -51,13 +51,16 @@ LOGGUARD_AI/
 │ ├── public/
 │ ├── src/
 │ │ ├── components/
+| │ | ├── Alerts.jsx # Alerts dashoboard
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts
 │ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
 │ │ │ ├── FileUpload.jsx # Drag & Drop log upload
 │ │ │ ├── LogTable.jsx # Filterable log table
+| │ | ├── LogList.jsx
 │ │ │ ├── ErrorTrendChart.jsx # Line chart: Errors per day
 │ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
 │ │ │ ├── LogLevelPie.jsx # Pie chart: Log level distribution
+| │ | ├── Upload.jsx 
 │ │ │ └── Login.jsx # Auth page
 │ │ ├── services/
 │ │ │ ├── api.js # All axios API calls
@@ -91,55 +94,52 @@ LOGGUARD_AI/
 ## 🚀 Getting Started
 
 ### Prerequisites
-    - Node.js v18+
-    - Backend server running on `http://localhost:5000`
+- Node.js v18+
+- Backend server running on `http://localhost:5000`
 
 ### 1. Install Dependencies
-    Install all required packages:
-    ```bash
-    npm install
-    npm install socket.io-client axios
-    ```
+Install all required packages:
+```bash
+npm install
+npm install socket.io-client axios
+```
 ### 2. Setup Environment Variables
-    Create a .env file inside the /Frontend folder:
-    ```bash
-    VITE_API_URL=https://localhost:5000
-    ```
-    This tells the frontend where your backend API is running
+Create a .env file inside the /Frontend folder:
+```bash
+VITE_API_URL=https://localhost:5000
+```
+This tells the frontend where your backend API is running
 ### 3. Run Development Server
-    Start the app:
-    ```bash 
-    npm run dev
-    ```
-    App will run on http://localhost:5173
+Start the app:
+```bash 
+npm run dev
+```
+App will run on http://localhost:5173
 ### 4. API Integration 
-    The Frontend connects to the backend using Axios. Base URL comes from .env.
-    | Method | EndPoint | Purpose |
-    | --- | --- | ---|
-    | `POST` | `/api/upload` | Upload log file. FormDate key: `file` |
-    | `GET` | `/api/logs/` | Fetch logs. Query: `level`, `search`, `page` |
-    | `GET` | `/api/stats` | Fetch dashboard stats |
-    **Example:**
-    ```
-    import axios from 'axios';
-    const API = import.meta.env.VITE_API_URL;
+The Frontend connects to the backend using Axios. Base URL comes from .env.
+| Method | EndPoint | Purpose |
+| --- | --- | ---|
+| `POST` | `/api/upload` | Upload log file. FormDate key: `file` |
+| `GET` | `/api/logs/` | Fetch logs. Query: `level`, `search`, `page` |
+| `GET` | `/api/stats` | Fetch dashboard stats |
+**Example:**
+```
+import axios from 'axios';
+const API = import.meta.env.VITE_API_URL;
 
-    // Upload log
-    const formData = new FormData();
-    formData.append("file", file);
-    await axios.post(`${API}/api/upload`, formData);
+// Upload log
+const formData = new FormData();
+formData.append("file", file);
+await axios.post(`${API}/api/upload`, formData);
 
-    // Get logs
-    const res = await axios.get(`${API}/api/logs?level=ERROR`);
-    ```
+// Get logs
+const res = await axios.get(`${API}/api/logs?level=ERROR`);
+```
 ### 5. Clone the repository
-    ```bash
-    git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
-    cd LOGGUARD_AI/Frontend
-    ```
-
----
-
+```bash
+git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
+cd LOGGUARD_AI/Frontend
+```
 
 ---
 
@@ -148,3 +148,5 @@ LOGGUARD_AI/
 2. **API paths**: Made them consistent: `/api/upload`, `/api/logs`, `/api/stats`
 3. **Day 8 status**: Marked current features as done, Day 9 as next
 4. **Typos**: Fixed "Sturcture", "Colums", "oxlintrc" etc
+ 
+---

@@ -12,7 +12,7 @@ function FileUpload({ onLogsLoaded }) {
     setLoading(true);
     
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('logfile', file);
 
     try {
       const res = await axios.post('http://localhost:5000/api/upload', formData, {

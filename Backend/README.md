@@ -15,16 +15,16 @@ Backend server for LogGuard AI. Handles log file uploads, parsing, filtering and
 ## Setup & Run Locally
 
 1. **Install dependencies**
-    ```bash
-    npm install
-    npm install express socket.io cors multer
-    ```
+```bash
+npm install
+npm install express socket.io cors multer
+```
 
 2. **Start Server**
-    ```bash
-    node server.js
-    ```
-    Server runs on http://localhost:5000
+```bash
+node server.js
+```
+Server runs on http://localhost:5000
 
 ---
 
@@ -48,10 +48,10 @@ Backend server for LogGuard AI. Handles log file uploads, parsing, filtering and
     - Returns {criticalErrors, avgResponseTime, systemHealth}
 
 4. **Clone the repository**
-    ```bash
-    git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
-    cd LOGGUARD_AI/Backend
-    ```
+```bash
+git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
+cd LOGGUARD_AI/Backend
+```
 
 ---
 
@@ -61,15 +61,15 @@ Backend server for LogGuard AI. Handles log file uploads, parsing, filtering and
 LOGGUARD_AI/
 ├── Frontend/
 ├── Backend/
-│ ├── uploads/ # Temp files from multer
 │ ├── node_modules/
+│ ├── uploads/ # Temp files from multer
 │ ├── logs.json # Parsed logs storage
 │ ├──.env
 │ ├── Dockerfile
 │ ├── package.json
 │ ├── package-lock.json
 │ ├── README.md
-│ └── server.js # Express API + Anomaly Detection│
+│ └── server.js # Express API + Anomaly Detection
 ├──.gitignore
 ├── LICENSE
 ├── README.md

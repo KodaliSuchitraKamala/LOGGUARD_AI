@@ -3,6 +3,7 @@ import FileUpload from './components/FileUpload';
 import LogTable from './components/LogTable';
 import Dashboard from './components/Dashboard';
 import Analytics from './components/Analytics'; // 1. Import Analytics
+import Alerts from './components/Alerts';
 
 function App() {
   const [logs, setLogs] = useState([]);
@@ -31,6 +32,11 @@ function App() {
           className={`pb-2 font-semibold ${page==='analytics'? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400 hover:text-white'}`}>
           Analytics
         </button>
+        <button 
+          onClick={() => setPage('alerts')} 
+          className={`pb-2 font-semibold ${page==='alerts'? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400 hover:text-white'}`}>
+            Alerts
+        </button>
       </div>
 
       {/* 4. CONDITIONAL RENDER */}
@@ -44,6 +50,9 @@ function App() {
 
       {page === 'analytics' && (
         <Analytics />
+      )}
+      {page === 'alerts' && (
+        <Alerts />
       )}
 
     </div>

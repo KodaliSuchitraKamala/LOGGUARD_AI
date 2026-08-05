@@ -1,0 +1,16 @@
+[
+  {
+    "timestamp": "2026-08-03 10:01:00",
+    "level": "ERROR",
+    "message": "2026-08-03 10:01:00 | ERROR | DB connection failed\r",
+    "severity": "Medium",
+    "detectedAt": "2026-08-05T12:31:55.800Z"
+  },
+  {
+    "timestamp": "2026-08-03 10:02:00",
+    "level": "CRITICAL",
+    "message": "2026-08-03 10:02:00 | CRITICAL | Server crash",
+    "severity": "High",
+    "detectedAt": "2026-08-05T12:31:55.801Z"
+  }
+]

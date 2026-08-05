@@ -1,1 +1,17 @@
-[{"timestamp":"2026-08-03 10:00:00","level":"INFO","message":"2026-08-03 10:00:00 | INFO | User logged in"},{"timestamp":"2026-08-03 10:01:00","level":"WARNING","message":"2026-08-03 10:01:00 | WARN | Low memory"},{"timestamp":"2026-08-03 10:02:00","level":"ERROR","message":"2026-08-03 10:02:00 | ERROR | DB connection failed"},{"timestamp":"2026-08-03 10:03:00","level":"CRITICAL","message":"2026-08-03 10:03:00 | CRITICAL |er Server crash"}]
+[
+  {
+    "timestamp": "2026-08-03 10:00:00",
+    "level": "INFO",
+    "message": "2026-08-03 10:00:00 | INFO | User logged in\r"
+  },
+  {
+    "timestamp": "2026-08-03 10:01:00",
+    "level": "ERROR",
+    "message": "2026-08-03 10:01:00 | ERROR | DB connection failed\r"
+  },
+  {
+    "timestamp": "2026-08-03 10:02:00",
+    "level": "CRITICAL",
+    "message": "2026-08-03 10:02:00 | CRITICAL | Server crash"
+  }
+]

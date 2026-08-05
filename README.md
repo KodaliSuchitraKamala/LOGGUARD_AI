@@ -72,27 +72,30 @@ The system has 2 main parts:
 ```
 LOGGUARD_AI/
 ├── Backend/
-│ ├── uploads/ # Temp files from multer
 │ ├── node_modules/
+│ ├── uploads/ # Temp files from multer
 │ ├── logs.json # Parsed logs storage
 │ ├──.env
 │ ├── Dockerfile
 │ ├── package.json
 │ ├── package-lock.json
 │ ├── README.md
-│ └── server.js # Express API + Anomaly Detection│
+│ └── server.js # Express API + Anomaly Detection
 ├── Frontend/
 │ ├── node_modules/
 │ ├── public/
 │ ├── src/
 │ │ ├── components/
+| │ | ├── Alerts.jsx # Alerts dashoboard
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts
 │ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
 │ │ │ ├── FileUpload.jsx # Drag & Drop log upload
 │ │ │ ├── LogTable.jsx # Filterable log table
+| │ | ├── LogList.jsx
 │ │ │ ├── ErrorTrendChart.jsx # Line chart: Errors per day
 │ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
 │ │ │ ├── LogLevelPie.jsx # Pie chart: Log level distribution
+| │ | ├── Upload.jsx 
 │ │ │ └── Login.jsx # Auth page
 │ │ ├── services/
 │ │ │ ├── api.js # All axios API calls
@@ -136,33 +139,33 @@ LOGGUARD_AI/
 ## Getting Started
 
 ### 1. Clone the repo
-    ```bash
-    git clone https://github.com/your-username/LogGuard-AI.git
-    cd LOGGUARD-AI
-    ```
+```bash
+git clone https://github.com/your-username/LogGuard-AI.git
+cd LOGGUARD-AI
+```
 
 ### 2. Backend Setup
-    ```bash
-    cd Backend
-    npm install
-    node server.js
-    ```
-    Server runs on http://localhost:5000
+```bash
+cd Backend
+npm install
+node server.js
+```
+Server runs on http://localhost:5000
 
 ### 3. Frontend Setup
-    ```bash
-    cd Frontend
-    npm install
-    npm run dev
-    ```
-    Frontend runs on http://localhost:5173
+```bash
+cd Frontend
+npm install
+npm run dev
+```
+Frontend runs on http://localhost:5173
 
 ### 4. Environment Variables
-    Create .env in Frontend:
-    ```
-    VITE_API_URL=http://localhost:5000
-    ```
-    Open http://localhost:5173 to see the dashboard.
+Create .env in Frontend:
+```bash
+VITE_API_URL=http://localhost:5000
+```
+Open http://localhost:5173 to see the dashboard.
 
 ---
 
@@ -180,7 +183,9 @@ LOGGUARD_AI/
 | **Day 8** | **Live Dashboard + Tailwind UI** | 1. Fixed Tailwind CSS setup with Vite + PostCSS <br> 2. Built dark theme dashboard: Header, 3 Stat Cards, Upload Box, Live Log Table <br> 3. Integrated Socket.io-client to receive logs in real-time <br> 4. Implemented color-coded logs: ERROR=Red, WARN=Yellow, INFO=Blue <br> 5. Added "ROOT CAUSE" badge and red border for anomaly logs <br> 6. Updated stats cards to react to live incoming logs <br> 7. Tested E2E: Backend emits → Frontend renders instantly <br> 8. Updated all 3 README files with current setup | React, Vite, Tailwind CSS, Socket.io, Node.js, Express | Deliverable: Fully working live dashboard. Real-time logs streaming with professional dark UI. Ready for Day 9 file upload. |
 | **Day 9** | **File Upload + Parse + Display** | 1. Backend: Created /api/upload with Multer to accept .log/.txt files <br> 2. Backend: Parse each line timestamp/LEVEL/message and append to allLogs array <br> 3. Backend: /api/logs returns full log list as JSON <br> 4. Frontend: Built FileUpload.jsx with drag-drop + "Choose File" button <br> 5. Frontend: Used axios to POST file and GET logs <br> 6. Frontend: Connected upload to state → LogList.jsx updates instantly <br> 7. Tested E2E: Upload file → Backend parses → Dashboard shows logs without refresh <br> 8. Fixed bug: Changed allLogs = newLogs to allLogs = [...allLogs, ...newLogs] for appending | Node.js, Express, Multer, React, Axios, Vite, Tailwind | Deliverable: Working file upload pipeline. Users can upload logs and see them parsed + displayed in the dashboard. Backend + Frontend fully connected. |
 | **Day 10** | **Real-Time Logs + UI Polish** | 1. Backend: Emit newLog event via Socket.io on file upload and test alert <br> 2. Frontend: Integrated socket.io-client to listen for live logs and prepend to table <br> 3. UI: Designed attractive LogTable with color badges, icons, hover effects, and row highlighting <br> 4. Added filter buttons: ALL, INFO, WARNING, ERROR, CRITICAL with active state <br> 5. Dashboard stats now auto-update on new incoming logs <br> 6. Converted timestamps to relative time format "2s ago" <br> 7. Added auto-scroll to newest log for live streaming feel <br> 8. Fixed CORS and 404 issues for /api/upload route | React, Vite, Tailwind CSS, Socket.io, Lucide-react, Node.js, Express | Deliverable: Fully live dashboard like Datadog. Logs stream instantly. Professional UI with filters and real-time stats. Ready for Day 11 AI Anomaly Detection. |
-| **Day 11** | **Persistence + Analytics Fix ✅** | 1. Save uploaded logs to `logs.json`<br>2. Created `/api/logs/latest` to read from file<br>3. Fixed "No Log Data" bug in Analytics<br>4. Added 4-color pie chart for log levels<br>5. Data persists across tab switches | Node.js, Express, React, Chart.js | Upload → Save → View Analytics. Data persists |
+| **Day 11** | **Persistence + Analytics Fix ✅** | 1. Save uploaded logs to `logs.json`<br>2. Created `/api/logs/latest` to read from file<br>3. Fixed "No Log Data" bug in Analytics<br>4. Added 4-color pie chart for log levels<br>5. Data persists across tab switches | Node.js, Express, React, Chart.js | Deliverable: Upload → Save → View Analytics. Data persists |
+| **Day 12** | **Anomaly Detection + Alerts System** | 1. Backend: Created `alerts.json` to store anomalies<br>2. Backend: Added `detectAnomalies()` function to detect `ERROR`, `CRITICAL`, `FATAL`, `FAILED` keywords<br>3. Backend: Updated `/api/upload` route to trigger detection and save alerts<br>4. Backend: Created `/api/alerts` `GET` route to fetch all alerts,<br>5. Frontend: Created `Alerts.jsx` component to display alerts<br>6. Frontend: Added "Alerts" tab in navbar<br>7. Frontend: Updated Dashboard cards to show CRITICAL and ERROR counts<br>8. Testing: Uploaded log with CRITICAL and verified email alerts | Node.js, Express, React, Vite, JavaScript, JSON | **Deliverable:**<br>1. System can now detect anomalies automatically<br>2. Alerts tab shows severity, timestamp, and message<br>3. Dashboard reflectd real-time error counts<br>4. Backend API `/api/alerts` working and returns JSON |
+
 ---
 
 ## Advantages
