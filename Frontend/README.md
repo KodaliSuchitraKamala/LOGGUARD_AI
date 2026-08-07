@@ -49,6 +49,7 @@ LOGGUARD_AI/
 ├── Frontend/
 │ ├── node_modules/
 │ ├── public/
+│ │ ├── alarm.mp3
 │ ├── src/
 │ │ ├── components/
 | │ | ├── Alerts.jsx # Alerts dashoboard

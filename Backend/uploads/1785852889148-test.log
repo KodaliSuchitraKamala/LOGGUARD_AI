@@ -1,4 +1,0 @@
-2026-08-03 10:00:00 | INFO | User logged in
-2026-08-03 10:01:00 | WARN | Low memory
-2026-08-03 10:02:00 | ERROR | DB connection failed
-2026-08-03 10:03:00 | CRITICAL |er Server crash

@@ -6,16 +6,19 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import dotenv from 'dotenv'; // FIX 1: use import
+import nodemailer from 'nodemailer'; // FIX 1: use import
+
+dotenv.config(); // load.env
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express(); // MUST come before httpServer
-const httpServer = createServer(app); // wrap app
+const app = express();
+const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: "http://localhost:5173" } });
 
-const PORT = 5000;
-
+const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
@@ -55,11 +58,37 @@ const loadLogs = () =>!fs.existsSync(LOGS_FILE)? [] : JSON.parse(fs.readFileSync
 
 io.on('connection', (socket) => console.log('Client connected:', socket.id));
 
+// EMAIL SETUP
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS // This should be an "App Password" not your normal gmail password
+  }
+});
+
+async function sendEmailAlert(severity, message, timestamp) {
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.RECIPIENT_EMAIL,
+      subject: `LOG ALERT: ${severity} detected`,
+      html: `<h3>LogGuard AI Alert</h3>
+             <p><b>Severity:</b> ${severity}</p>
+             <p><b>Time:</b> ${timestamp}</p>
+             <p><b>Message:</b> ${message}</p>`
+    };
+    await transporter.sendMail(mailOptions);
+    console.log("Email alert sent");
+  } catch (err) {
+    console.error("Email error:", err);
+  }
+}
+
 // ROUTES
-app.post('/api/upload', upload.single('logfile'), (req, res) => {
+app.post('/api/upload', upload.single('logfile'), async (req, res) => { // made async for email
   try {
     if(!req.file) return res.status(400).json({ error: "No file uploaded" });
-    
     const logs = parseLogFile(req.file.path);
     fs.writeFileSync(LOGS_FILE, JSON.stringify(logs, null, 2));
 
@@ -68,7 +97,13 @@ app.post('/api/upload', upload.single('logfile'), (req, res) => {
     saveAlerts(allAlerts);
 
     if(newAnomalies.length > 0){
-      io.emit('new_anomaly', newAnomalies); // broadcast live
+      io.emit('new_anomaly', newAnomalies); // Day 13: Live toast trigger
+
+      // FIX 2: Send email for CRITICAL only
+      const criticals = newAnomalies.filter(a => a.severity === 'High');
+      if(criticals.length > 0) {
+        await sendEmailAlert(criticals[0].severity, criticals[0].message, criticals[0].detectedAt);
+      }
     }
 
     res.json({ logs, count: logs.length, message: `Loaded ${logs.length} logs. Found ${newAnomalies.length} anomalies.` });
@@ -77,26 +112,33 @@ app.post('/api/upload', upload.single('logfile'), (req, res) => {
   }
 });
 
-app.get('/api/logs/latest', (req, res) => res.json(loadLogs().slice(-50)));
-
-app.get('/api/analytics/summary', (req, res) => {
-  const logs = loadLogs();
-  const errors = logs.filter(l => l.level === 'ERROR' || l.level === 'CRITICAL').length;
-  res.json({ totalLogs: logs.length, errors, warnings: logs.filter(l => l.level === 'WARNING').length, info: logs.filter(l => l.level === 'INFO').length, avgResponse: 234, health: logs.length > 0? Math.max(0, 100 - errors * 5) : 98 });
-});
-
-app.get('/api/analytics/trends', (req, res) => {
-  const logs = loadLogs();
-  const last7Days = Array.from({length: 7}, (_, i) => { const d = new Date(); d.setDate(d.getDate() - i); return d.toISOString().split('T')[0]; }).reverse();
-  res.json(last7Days.map(date => ({ date: date.split('-').slice(1).join('/'), errors: logs.filter(l => l.timestamp.startsWith(date) && (l.level === 'ERROR' || l.level === 'CRITICAL')).length, responseTime: 200 + Math.floor(Math.random() * 150) })));
-});
-
-app.get('/api/alerts', (req, res) => {
+// DAY 14 ROUTE TO RESOLVE/DELETE ALERT
+app.post('/api/alerts/resolve/:index', (req, res) => {
   try {
-    res.json(loadAlerts());
+    const alerts = loadAlerts();
+    const index = parseInt(req.params.index);
+    if(index >= 0 && index < alerts.length){
+      alerts.splice(index, 1);
+      saveAlerts(alerts);
+      io.emit('alerts_updated', alerts);
+    }
+    res.json({ success: true, alerts });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-httpServer.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`)); // ONLY this listen
+app.get('/api/logs/latest', (req, res) => res.json(loadLogs().slice(-50)));
+app.get('/api/analytics/summary', (req, res) => {
+  const logs = loadLogs();
+  const errors = logs.filter(l => l.level === 'ERROR' || l.level === 'CRITICAL').length;
+  res.json({ totalLogs: logs.length, errors, warnings: logs.filter(l => l.level === 'WARNING').length, info: logs.filter(l => l.level === 'INFO').length, avgResponse: 234, health: logs.length > 0? Math.max(0, 100 - errors * 5) : 98 });
+});
+app.get('/api/analytics/trends', (req, res) => {
+  const logs = loadLogs();
+  const last7Days = Array.from({length: 7}, (_, i) => { const d = new Date(); d.setDate(d.getDate() - i); return d.toISOString().split('T')[0]; }).reverse();
+  res.json(last7Days.map(date => ({ date: date.split('-').slice(1).join('/'), errors: logs.filter(l => l.timestamp.startsWith(date) && (l.level === 'ERROR' || l.level === 'CRITICAL')).length, responseTime: 200 + Math.floor(Math.random() * 150) })));
+});
+app.get('/api/alerts', (req, res) => res.json(loadAlerts()));
+
+httpServer.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
