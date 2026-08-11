@@ -1,17 +1,38 @@
 [
   {
-    "timestamp": "2026-08-03 10:00:00",
+    "id": "1786373452707-r8to271cq",
+    "userId": "1786371701713",
     "level": "INFO",
-    "message": "2026-08-03 10:00:00 | INFO | User logged in\r"
+    "message": "2026-08-10 10:00:00 | INFO | Server started",
+    "filename": "test.log",
+    "timestamp": "2026-08-10T14:50:52.707Z",
+    "acknowledged": false
   },
   {
-    "timestamp": "2026-08-03 10:01:00",
+    "id": "1786373452707-5mwwl8xnt",
+    "userId": "1786371701713",
+    "level": "WARNING",
+    "message": "2026-08-10 10:01:00 | WARNING | Disk 80% full",
+    "filename": "test.log",
+    "timestamp": "2026-08-10T14:50:52.707Z",
+    "acknowledged": false
+  },
+  {
+    "id": "1786373452707-lu2kpnw4q",
+    "userId": "1786371701713",
     "level": "ERROR",
-    "message": "2026-08-03 10:01:00 | ERROR | DB connection failed\r"
+    "message": "2026-08-10 10:02:00 | ERROR | DB connection failed",
+    "filename": "test.log",
+    "timestamp": "2026-08-10T14:50:52.707Z",
+    "acknowledged": false
   },
   {
-    "timestamp": "2026-08-03 10:02:00",
+    "id": "1786373452707-635c95f54",
+    "userId": "1786371701713",
     "level": "CRITICAL",
-    "message": "2026-08-03 10:02:00 | CRITICAL | Server crash"
+    "message": "2026-08-10 10:03:00 | CRITICAL | Server crashed",
+    "filename": "test.log",
+    "timestamp": "2026-08-10T14:50:52.707Z",
+    "acknowledged": false
   }
 ]

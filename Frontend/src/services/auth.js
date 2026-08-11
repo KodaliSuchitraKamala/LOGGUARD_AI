@@ -9,3 +9,7 @@ export const login = (email, password) =>
       localStorage.setItem("token", res.data.token);
       return res.data;
     });
+
+export const isLoggedIn = () =>!!localStorage.getItem('token');
+export const getToken = () => localStorage.getItem('token');
+export const logout = () => localStorage.removeItem('token');

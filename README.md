@@ -73,9 +73,15 @@ The system has 2 main parts:
 LOGGUARD_AI/
 ├── Backend/
 │ ├── node_modules/
+│ ├── middleware/
+│ │ ├── auth.js
+│ ├── routes/
+│ │ ├── auth.js
 │ ├── uploads/ # Temp files from multer
+│ ├── .env
+│ ├── alerts.json
 │ ├── logs.json # Parsed logs storage
-│ ├──.env
+│ ├── emailService.js
 │ ├── Dockerfile
 │ ├── package.json
 │ ├── package-lock.json
@@ -90,26 +96,26 @@ LOGGUARD_AI/
 | │ | ├── Alerts.jsx # Alerts dashoboard
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts
 │ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
-│ │ │ ├── FileUpload.jsx # Drag & Drop log upload
-│ │ │ ├── LogTable.jsx # Filterable log table
-| │ | ├── LogList.jsx
 │ │ │ ├── ErrorTrendChart.jsx # Line chart: Errors per day
-│ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
+│ │ │ ├── FileUpload.jsx # Drag & Drop log upload
+│ │ │ ├── Login.jsx # Auth page 
 │ │ │ ├── LogLevelPie.jsx # Pie chart: Log level distribution
-| │ | ├── Upload.jsx 
-│ │ │ └── Login.jsx # Auth page
+| │ | ├── LogList.jsx
+| │ | ├── LogTable.jsx # Filterable log table 
+│ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
+│ │ │ └── Upload.jsx 
 │ │ ├── services/
 │ │ │ ├── api.js # All axios API calls
 │ │ │ ├── auth.js # Auth helpers
 │ │ │ └── socket.js # Socket.io client for real-time alerts
-│ │ ├── App.jsx # Main app with Dashboard/Analytics tabs
 │ │ ├── App.css
+│ │ ├── App.jsx # Main app with Dashboard/Analytics tabs
 │ │ ├── index.css
 │ │ ├── main.jsx
 │ │ └── socket.js
 │ ├──.env
 │ ├──.gitignore
-│ ├──.eslintrc.json
+│ ├──.oxlintrc.json
 │ ├── Dockerfile
 │ ├── index.html
 │ ├── package.json
@@ -189,6 +195,7 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 13** | **Real-time Alerts, toast notifications, alarm sound, and live updating dashboard** | 1. Integrated WebSocket for live anomaly push from backend to frontend<br>2. Added Toast notifications for ERROR/CRITICAL logs<br>3. Implemented Alarm sound for CRITICAL/FATAL alerts<br>4. Created GET /api/alerts API and live updating Alerts tab<br>5. Dashboard metrics update in real-time without refresh |React, Node.js, Socket.io, Tailwind CSS | **Deliverable:**<br>Real-time monitoring working. Alerts shown on UI with sound + toast. |
 | **Day 14** | **Alert Management & Acknowledge Feature to alarms and Mark CRITICAL/FATAL alerts** | 1. Added "Acknowledge" button for each CRITICAL/Fatal alerts<br>2. Created POST /api/alerts/acknowledge API to stop alarm and mark alert as handled<br>3. Prevented repeated notifications for same acknowledged alert<br>4. Updated Alerts tab to show acknowledged status with timestamp<br>5. Improved and UX- users can now silence alarms after review | React, Node.js, Express, Socket.io, Tailwind CSS |  **Deliverable:**<br>Alert workflow complete. Users can acknowledge alerts and stop alarm sound. |
 | **Day 15** | **Automated Email Notifications using Nodemailer to notify admins of CRITICAL/FATAL anomalies** | 1. Integrated Nodemailer to send email alerts for CRITICAL/FATAL anomalies<br>2. Email triggers automatically on log upload when severity is High<br>3. Email includes severity, timestamp, and exact log message<br>4. Tested email delivery with demo log containing "Server crash"<br>5. End-to-end alerting complete: UI toast + Alarm + Email | Node.js, Express, Nodemailer, React, Socket.io |  **Deliverable:**<br>Automated email alerts working. Admins notified even when not on dashboard. |
+| **Day 16** | **Auth + Alerts Without DB ✅** | 1. Replaced MongoDB with dummy user + JWT auth<br>2. Created `auth.js` middleware for token verification<br>3. Added Axios interceptor to send token from frontend<br>4. Implemented in-memory alerts store with GET + Acknowledge API<br>5. Updated Upload route to push sample alerts<br>6. Connected Dashboard + Alerts UI to live data<br>7. Enabled CORS and fixed 500/401 errors | Node.js, Express, Reat, Axios, JWT, bcryptjs, CORS | **Deliverable:** Full flow working: Register → Login → Upload → Alerts → Acknowledge. No DB required for demo |
 
 ---
 

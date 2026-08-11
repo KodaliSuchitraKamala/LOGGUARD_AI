@@ -1,33 +1,50 @@
 import { useState } from "react";
-import { login, register } from "../services/auth";
+import { useNavigate } from "react-router-dom";
+import API from "../services/api";
 
-export default function Login({ onLogin }) {
-  const [email, setEmail] = useState("test@test.com");
-  const [password, setPassword] = useState("1234");
-  const [isRegister, setIsRegister] = useState(false);
+export default function Login({ setAuth }) { 
+  const [name, setName] = useState(""); // add name for register
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (isRegister) {
-        await register(email, password);
+      const endpoint = isLogin ? "/api/login" : "/api/register"; // FIXED HERE
+      const payload = isLogin ? { email, password } : { name, email, password }; // register needs name
+      
+      const res = await API.post(endpoint, payload);
+      
+      if(isLogin) {
+        localStorage.setItem("token", res.data.token); // Store JWT
+        setAuth(true);
+        navigate("/");
+      } else {
+        alert("Registered! Now login");
+        setIsLogin(true);
       }
-      await login(email, password);
-      onLogin();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed");
+      console.log("FULL ERROR:", err.response)
+      alert(err.response?.data?.error || "Authentication failed"); // backend sends 'error' not 'message'
     }
   };
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <form onSubmit={handleSubmit} className="p-6 border rounded shadow">
-        <h1 className="text-xl mb-4">{isRegister ? "Register" : "Login"}</h1>
-        <input className="border p-2 w-full mb-2" value={email} onChange={e=>setEmail(e.target.value)} />
-        <input className="border p-2 w-full mb-2" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
-        <button className="bg-blue-500 text-white p-2 w-full">{isRegister ? "Register" : "Login"}</button>
-        <p className="text-sm mt-2 cursor-pointer text-blue-500" onClick={()=>setIsRegister(!isRegister)}>
-          {isRegister ? "Already have account? Login" : "No account? Register"}
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+      <form onSubmit={handleSubmit} className="bg-gray-800 p-8 rounded-lg w-96 shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 text-center">{isLogin ? "Login" : "Register"}</h2>
+        
+        {!isLogin && (
+          <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-2 mb-4 rounded bg-gray-700" required />
+        )}
+        
+        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-2 mb-4 rounded bg-gray-700" required />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 mb-4 rounded bg-gray-700" required />
+        <button className="w-full bg-blue-600 p-2 rounded font-semibold hover:bg-blue-700">{isLogin ? "Login" : "Register"}</button>
+        <p onClick={() => setIsLogin(!isLogin)} className="text-blue-400 mt-4 cursor-pointer text-center text-sm">
+          {isLogin ? "No account? Register" : "Already have account? Login"}
         </p>
       </form>
     </div>

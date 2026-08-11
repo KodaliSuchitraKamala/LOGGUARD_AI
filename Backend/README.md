@@ -62,9 +62,15 @@ LOGGUARD_AI/
 ├── Frontend/
 ├── Backend/
 │ ├── node_modules/
+│ ├── middleware/
+│ │ ├── auth.js
+│ ├── routes/
+│ │ ├── auth.js
 │ ├── uploads/ # Temp files from multer
+│ ├── .env
+│ ├── alerts.json
 │ ├── logs.json # Parsed logs storage
-│ ├──.env
+│ ├── emailService.js
 │ ├── Dockerfile
 │ ├── package.json
 │ ├── package-lock.json

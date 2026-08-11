@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { AlertTriangle, Info, XCircle, ShieldCheck, Filter } from 'lucide-react';
 
 function LogTable({ logs = [] }) {
-  const [filter, setFilter] = useState('ALL'); // 1. Add state
+  const [filter, setFilter] = useState('ALL');
 
-  if(logs.length === 0) {
+  const safeLogs = Array.isArray(logs) ? logs : []; // ADD THIS LINE
+
+  if(safeLogs.length === 0) {
     return <p className="text-gray-400 mt-4 text-center">No logs yet. Upload a file.</p>
   }
 
-  const filteredLogs = filter === 'ALL' ? logs : logs.filter(l => l.level === filter); // 2. Filter logs
+  const filteredLogs = filter === 'ALL' ? safeLogs : safeLogs.filter(l => l.level === filter); // use safeLogs
 
   const getLevelBadge = (level) => {
     const styles = {
@@ -34,7 +36,6 @@ function LogTable({ logs = [] }) {
 
   return (
     <div>
-      {/* 3. ADD FILTER BUTTONS HERE */}
       <div className="flex gap-2 mb-3 p-4 items-center">
         <Filter size={16} className="text-gray-400" />
         {['ALL','INFO','WARNING','ERROR','CRITICAL'].map(lvl => (
@@ -48,8 +49,7 @@ function LogTable({ logs = [] }) {
         ))}
       </div>
 
-      {/* 4. TABLE */}
-      <div className="overflow-x-auto rounded-lg border border-gray-700">
+      <div className="overflow-x-auto rounded-lg border-gray-700">
         <table className="w-full text-sm">
           <thead className="bg-gray-800 text-gray-300 uppercase text-xs">
             <tr>
@@ -59,7 +59,7 @@ function LogTable({ logs = [] }) {
             </tr>
           </thead>
           <tbody className="bg-gray-900 divide-y divide-gray-700">
-            {filteredLogs.map((log, index) => ( // 5. Use filteredLogs instead of logs
+            {filteredLogs.map((log, index) => (
               <tr 
                 key={log.id || index} 
                 className={`hover:bg-gray-800 transition-colors duration-150 
@@ -77,4 +77,5 @@ function LogTable({ logs = [] }) {
     </div>
   );
 }
+
 export default LogTable;

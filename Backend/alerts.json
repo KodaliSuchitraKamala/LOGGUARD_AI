@@ -1,16 +1,20 @@
 [
   {
-    "timestamp": "2026-08-03 10:01:00",
+    "id": "1786373452707-lu2kpnw4q",
+    "userId": "1786371701713",
     "level": "ERROR",
-    "message": "2026-08-03 10:01:00 | ERROR | DB connection failed\r",
-    "severity": "Medium",
-    "detectedAt": "2026-08-06T13:00:57.592Z"
+    "message": "2026-08-10 10:02:00 | ERROR | DB connection failed",
+    "filename": "test.log",
+    "timestamp": "2026-08-10T14:50:52.707Z",
+    "acknowledged": false
   },
   {
-    "timestamp": "2026-08-03 10:02:00",
+    "id": "1786373452707-635c95f54",
+    "userId": "1786371701713",
     "level": "CRITICAL",
-    "message": "2026-08-03 10:02:00 | CRITICAL | Server crash",
-    "severity": "High",
-    "detectedAt": "2026-08-06T13:00:57.592Z"
+    "message": "2026-08-10 10:03:00 | CRITICAL | Server crashed",
+    "filename": "test.log",
+    "timestamp": "2026-08-10T14:50:52.707Z",
+    "acknowledged": false
   }
 ]

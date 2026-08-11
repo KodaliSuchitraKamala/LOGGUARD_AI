@@ -1,12 +1,36 @@
 import axios from 'axios';
-const API_URL = 'http://localhost:5000/api';
+import { toast } from 'react-hot-toast';
 
-export const uploadLogFile = (formData) => {
-  return axios.post(`${API_URL}/upload`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
-}
+const API = axios.create({
+  baseURL: 'http://localhost:5000/api', // CALL BACKEND DIRECTLY
+});
 
-export const getAnalyticsSummary = () => axios.get(`${API_URL}/analytics/summary`);
-export const getAnalyticsTrends = () => axios.get(`${API_URL}/analytics/trends`);
-export const getLatestLogs = () => axios.get(`${API_URL}/logs/latest`);
+API.interceptors.request.use((req) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
+  }
+  return req;
+});
+
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      toast.error('Session expired. Please login again.');
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export const uploadLogFile = (formData) => API.post('/logs/upload', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const getAnalyticsSummary = () => API.get('/analytics/summary');
+export const getAnalyticsTrends = () => API.get('/analytics/trends');
+export const getLatestLogs = () => API.get('/logs/latest');
+export const getAlerts = () => API.get('/alerts');
+
+export default API;

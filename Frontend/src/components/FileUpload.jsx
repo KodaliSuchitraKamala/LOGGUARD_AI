@@ -1,76 +1,61 @@
-import { useState, useRef } from 'react';
-import axios from 'axios';
-import { UploadCloud } from 'lucide-react'; // or use any icon library
+import React, { useState, useRef } from 'react';
+import { toast } from 'react-hot-toast';
+import { uploadLogFile } from '../services/api';
+import { UploadCloud } from 'lucide-react';
 
-function FileUpload({ onLogsLoaded }) {
-  const [dragActive, setDragActive] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const inputRef = useRef(null);
+export default function FileUpload({ onLogsLoaded }) {
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleFile = async (file) => {
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
-    setLoading(true);
-    
+
+    setUploading(true);
     const formData = new FormData();
-    formData.append('logfile', file);
+    formData.append('logfile', file); // <-- MUST MATCH BACKEND: upload.single('logfile')
 
     try {
-      const res = await axios.post('http://localhost:5000/api/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      onLogsLoaded(res.data.logs); // backend must return {logs: [...]}
-      alert("File uploaded successfully!");
+      const res = await uploadLogFile(formData);
+      toast.success(res.data.message);
+      onLogsLoaded(); // refresh table
+      fileInputRef.current.value = ""; // reset
     } catch(err) {
-      console.error(err);
-      alert("Upload failed. Is backend running on port 5000?");
-    } finally {
-      setLoading(false);
+      console.error("UPLOAD ERROR:", err.response);
+      toast.error(err.response?.data?.error || 'Upload failed'); // backend sends 'error'
     }
-  }
-
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
-    else if (e.type === "dragleave") setDragActive(false);
-  }
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  }
+    setUploading(false);
+  };
 
   return (
-    <div 
-      onDragEnter={handleDrag}
-      onDragLeave={handleDrag}
-      onDragOver={handleDrag}
-      onDrop={handleDrop}
-      className={`border-2 border-dashed p-10 text-center rounded-lg transition ${dragActive? 'border-blue-500 bg-gray-800' : 'border-gray-600 bg-gray-900'}`}>
-      
-      <UploadCloud className="mx-auto mb-4 w-12 h-12 text-gray-400" />
-      <h2 className="text-3xl font-bold mb-2">Upload File</h2>
-      <p className="text-gray-400 mb-4">Drag & Drop Log File Here</p>
-      
-      <button 
-        onClick={() => inputRef.current.click()} 
-        disabled={loading} 
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:bg-gray-500">
-        {loading? 'Uploading...' : 'Choose File'}
-      </button>
+    <div className="bg-gray-800 p-6 rounded-lg mb-6">
+      <h2 className="text-xl font-bold mb-4">Upload Log File</h2>
 
-      <input 
-        ref={inputRef}
-        type="file" 
-        className="hidden" 
-        onChange={(e) => handleFile(e.target.files[0])} 
-        accept=".log,.txt" 
-      />
+      <div
+        onClick={() => fileInputRef.current.click()}
+        className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer"
+      >
+        <UploadCloud className="mx-auto mb-2 text-gray-400" size={32} />
+        <p className="text-lg font-bold">Drag & Drop Log File Here</p>
+        <p className="text-gray-400 text-sm">or click to choose</p>
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleFileChange}
+          accept=".log,.txt"
+        />
+      </div>
+
+      <button
+        onClick={() => fileInputRef.current.click()}
+        disabled={uploading}
+        type="button"
+        className="mt-4 w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-semibold disabled:bg-gray-600"
+      >
+        {uploading? "Uploading..." : "Choose File"}
+      </button>
     </div>
-  )
+  );
 }
-export default FileUpload;
