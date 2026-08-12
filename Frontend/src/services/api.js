@@ -2,7 +2,7 @@ import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api', // CALL BACKEND DIRECTLY
+  baseURL: 'http://localhost:5000/api',
 });
 
 API.interceptors.request.use((req) => {
@@ -25,7 +25,7 @@ API.interceptors.response.use(
   }
 );
 
-export const uploadLogFile = (formData) => API.post('/logs/upload', formData, {
+export const uploadLogFile = (formData) => API.post('/upload', formData, { // FIXED
   headers: { 'Content-Type': 'multipart/form-data' }
 });
 export const getAnalyticsSummary = () => API.get('/analytics/summary');

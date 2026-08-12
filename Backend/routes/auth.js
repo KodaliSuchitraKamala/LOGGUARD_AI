@@ -1,42 +1,47 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { db } from '../db.js';
 
 const router = express.Router();
 
-// Dummy user for testing
-const DUMMY_USER = {
-  id: '1',
-  email: 'admin@logguard.ai',
-  password: '1234'
-};
-
-// POST /api/auth/login
-router.post("/login", async (req, res) =>{
+router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
+    if(!name ||!email ||!password) return res.status(400).json({ error: 'All fields required' });
 
-    if (email != DUMMY_USER.email) {
-      return res.status(400).json({ msg: "Invalid credentials" });
-    }
+    await db.read();
+    db.data = db.data || { users: [], logs: [], alerts: [] };
+    
+    if ((db.data.users || []).find(u => u.email === email)) return res.status(400).json({ error: 'User exists' });
 
-    const isMatch = await bcrypt.compare(password, DUMMY_USER.password);
-    if(!isMarch) {
-      return res.status(400).json({ msg: "Invalid credentials" });
-    }
-
-    // Create JWT
-    const payload = { user: { id: DUMMY_USER.id } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "1h"
-    });
-
-    res.json({ token, user: { id: DUMMY_USER.id, email: DUMMY_USER.email } });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
+    const hashed = await bcrypt.hash(password, 10);
+    const newUser = { id: Date.now().toString(), name, email, password: hashed };
+    db.data.users = db.data.users || [];
+    db.data.users.push(newUser);
+    await db.write();
+    res.json({ message: 'Registered' });
+  } catch (error) {
+    console.error("REGISTER ERROR:", error)
+    res.status(500).json({ error: error.message });
   }
 });
 
-module.exports = router;
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    await db.read();
+    db.data = db.data || { users: [], logs: [], alerts: [] };
+    
+    const user = (db.data.users || []).find(u => u.email === email);
+    if (!user ||!await bcrypt.compare(password, user.password)) return res.status(400).json({ error: 'Invalid credentials' });
+
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+  } catch (error) {
+    console.error("LOGIN ERROR:", error)
+    res.status(500).json({ error: error.message });
+  }
+});
+
+export default router;

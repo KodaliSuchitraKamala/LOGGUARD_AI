@@ -66,9 +66,15 @@ LOGGUARD_AI/
 │ │ ├── auth.js
 │ ├── routes/
 │ │ ├── auth.js
+│ │ ├── logs.js
+│ │ ├── upload.js
 │ ├── uploads/ # Temp files from multer
+│ ├── utils/
+│ │ ├── logParser.js
 │ ├── .env
 │ ├── alerts.json
+│ ├── db.js
+│ ├── db.json
 │ ├── logs.json # Parsed logs storage
 │ ├── emailService.js
 │ ├── Dockerfile

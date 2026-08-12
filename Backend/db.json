@@ -1,0 +1,68 @@
+{
+  "users": [
+    {
+      "id": "1786537383226",
+      "name": "Suchitra",
+      "email": "kodalisuchitrakamala@gmail.com",
+      "password": "$2b$10$OzrUzTBmCJ03qPUoFdcQrO8UGRz59lLI4B2jhElb.1vA4ydN52V/q"
+    }
+  ],
+  "logs": [
+    {
+      "id": "1786537918911-0.43814439630603963",
+      "userId": "1786537383226",
+      "level": "INFO",
+      "message": "Server started|50ms",
+      "filename": "test.log",
+      "timestamp": "2026-08-10T04:30:00.000Z",
+      "acknowledged": false
+    },
+    {
+      "id": "1786537918911-0.20045951218836655",
+      "userId": "1786537383226",
+      "level": "WARNING",
+      "message": "Disk 80% full|80ms",
+      "filename": "test.log",
+      "timestamp": "2026-08-10T04:31:00.000Z",
+      "acknowledged": false
+    },
+    {
+      "id": "1786537918911-0.18636136353264587",
+      "userId": "1786537383226",
+      "level": "ERROR",
+      "message": "DB connection failed|500ms",
+      "filename": "test.log",
+      "timestamp": "2026-08-10T04:32:00.000Z",
+      "acknowledged": false
+    },
+    {
+      "id": "1786537918911-0.19784965285083767",
+      "userId": "1786537383226",
+      "level": "CRITICAL",
+      "message": "Server crashed|2000ms",
+      "filename": "test.log",
+      "timestamp": "2026-08-10T04:33:00.000Z",
+      "acknowledged": false
+    }
+  ],
+  "alerts": [
+    {
+      "id": "1786537918911-0.18636136353264587",
+      "userId": "1786537383226",
+      "level": "ERROR",
+      "message": "DB connection failed|500ms",
+      "filename": "test.log",
+      "timestamp": "2026-08-10T04:32:00.000Z",
+      "acknowledged": false
+    },
+    {
+      "id": "1786537918911-0.19784965285083767",
+      "userId": "1786537383226",
+      "level": "CRITICAL",
+      "message": "Server crashed|2000ms",
+      "filename": "test.log",
+      "timestamp": "2026-08-10T04:33:00.000Z",
+      "acknowledged": false
+    }
+  ]
+}

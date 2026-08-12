@@ -12,7 +12,7 @@ export default function Login({ setAuth }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const endpoint = isLogin ? "/api/login" : "/api/register"; // FIXED HERE
+      const endpoint = isLogin ? "/login" : "/register"; // FIXED HERE
       const payload = isLogin ? { email, password } : { name, email, password }; // register needs name
       
       const res = await API.post(endpoint, payload);

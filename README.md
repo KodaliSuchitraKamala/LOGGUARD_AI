@@ -77,9 +77,15 @@ LOGGUARD_AI/
 │ │ ├── auth.js
 │ ├── routes/
 │ │ ├── auth.js
+│ │ ├── logs.js
+│ │ ├── upload.js
 │ ├── uploads/ # Temp files from multer
+│ ├── utils/
+│ │ ├── logParser.js
 │ ├── .env
 │ ├── alerts.json
+│ ├── db.js
+│ ├── db.json
 │ ├── logs.json # Parsed logs storage
 │ ├── emailService.js
 │ ├── Dockerfile
@@ -196,6 +202,7 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 14** | **Alert Management & Acknowledge Feature to alarms and Mark CRITICAL/FATAL alerts** | 1. Added "Acknowledge" button for each CRITICAL/Fatal alerts<br>2. Created POST /api/alerts/acknowledge API to stop alarm and mark alert as handled<br>3. Prevented repeated notifications for same acknowledged alert<br>4. Updated Alerts tab to show acknowledged status with timestamp<br>5. Improved and UX- users can now silence alarms after review | React, Node.js, Express, Socket.io, Tailwind CSS |  **Deliverable:**<br>Alert workflow complete. Users can acknowledge alerts and stop alarm sound. |
 | **Day 15** | **Automated Email Notifications using Nodemailer to notify admins of CRITICAL/FATAL anomalies** | 1. Integrated Nodemailer to send email alerts for CRITICAL/FATAL anomalies<br>2. Email triggers automatically on log upload when severity is High<br>3. Email includes severity, timestamp, and exact log message<br>4. Tested email delivery with demo log containing "Server crash"<br>5. End-to-end alerting complete: UI toast + Alarm + Email | Node.js, Express, Nodemailer, React, Socket.io |  **Deliverable:**<br>Automated email alerts working. Admins notified even when not on dashboard. |
 | **Day 16** | **Auth + Alerts Without DB ✅** | 1. Replaced MongoDB with dummy user + JWT auth<br>2. Created `auth.js` middleware for token verification<br>3. Added Axios interceptor to send token from frontend<br>4. Implemented in-memory alerts store with GET + Acknowledge API<br>5. Updated Upload route to push sample alerts<br>6. Connected Dashboard + Alerts UI to live data<br>7. Enabled CORS and fixed 500/401 errors | Node.js, Express, Reat, Axios, JWT, bcryptjs, CORS | **Deliverable:** Full flow working: Register → Login → Upload → Alerts → Acknowledge. No DB required for demo |
+| **Day 17** | **Real Log Parsing + Email Alerts + Lowdb Persistence** | 1. Set up `nodemailer` and created `emailService.js` to send alerts<br>2. Connected email alerts to `upload.js` → trigger emails for `ERROR` and `CRITICAL` logs<br>3. Implemented real `.log` file parsing and verified parsing works correctly<br>4. Verified Lowdb persistence → logs saved to `logs.json`, users saved to `users.json`<br>5. Debugged parser issues where it returned `Array(0)` / empty results<br>6. Tested end-to-end flow: Register → Login → Upload Log → Dashboard + Analytics + Alerts + Emails | Node.js, Express, Multer, Lowdb, Nodemailer, JavaScript | **Deliverable:** Real log upload with parsing, database persistence, and automated email alerts for critical errors working |
 
 ---
 
