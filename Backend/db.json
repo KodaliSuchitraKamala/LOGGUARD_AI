@@ -1,67 +1,56 @@
 {
-  "users": [
-    {
-      "id": "1786537383226",
-      "name": "Suchitra",
-      "email": "kodalisuchitrakamala@gmail.com",
-      "password": "$2b$10$OzrUzTBmCJ03qPUoFdcQrO8UGRz59lLI4B2jhElb.1vA4ydN52V/q"
-    }
-  ],
+  "users": [],
   "logs": [
     {
-      "id": "1786537918911-0.43814439630603963",
+      "id": "02b1fc4b-7801-4e3f-b4ae-db7a9d756211",
       "userId": "1786537383226",
+      "timestamp": "2026-08-13 10:00:00",
       "level": "INFO",
-      "message": "Server started|50ms",
-      "filename": "test.log",
-      "timestamp": "2026-08-10T04:30:00.000Z",
-      "acknowledged": false
+      "message": "Server started",
+      "responseTime": 50
     },
     {
-      "id": "1786537918911-0.20045951218836655",
+      "id": "8a246970-03ac-4b49-b40c-de7c0d1dad83",
       "userId": "1786537383226",
-      "level": "WARNING",
-      "message": "Disk 80% full|80ms",
-      "filename": "test.log",
-      "timestamp": "2026-08-10T04:31:00.000Z",
-      "acknowledged": false
-    },
-    {
-      "id": "1786537918911-0.18636136353264587",
-      "userId": "1786537383226",
+      "timestamp": "2026-08-13 10:01:00",
       "level": "ERROR",
-      "message": "DB connection failed|500ms",
-      "filename": "test.log",
-      "timestamp": "2026-08-10T04:32:00.000Z",
-      "acknowledged": false
+      "message": "DB failed",
+      "responseTime": 500
     },
     {
-      "id": "1786537918911-0.19784965285083767",
+      "id": "0adaf7bf-48c1-447f-9191-1c65363627ec",
       "userId": "1786537383226",
+      "timestamp": "2026-08-13 10:02:00",
+      "level": "INFO",
+      "message": "User login",
+      "responseTime": 120
+    },
+    {
+      "id": "5c763732-447d-4813-8fe0-054b422737a5",
+      "userId": "1786537383226",
+      "timestamp": "2026-08-13 10:03:00",
       "level": "CRITICAL",
-      "message": "Server crashed|2000ms",
-      "filename": "test.log",
-      "timestamp": "2026-08-10T04:33:00.000Z",
-      "acknowledged": false
+      "message": "Server crash",
+      "responseTime": 2000
     }
   ],
   "alerts": [
     {
-      "id": "1786537918911-0.18636136353264587",
+      "id": "4ae904b7-f1dc-4a23-9811-4dca3b34b0ee",
       "userId": "1786537383226",
+      "logId": "8a246970-03ac-4b49-b40c-de7c0d1dad83",
       "level": "ERROR",
-      "message": "DB connection failed|500ms",
-      "filename": "test.log",
-      "timestamp": "2026-08-10T04:32:00.000Z",
+      "message": "DB failed",
+      "timestamp": "2026-08-13 10:01:00",
       "acknowledged": false
     },
     {
-      "id": "1786537918911-0.19784965285083767",
+      "id": "7874a5fa-4680-444a-a0f0-e60aeb22a295",
       "userId": "1786537383226",
+      "logId": "5c763732-447d-4813-8fe0-054b422737a5",
       "level": "CRITICAL",
-      "message": "Server crashed|2000ms",
-      "filename": "test.log",
-      "timestamp": "2026-08-10T04:33:00.000Z",
+      "message": "Server crash",
+      "timestamp": "2026-08-13 10:03:00",
       "acknowledged": false
     }
   ]

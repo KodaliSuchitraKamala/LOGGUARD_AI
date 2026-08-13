@@ -3,79 +3,51 @@ import multer from 'multer';
 import fs from 'fs';
 import { db } from '../db.js';
 import auth from '../middleware/auth.js';
-import { sendEmail } from '../emailService.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
-const parseLogLine = (line) => {
-  const parts = line.split('|').map(p => p.trim());
-  if(parts.length < 3) return null;
-
-  const timestamp = parts[0];
-  const level = parts[1];
-  const message = parts[2];
-  const responseTime = parts[3]? parseInt(parts[3]) : 0; // NEW
-
-  return {
-    timestamp: new Date(timestamp).toISOString(),
-    level: level,
-    message: message,
-    responseTime: responseTime // NEW
-  }
-}
-
-const getLogLevel = (line) => {
-  if(line.includes('CRITICAL')) return 'CRITICAL';
-  if(line.includes('ERROR')) return 'ERROR';
-  if(line.includes('WARNING')) return 'WARNING';
-  return 'INFO';
-}
-
-router.post('/upload', auth, upload.single('logFile'), async (req, res) => {
+router.post('/upload', auth, upload.single('logfile'), async (req, res) => {
     try {
-        if(!req.file) return res.status(400).json({error: 'No file uploaded'});
-        const content = fs.readFileSync(req.file.path, 'utf-8');
-        const lines = content.split('\n').filter(l => l.trim());
+        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+        const fileContent = fs.readFileSync(req.file.path, 'utf8');
+        const lines = fileContent.split('\n');
+        const newLogs = [];
 
         await db.read();
 
-        const newLogs = [];
-        const newAlerts = [];
+        lines.forEach(line => {
+            if (line.trim() === '') return;
+            const parts = line.split('|').map(p => p.trim());
+            
+            if (parts.length >= 4) {
+                const [timestamp, level, message, responseTimeStr] = parts;
+                const responseTime = parseInt(responseTimeStr.replace('ms', '')) || 0;
+                const logId = uuidv4();
 
-        for(const line of lines){
-          const parsed = parseLogLine(line);
-          if(!parsed) continue;
+                const log = { id: logId, userId: req.user.id, timestamp, level, message, responseTime };
+                newLogs.push(log);
 
-          const logEntry = {
-            id: `${Date.now()}-${Math.random()}`,
-            userId: req.user.id,
-            level: parsed.level,
-            message: parsed.message,
-            filename: req.file.originalname,
-            timestamp: parsed.timestamp, // NOW USING REAL TIMESTAMP
-            acknowledged: false
-          };
-          newLogs.push(logEntry);
-          if(['ERROR', 'CRITICAL'].includes(parsed.level)){
-            newAlerts.push(logEntry);
-          }
-        }
+                // Auto-generate alerts
+                if(level === 'ERROR' || level === 'CRITICAL'){
+                    db.data.alerts.push({ id: uuidv4(), userId: req.user.id, logId, level, message, timestamp, acknowledged: false })
+                }
+            }
+        });
+
+        if(newLogs.length === 0) return res.status(400).json({ error: "No valid log lines found" });
 
         db.data.logs.push(...newLogs);
-        db.data.alerts.push(...newAlerts);
         await db.write();
+
         fs.unlinkSync(req.file.path);
+        res.json({ success: true, count: newLogs.length, message: `${newLogs.length} logs uploaded successfully` });
 
-        for(const alert of newAlerts) {
-            const html = `<h2>LogGuard AI Alert: ${alert.level}</h2><p><b>Time:</b> ${alert.timestamp}</p><p><b>Message:</b> ${alert.message}</p>`;
-            await sendEmail(process.env.ALERT_EMAIL, `LogGuard AI ${alert.level} Alert`, html);
-        };
-
-        res.json({ message: `Uploaded ${newLogs.length} logs. Found ${newAlerts.length} alerts.` });
-    } catch (err) {
-        console.error("Upload Error: ", err);
-        res.status(500).json({ error: err.message })
+    } catch (error) {
+        console.error("UPLOAD ERROR:", error);
+        res.status(500).json({ error: error.message });
     }
 });
 

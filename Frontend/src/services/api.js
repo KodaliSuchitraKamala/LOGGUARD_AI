@@ -25,11 +25,10 @@ API.interceptors.response.use(
   }
 );
 
-export const uploadLogFile = (formData) => API.post('/upload', formData, { // FIXED
+export const uploadLogFile = (formData) => API.post('/upload', formData, {
   headers: { 'Content-Type': 'multipart/form-data' }
 });
-export const getAnalyticsSummary = () => API.get('/analytics/summary');
-export const getAnalyticsTrends = () => API.get('/analytics/trends');
+export const getAnalytics = () => API.get('/analytics');
 export const getLatestLogs = () => API.get('/logs/latest');
 export const getAlerts = () => API.get('/alerts');
 

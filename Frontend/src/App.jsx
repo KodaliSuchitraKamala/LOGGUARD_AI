@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { getLatestLogs } from './services/api';
+import { getLatestLogs, getAnalytics } from './services/api'; // ADD getAnalytics
 import { logout } from './services/auth';
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
@@ -12,6 +12,7 @@ import LogTable from './components/LogTable';
 
 function App() {
   const [logs, setLogs] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState(null); // NEW
   const [refreshKey, setRefreshKey] = useState(0);
   const [auth, setAuth] = useState(!!localStorage.getItem('token'));
   const [page, setPage] = useState('dashboard');
@@ -24,7 +25,6 @@ function App() {
     }
     try {
       const res = await getLatestLogs();
-      console.log("RAW DATA FROM BACKEND:", res.data)
       setLogs(res.data);
     } catch(err) {
       console.error("FETCH ERROR:", err)
@@ -32,9 +32,23 @@ function App() {
     setLoading(false);
   }
 
+  const fetchAnalytics = async () => {
+    if(!auth) return;
+    try {
+      const res = await getAnalytics();
+      console.log("ANALYTICS DATA:", res.data) // ADD THIS
+      setAnalyticsData(res.data);
+    } catch(err) {
+      console.error("ANALYTICS ERROR:", err.response?.data || err) // BETTER LOG
+      toast.error("Failed to load analytics")
+    }
+  }
+
   useEffect(() => {
-    if(auth) fetchLogs();
-    else setLoading(false);
+    if(auth) {
+      fetchLogs();
+      fetchAnalytics(); // NEW
+    } else setLoading(false);
   }, [auth, refreshKey]);
 
   const handleUploadSuccess = () => {
@@ -45,6 +59,7 @@ function App() {
     logout();
     setAuth(false);
     setLogs([]);
+    setAnalyticsData(null);
   }
 
   if(loading) return <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center">Loading...</div>
@@ -73,7 +88,7 @@ function App() {
                 <LogTable logs={logs} /> 
               </div>
             )}
-            {page === 'analytics' && (<Analytics />)}
+            {page === 'analytics' && (analyticsData ? <Analytics data={analyticsData} /> : <p>Loading Analytics...</p>)} {/* FIXED */}
             {page === 'alerts' && (<Alerts />)}
           </div>
         ) : <Navigate to='/login' />} />

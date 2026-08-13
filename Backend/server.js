@@ -6,6 +6,13 @@ import cron from 'node-cron';
 import { initDB, db } from './db.js';
 import { sendEmail } from './emailService.js';
 import dotenv from 'dotenv';
+
+// IMPORT ALL ROUTES FIRST BEFORE ANY AWAIT
+import authRoute from './routes/auth.js';
+import uploadRoute from './routes/upload.js';
+import logsRoute from './routes/logs.js';
+import analyticsRoute from './routes/analytics.js'; 
+
 dotenv.config();
 
 const app = express();
@@ -14,17 +21,19 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
+// INIT DB
 await initDB();
+console.log("DB Initialized");
 
-import authRoute from './routes/auth.js';
-import uploadRoute from './routes/upload.js';
-import logsRoute from './routes/logs.js';
-
+// REGISTER ALL API ROUTES
 app.use('/api', authRoute);
 app.use('/api', uploadRoute);
 app.use('/api', logsRoute);
+app.use('/api', analyticsRoute); 
+console.log("All API routes registered");
+
+app.use(express.static('public'));
 
 cron.schedule('* * * * *', async () => {
   console.log('Running Daily Summary Job...');

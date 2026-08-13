@@ -1,4 +1,4 @@
-2026-08-10 10:00:00 | INFO | Server started | 50ms
-2026-08-10 10:01:00 | WARNING | Disk 80% full | 80ms
-2026-08-10 10:02:00 | ERROR | DB connection failed | 500ms
-2026-08-10 10:03:00 | CRITICAL | Server crashed | 2000ms
+2026-08-13 10:00:00 | INFO | Server started | 50ms
+2026-08-13 10:01:00 | ERROR | DB failed | 500ms
+2026-08-13 10:02:00 | INFO | User login | 120ms
+2026-08-13 10:03:00 | CRITICAL | Server crash | 2000ms

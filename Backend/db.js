@@ -1,18 +1,15 @@
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
-import path from 'path';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const file = path.join(__dirname, 'db.json');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const file = join(__dirname, 'db.json'); // Use 1 file instead of 3
 const adapter = new JSONFile(file);
-const defaultData = { users: [], logs: [], alerts: [] };
-export const db = new Low(adapter, defaultData);
+export const db = new Low(adapter);
 
-export async function initDB() {
+export const initDB = async () => {
     await db.read();
-    db.data = db.data || defaultData;
+    db.data ||= { users: [], logs: [], alerts: [] }; // THIS LINE FIXES [] ISSUE
     await db.write();
 }

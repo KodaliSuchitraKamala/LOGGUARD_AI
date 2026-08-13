@@ -65,6 +65,7 @@ LOGGUARD_AI/
 │ ├── middleware/
 │ │ ├── auth.js
 │ ├── routes/
+│ │ ├── analytics.js
 │ │ ├── auth.js
 │ │ ├── logs.js
 │ │ ├── upload.js

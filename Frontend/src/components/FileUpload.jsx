@@ -13,13 +13,13 @@ export default function FileUpload({ onLogsLoaded }) {
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('logFile', file); // FIXED: capital F to match backend
+    formData.append('logfile', file); // FIXED: lowercase f to match backend multer
 
     try {
       const res = await uploadLogFile(formData);
       toast.success(res.data.message);
-      onLogsLoaded(); // refresh table
-      fileInputRef.current.value = ""; // reset
+      onLogsLoaded(); // refresh table + analytics
+      fileInputRef.current.value = "";
     } catch(err) {
       console.error("UPLOAD ERROR:", err.response);
       toast.error(err.response?.data?.error || 'Upload failed');
@@ -30,7 +30,6 @@ export default function FileUpload({ onLogsLoaded }) {
   return (
     <div className="bg-gray-800 p-6 rounded-lg mb-6">
       <h2 className="text-xl font-bold mb-4">Upload Log File</h2>
-
       <div
         onClick={() => fileInputRef.current.click()}
         className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer"
@@ -38,7 +37,6 @@ export default function FileUpload({ onLogsLoaded }) {
         <UploadCloud className="mx-auto mb-2 text-gray-400" size={32} />
         <p className="text-lg font-bold">Drag & Drop Log File Here</p>
         <p className="text-gray-400 text-sm">or click to choose</p>
-
         <input
           type="file"
           ref={fileInputRef}
@@ -47,7 +45,6 @@ export default function FileUpload({ onLogsLoaded }) {
           accept=".log,.txt"
         />
       </div>
-
       <button
         onClick={() => fileInputRef.current.click()}
         disabled={uploading}
