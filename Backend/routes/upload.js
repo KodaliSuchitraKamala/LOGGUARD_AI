@@ -4,7 +4,8 @@ import fs from 'fs';
 import { db } from '../db.js';
 import auth from '../middleware/auth.js';
 import { v4 as uuidv4 } from 'uuid';
-import { io } from '../server.js'; // NEW: 1. IMPORT io
+import { io } from '../server.js';
+import { sendAlert } from '../services/alertService.js';
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
@@ -22,7 +23,7 @@ router.post('/upload', auth, upload.single('logfile'), async (req, res) => {
         lines.forEach(line => {
             if (line.trim() === '') return;
             const parts = line.split('|').map(p => p.trim());
-            
+
             if (parts.length >= 4) {
                 const [timestamp, level, message, responseTimeStr] = parts;
                 const responseTime = parseInt(responseTimeStr.replace('ms', '')) || 0;
@@ -33,7 +34,14 @@ router.post('/upload', auth, upload.single('logfile'), async (req, res) => {
 
                 // Auto-generate alerts
                 if(level === 'ERROR' || level === 'CRITICAL'){
-                    db.data.alerts.push({ id: uuidv4(), userId: req.user.id, logId, level, message, timestamp, acknowledged: false })
+                    const alert = { id: uuidv4(), userId: req.user.id, logId, level, message, timestamp, acknowledged: false }
+                    db.data.alerts.push(alert);
+                    io.emit('new_alert', {...alert, userEmail: req.user.email });
+
+                    // Instant email for CRITICAL
+                    if(level === 'CRITICAL'){
+                        sendAlert('Critical Log Detected', 'CRITICAL', message, 1);
+                    }
                 }
             }
         });
@@ -43,7 +51,13 @@ router.post('/upload', auth, upload.single('logfile'), async (req, res) => {
         db.data.logs.push(...newLogs);
         await db.write();
 
-        io.emit('new_log', { userId: req.user.id }); // NEW: 2. EMIT EVENT
+        // Check threshold for failed logins
+        const failedLogins = newLogs.filter(l => l.level === 'ERROR' && l.message.toLowerCase().includes('login failed')).length;
+        if(failedLogins >= parseInt(process.env.ALERT_THRESHOLD_FAILED_LOGINS)){
+            sendAlert('Failed Login Threshold', 'ERROR', `${failedLogins} Failed Login Attempts`, failedLogins);
+        }
+
+        io.emit('new_log', { userId: req.user.id, count: newLogs.length });
 
         fs.unlinkSync(req.file.path);
         res.json({ success: true, count: newLogs.length, message: `${newLogs.length} logs uploaded successfully` });

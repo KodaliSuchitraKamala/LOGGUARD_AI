@@ -79,6 +79,22 @@
       "level": "WARN",
       "message": "Socket test log",
       "responseTime": 150
+    },
+    {
+      "id": "8d66b529-463d-4579-8ee9-6f444f9a3a3c",
+      "userId": "1786706814297",
+      "timestamp": "2026-08-13T14:00:00Z",
+      "level": "ERROR",
+      "message": "login failed for user admin",
+      "responseTime": 120
+    },
+    {
+      "id": "b825f50c-754a-435b-89af-1c5c9163d468",
+      "userId": "1786706814297",
+      "timestamp": "2026-08-13T14:01:00Z",
+      "level": "CRITICAL",
+      "message": "DB Connection Lost",
+      "responseTime": 0
     }
   ],
   "alerts": [
@@ -116,6 +132,24 @@
       "level": "CRITICAL",
       "message": "Server crash",
       "timestamp": "2026-08-13 10:03:00",
+      "acknowledged": false
+    },
+    {
+      "id": "1dc453b7-cb8b-462a-b5fc-df8063983a6e",
+      "userId": "1786706814297",
+      "logId": "8d66b529-463d-4579-8ee9-6f444f9a3a3c",
+      "level": "ERROR",
+      "message": "login failed for user admin",
+      "timestamp": "2026-08-13T14:00:00Z",
+      "acknowledged": false
+    },
+    {
+      "id": "015eb644-c361-40f4-93b6-dc43b7b117e7",
+      "userId": "1786706814297",
+      "logId": "b825f50c-754a-435b-89af-1c5c9163d468",
+      "level": "CRITICAL",
+      "message": "DB Connection Lost",
+      "timestamp": "2026-08-13T14:01:00Z",
       "acknowledged": false
     }
   ]

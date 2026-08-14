@@ -53,6 +53,7 @@ LOGGUARD_AI/
 │ ├── src/
 │ │ ├── components/
 | │ | ├── Alerts.jsx # Alerts dashoboard
+| │ | ├── AlertsToast.jsx
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts
 │ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
 │ │ │ ├── FileUpload.jsx # Drag & Drop log upload

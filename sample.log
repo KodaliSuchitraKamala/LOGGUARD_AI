@@ -1,1 +1,2 @@
-    2025-10-02 12:00:00 | WARN | Socket test log | 150ms
+    2026-08-13T14:00:00Z | ERROR | login failed for user admin | 120ms
+    2026-08-13T14:01:00Z | CRITICAL | DB Connection Lost | 0ms
