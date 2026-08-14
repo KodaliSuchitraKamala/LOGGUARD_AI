@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { getLatestLogs, getAnalytics } from './services/api'; // ADD getAnalytics
+import { getLatestLogs, getAnalytics } from './services/api'; 
 import { logout } from './services/auth';
+import socket from './services/socket'; // ADD THIS
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import Analytics from './components/Analytics';
@@ -12,7 +13,7 @@ import LogTable from './components/LogTable';
 
 function App() {
   const [logs, setLogs] = useState([]);
-  const [analyticsData, setAnalyticsData] = useState(null); // NEW
+  const [analyticsData, setAnalyticsData] = useState(null); 
   const [refreshKey, setRefreshKey] = useState(0);
   const [auth, setAuth] = useState(!!localStorage.getItem('token'));
   const [page, setPage] = useState('dashboard');
@@ -36,10 +37,10 @@ function App() {
     if(!auth) return;
     try {
       const res = await getAnalytics();
-      console.log("ANALYTICS DATA:", res.data) // ADD THIS
+      console.log("ANALYTICS DATA:", res.data) 
       setAnalyticsData(res.data);
     } catch(err) {
-      console.error("ANALYTICS ERROR:", err.response?.data || err) // BETTER LOG
+      console.error("ANALYTICS ERROR:", err.response?.data || err) 
       toast.error("Failed to load analytics")
     }
   }
@@ -47,9 +48,20 @@ function App() {
   useEffect(() => {
     if(auth) {
       fetchLogs();
-      fetchAnalytics(); // NEW
+      fetchAnalytics(); 
     } else setLoading(false);
   }, [auth, refreshKey]);
+
+  // NEW: SOCKET.IO LIVE UPDATE
+  useEffect(() => {
+    if (!auth) return;
+    socket.on('new_log', () => {
+        console.log("New log detected via Socket, refetching...");
+        fetchAnalytics(); 
+        fetchLogs();
+    });
+    return () => socket.off('new_log'); // cleanup
+  }, [auth]); // ADDED
 
   const handleUploadSuccess = () => {
     setRefreshKey(prev => prev + 1);
@@ -88,7 +100,7 @@ function App() {
                 <LogTable logs={logs} /> 
               </div>
             )}
-            {page === 'analytics' && (analyticsData ? <Analytics data={analyticsData} /> : <p>Loading Analytics...</p>)} {/* FIXED */}
+            {page === 'analytics' && (analyticsData? <Analytics data={analyticsData} /> : <p>Loading Analytics...</p>)} 
             {page === 'alerts' && (<Alerts />)}
           </div>
         ) : <Navigate to='/login' />} />

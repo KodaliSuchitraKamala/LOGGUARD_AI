@@ -17,7 +17,11 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+export const io = new Server(server, { cors: { origin: "http://localhost:5173" } }); // ADDED export + specific origin
+
+io.on('connection', (socket) => { // ADDED: for debug
+    console.log('Client connected:', socket.id);
+});
 
 app.use(cors());
 app.use(express.json());

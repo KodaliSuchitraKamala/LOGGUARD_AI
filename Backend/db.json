@@ -1,5 +1,12 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "1786706814297",
+      "name": "Suchitra",
+      "email": "kodalisuchitrakamala@gmail.com",
+      "password": "$2b$10$3HgL.Nsn9sNfQUgEuAu9XedbagOaJSiOqmzvFxz5hMWZONGc8Zuka"
+    }
+  ],
   "logs": [
     {
       "id": "02b1fc4b-7801-4e3f-b4ae-db7a9d756211",
@@ -32,6 +39,46 @@
       "level": "CRITICAL",
       "message": "Server crash",
       "responseTime": 2000
+    },
+    {
+      "id": "99717455-d518-469b-8a72-2b649cf2b73c",
+      "userId": "1786706814297",
+      "timestamp": "2026-08-13 10:00:00",
+      "level": "INFO",
+      "message": "Server started",
+      "responseTime": 50
+    },
+    {
+      "id": "947dc9c6-a0f1-4d55-aa86-05d23a647da2",
+      "userId": "1786706814297",
+      "timestamp": "2026-08-13 10:01:00",
+      "level": "ERROR",
+      "message": "DB failed",
+      "responseTime": 500
+    },
+    {
+      "id": "52e065d7-34a1-4793-93b4-0338b3fd5a3f",
+      "userId": "1786706814297",
+      "timestamp": "2026-08-13 10:02:00",
+      "level": "INFO",
+      "message": "User login",
+      "responseTime": 120
+    },
+    {
+      "id": "0194d282-11d6-440f-9c5b-723feb3f92b5",
+      "userId": "1786706814297",
+      "timestamp": "2026-08-13 10:03:00",
+      "level": "CRITICAL",
+      "message": "Server crash",
+      "responseTime": 2000
+    },
+    {
+      "id": "409b531a-4393-44d6-aa64-8a31ca643971",
+      "userId": "1786706814297",
+      "timestamp": "2025-10-02 12:00:00",
+      "level": "WARN",
+      "message": "Socket test log",
+      "responseTime": 150
     }
   ],
   "alerts": [
@@ -48,6 +95,24 @@
       "id": "7874a5fa-4680-444a-a0f0-e60aeb22a295",
       "userId": "1786537383226",
       "logId": "5c763732-447d-4813-8fe0-054b422737a5",
+      "level": "CRITICAL",
+      "message": "Server crash",
+      "timestamp": "2026-08-13 10:03:00",
+      "acknowledged": false
+    },
+    {
+      "id": "e31e29d1-9bfb-4a36-a40f-1f293c06d390",
+      "userId": "1786706814297",
+      "logId": "947dc9c6-a0f1-4d55-aa86-05d23a647da2",
+      "level": "ERROR",
+      "message": "DB failed",
+      "timestamp": "2026-08-13 10:01:00",
+      "acknowledged": false
+    },
+    {
+      "id": "41fdbce7-6f79-4e30-9a48-e18c87fd6d10",
+      "userId": "1786706814297",
+      "logId": "0194d282-11d6-440f-9c5b-723feb3f92b5",
       "level": "CRITICAL",
       "message": "Server crash",
       "timestamp": "2026-08-13 10:03:00",

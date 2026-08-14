@@ -4,6 +4,7 @@ import fs from 'fs';
 import { db } from '../db.js';
 import auth from '../middleware/auth.js';
 import { v4 as uuidv4 } from 'uuid';
+import { io } from '../server.js'; // NEW: 1. IMPORT io
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
@@ -41,6 +42,8 @@ router.post('/upload', auth, upload.single('logfile'), async (req, res) => {
 
         db.data.logs.push(...newLogs);
         await db.write();
+
+        io.emit('new_log', { userId: req.user.id }); // NEW: 2. EMIT EVENT
 
         fs.unlinkSync(req.file.path);
         res.json({ success: true, count: newLogs.length, message: `${newLogs.length} logs uploaded successfully` });

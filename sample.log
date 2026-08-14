@@ -1,4 +1,1 @@
-2025-04-05 10:00:01 | INFO | Server started on port 5000
-2025-04-05 10:00:05 | ERROR | Database connection failed
-2025-04-05 10:00:10 | WARN | High memory usage: 85%
-2025-04-05 10:00:15 | INFO | User login: rahul@guntur.com
+    2025-10-02 12:00:00 | WARN | Socket test log | 150ms
