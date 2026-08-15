@@ -9,39 +9,7 @@
   ],
   "logs": [
     {
-      "id": "02b1fc4b-7801-4e3f-b4ae-db7a9d756211",
-      "userId": "1786537383226",
-      "timestamp": "2026-08-13 10:00:00",
-      "level": "INFO",
-      "message": "Server started",
-      "responseTime": 50
-    },
-    {
-      "id": "8a246970-03ac-4b49-b40c-de7c0d1dad83",
-      "userId": "1786537383226",
-      "timestamp": "2026-08-13 10:01:00",
-      "level": "ERROR",
-      "message": "DB failed",
-      "responseTime": 500
-    },
-    {
-      "id": "0adaf7bf-48c1-447f-9191-1c65363627ec",
-      "userId": "1786537383226",
-      "timestamp": "2026-08-13 10:02:00",
-      "level": "INFO",
-      "message": "User login",
-      "responseTime": 120
-    },
-    {
-      "id": "5c763732-447d-4813-8fe0-054b422737a5",
-      "userId": "1786537383226",
-      "timestamp": "2026-08-13 10:03:00",
-      "level": "CRITICAL",
-      "message": "Server crash",
-      "responseTime": 2000
-    },
-    {
-      "id": "99717455-d518-469b-8a72-2b649cf2b73c",
+      "id": "62336167-d751-4012-80bd-45110156422f",
       "userId": "1786706814297",
       "timestamp": "2026-08-13 10:00:00",
       "level": "INFO",
@@ -49,7 +17,7 @@
       "responseTime": 50
     },
     {
-      "id": "947dc9c6-a0f1-4d55-aa86-05d23a647da2",
+      "id": "a84f80a6-1591-40ce-a5b8-ca80ebe35834",
       "userId": "1786706814297",
       "timestamp": "2026-08-13 10:01:00",
       "level": "ERROR",
@@ -57,7 +25,7 @@
       "responseTime": 500
     },
     {
-      "id": "52e065d7-34a1-4793-93b4-0338b3fd5a3f",
+      "id": "1f70e70c-b00b-4f19-929a-9152ddfff007",
       "userId": "1786706814297",
       "timestamp": "2026-08-13 10:02:00",
       "level": "INFO",
@@ -65,91 +33,31 @@
       "responseTime": 120
     },
     {
-      "id": "0194d282-11d6-440f-9c5b-723feb3f92b5",
+      "id": "45991909-4bb7-41bc-9d69-7dad0582a9e7",
       "userId": "1786706814297",
       "timestamp": "2026-08-13 10:03:00",
       "level": "CRITICAL",
       "message": "Server crash",
       "responseTime": 2000
-    },
-    {
-      "id": "409b531a-4393-44d6-aa64-8a31ca643971",
-      "userId": "1786706814297",
-      "timestamp": "2025-10-02 12:00:00",
-      "level": "WARN",
-      "message": "Socket test log",
-      "responseTime": 150
-    },
-    {
-      "id": "8d66b529-463d-4579-8ee9-6f444f9a3a3c",
-      "userId": "1786706814297",
-      "timestamp": "2026-08-13T14:00:00Z",
-      "level": "ERROR",
-      "message": "login failed for user admin",
-      "responseTime": 120
-    },
-    {
-      "id": "b825f50c-754a-435b-89af-1c5c9163d468",
-      "userId": "1786706814297",
-      "timestamp": "2026-08-13T14:01:00Z",
-      "level": "CRITICAL",
-      "message": "DB Connection Lost",
-      "responseTime": 0
     }
   ],
   "alerts": [
     {
-      "id": "4ae904b7-f1dc-4a23-9811-4dca3b34b0ee",
-      "userId": "1786537383226",
-      "logId": "8a246970-03ac-4b49-b40c-de7c0d1dad83",
+      "id": "7e9f6ea4-3ca4-4b4b-a668-b5474e4166f8",
+      "userId": "1786706814297",
+      "logId": "a84f80a6-1591-40ce-a5b8-ca80ebe35834",
       "level": "ERROR",
       "message": "DB failed",
       "timestamp": "2026-08-13 10:01:00",
       "acknowledged": false
     },
     {
-      "id": "7874a5fa-4680-444a-a0f0-e60aeb22a295",
-      "userId": "1786537383226",
-      "logId": "5c763732-447d-4813-8fe0-054b422737a5",
+      "id": "efc366c6-3187-40d6-ba47-a68ba5b0d67e",
+      "userId": "1786706814297",
+      "logId": "45991909-4bb7-41bc-9d69-7dad0582a9e7",
       "level": "CRITICAL",
       "message": "Server crash",
       "timestamp": "2026-08-13 10:03:00",
-      "acknowledged": false
-    },
-    {
-      "id": "e31e29d1-9bfb-4a36-a40f-1f293c06d390",
-      "userId": "1786706814297",
-      "logId": "947dc9c6-a0f1-4d55-aa86-05d23a647da2",
-      "level": "ERROR",
-      "message": "DB failed",
-      "timestamp": "2026-08-13 10:01:00",
-      "acknowledged": false
-    },
-    {
-      "id": "41fdbce7-6f79-4e30-9a48-e18c87fd6d10",
-      "userId": "1786706814297",
-      "logId": "0194d282-11d6-440f-9c5b-723feb3f92b5",
-      "level": "CRITICAL",
-      "message": "Server crash",
-      "timestamp": "2026-08-13 10:03:00",
-      "acknowledged": false
-    },
-    {
-      "id": "1dc453b7-cb8b-462a-b5fc-df8063983a6e",
-      "userId": "1786706814297",
-      "logId": "8d66b529-463d-4579-8ee9-6f444f9a3a3c",
-      "level": "ERROR",
-      "message": "login failed for user admin",
-      "timestamp": "2026-08-13T14:00:00Z",
-      "acknowledged": false
-    },
-    {
-      "id": "015eb644-c361-40f4-93b6-dc43b7b117e7",
-      "userId": "1786706814297",
-      "logId": "b825f50c-754a-435b-89af-1c5c9163d468",
-      "level": "CRITICAL",
-      "message": "DB Connection Lost",
-      "timestamp": "2026-08-13T14:01:00Z",
       "acknowledged": false
     }
   ]

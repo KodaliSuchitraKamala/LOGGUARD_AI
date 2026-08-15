@@ -74,56 +74,69 @@ LOGGUARD_AI/
 ├── Backend/
 │ ├── node_modules/
 │ ├── middleware/
+│ │ ├── adminMiddleware.js
 │ │ ├── auth.js
+│ │ ├── authMiddleware.js
+│ │ ├── roleMiddleware.js
+│ ├── models/
+│ │ ├── Alerts.js
+│ │ ├── Log.js
+│ │ ├── User.js
 │ ├── routes/
+│ │ ├── alerts.js
 │ │ ├── analytics.js
 │ │ ├── auth.js
+│ │ ├── logRoutes.js
 │ │ ├── logs.js
 │ │ ├── upload.js
+│ │ ├── users.js
 │ ├── uploads/ # Temp files from multer
 │ ├── utils/
 │ │ ├── logParser.js
 │ ├── .env
-│ ├── alerts.json
 │ ├── db.js
 │ ├── db.json
-│ ├── logs.json # Parsed logs storage
 │ ├── emailService.js
 │ ├── Dockerfile
 │ ├── package.json
 │ ├── package-lock.json
 │ ├── README.md
-│ └── server.js # Express API + Anomaly Detection
+│ ├── server.js # Express API + Anomaly Detection
+│ └── users.json 
 ├── Frontend/
 │ ├── node_modules/
 │ ├── public/
 │ │ ├── alarm.mp3
 │ ├── src/
 │ │ ├── components/
+| │ | ├── admin/
+| | │ | ├── AdminStats.jsx
+| │ | ├── AdminUsersTable.jsx
 | │ | ├── Alerts.jsx # Alerts dashoboard
 | │ | ├── AlertsToast.jsx
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts
 │ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
-│ │ │ ├── ErrorTrendChart.jsx # Line chart: Errors per day
 │ │ │ ├── FileUpload.jsx # Drag & Drop log upload
-│ │ │ ├── Login.jsx # Auth page 
-│ │ │ ├── LogLevelPie.jsx # Pie chart: Log level distribution
+│ │ │ ├── LogTable.jsx # Filterable log table
 | │ | ├── LogList.jsx
-| │ | ├── LogTable.jsx # Filterable log table 
+| │ | ├── Navbar.jsx
+│ │ │ ├── ErrorTrendChart.jsx # Line chart: Errors per day
 │ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
-│ │ │ └── Upload.jsx 
+│ │ │ ├── LogLevelPie.jsx # Pie chart: Log level distribution
+| │ | ├── Upload.jsx 
+│ │ │ └── Login.jsx # Auth page
 │ │ ├── services/
 │ │ │ ├── api.js # All axios API calls
 │ │ │ ├── auth.js # Auth helpers
 │ │ │ └── socket.js # Socket.io client for real-time alerts
-│ │ ├── App.css
 │ │ ├── App.jsx # Main app with Dashboard/Analytics tabs
+│ │ ├── App.css
 │ │ ├── index.css
 │ │ ├── main.jsx
 │ │ └── socket.js
 │ ├──.env
 │ ├──.gitignore
-│ ├──.oxlintrc.json
+│ ├──.eslintrc.json
 │ ├── Dockerfile
 │ ├── index.html
 │ ├── package.json
@@ -208,6 +221,8 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 18** | **Analytics Tab Update + Daily Summary** | 1. Integrated `node-cron` job for daily summary email at 9 AM IST<br>2. Added severity levels to alerts and limited instant emails to ERROR/CRITICAL only<br>3. Updated Analytics tab with daily summary stats: total logs, ERROR/CRITICAL counts, top 3 errors<br>4. Added charts: logs severity distribution pie chart + response time line graph<br> 5. Created Alerts History section in Analytics with timestamp, severity, and message<br> 6. Added Settings controls in Analytics: "Enable Daily Summary" toggle + "Preferred summary time"<br>7. Tested summary email content and cron timing test logs | React, VIte, Node.js, Express, node-cron, Chart.js | **Deliverable:**<br>Analytics tab now central hub for summaries, visualizations, and alert history + automated daily email reports |
 | **Day 19** | **Real-Time Dashboard Updates with Socket.IO** | 1. Initialized Socket.IO server in `server.js` and exported `io` instance<br>2. Emitted `new_log` event from `upload.js` after DB write<br>3. Created `socket.js` client service<br>4. Added `socket.on('new_log')` listener in `App.js` to auto refetch logs + analytics<br>5. Tested live KPI, Pie, and Trend chart updates | Node.js, Express, Socket.IO, React, Vite | **Deliverable:**<br>Dashboard now updates KPI cards and all charts instantly within 1 second of new log upload. No manual refresh required. |
 | **Day 20** | **Real-Time Alerts + Email Notifications** | 1. Socket.IO integration for live alerts <br> 2. Instant email on CRITICAL logs <br> 3. Threshold alert for failed logins <br> 4. Daily 9PM IST summary email cron <br> 5. AlertToast UI for real-time popups | Node.js, Express, Socket.IO, Nodemailer, node-cron, React, Tailwind | **Deliverable:**<br>Live dashboard toasts + Email sent to suchitrakamalakodali@gmail.com + Daily summary report |
+| **Day 21** | **User Roles + Admin Panel** | 1. Added role field + lastLogin to User model<br>2. Created authMiddleware + adminMiddleware<br>3. Built /api/users GET, PUT, DELETE routes<br>4. Built AdminUsersTable UI with role dropdown<br>5. Fixed Invalid Date bug + scoped APIs by role | Node.js, Express, MongoDB, Mongoose, React, JWT, TailwindCSS | **Deliverable:**<br>Admin can view/manage all users. Role-based access enforced. Last login tracked. |
+| **Day 22** | **File Upload + Log Ingestion** | 1. Integrated multer for .log/.txt/.json uploads<br>2. Built log parser to extract timestamp, level, message, source<br>3. Created LogUploader.jsx with drag-drop + file validation<br>4. Bulk insert parsed logs to MongoDB<br>5. Auto-refresh Analytics after upload + E2E test | Node.js, Express, Multer, MongoDB, Mongoose, React, TailwindCSS, Axios | **Deliverable:**<br>Bulk log ingestion live. Uploaded logs reflect in KPI, Pie, and Trend charts instantly. |
 
 ---
 

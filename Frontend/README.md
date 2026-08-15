@@ -52,6 +52,9 @@ LOGGUARD_AI/
 │ │ ├── alarm.mp3
 │ ├── src/
 │ │ ├── components/
+| │ | ├── admin/
+| | │ | ├── AdminStats.jsx
+| │ | ├── AdminUsersTable.jsx
 | │ | ├── Alerts.jsx # Alerts dashoboard
 | │ | ├── AlertsToast.jsx
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts
@@ -59,6 +62,7 @@ LOGGUARD_AI/
 │ │ │ ├── FileUpload.jsx # Drag & Drop log upload
 │ │ │ ├── LogTable.jsx # Filterable log table
 | │ | ├── LogList.jsx
+| │ | ├── Navbar.jsx
 │ │ │ ├── ErrorTrendChart.jsx # Line chart: Errors per day
 │ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
 │ │ │ ├── LogLevelPie.jsx # Pie chart: Log level distribution

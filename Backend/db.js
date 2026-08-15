@@ -1,15 +1,20 @@
-import { Low } from 'lowdb';
-import { JSONFile } from 'lowdb/node';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const file = join(__dirname, 'db.json'); // Use 1 file instead of 3
-const adapter = new JSONFile(file);
-export const db = new Low(adapter);
+import mongoose from "mongoose";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const initDB = async () => {
-    await db.read();
-    db.data ||= { users: [], logs: [], alerts: [] }; // THIS LINE FIXES [] ISSUE
-    await db.write();
-}
+    try {
+        await mongoose.connect(process.env.MONGO_URL, {
+            dbName: process.env.DB_NAME
+        });
+        console.log(`MongoDB Connected: ${mongoose.connection.host} ✅`);
+        console.log(`Database: ${process.env.DB_NAME}`);
+    } catch (error) {
+        console.error(`DB Connection Error: ${error.message}`);
+        process.exit(1);
+    }
+};
+
+// For backward compatibility with old routes
+export const db = mongoose.connection;
+export default mongoose;

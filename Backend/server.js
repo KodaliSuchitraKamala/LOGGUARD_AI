@@ -10,8 +10,10 @@ import dotenv from 'dotenv';
 
 import authRoute from './routes/auth.js';
 import uploadRoute from './routes/upload.js';
-import logsRoute from './routes/logs.js';
-import analyticsRoute from './routes/analytics.js';
+import analyticsRoutes from './routes/analytics.js';
+import logRoutes from './routes/logs.js';
+import alertRoutes from './routes/alerts.js';
+import userRoutes from './routes/users.js';
 
 dotenv.config();
 
@@ -33,8 +35,10 @@ console.log("DB Initialized");
 
 app.use('/api', authRoute);
 app.use('/api', uploadRoute);
-app.use('/api', logsRoute);
-app.use('/api', analyticsRoute);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/logs', logRoutes);
+app.use('/api/alerts', alertRoutes);
+app.use('/api/users', userRoutes);
 console.log("All API routes registered");
 
 app.use(express.static('public'));

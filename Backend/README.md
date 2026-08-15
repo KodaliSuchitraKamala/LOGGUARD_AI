@@ -63,26 +63,35 @@ LOGGUARD_AI/
 ├── Backend/
 │ ├── node_modules/
 │ ├── middleware/
+│ │ ├── adminMiddleware.js
 │ │ ├── auth.js
+│ │ ├── authMiddleware.js
+│ │ ├── roleMiddleware.js
+│ ├── models/
+│ │ ├── Alerts.js
+│ │ ├── Log.js
+│ │ ├── User.js
 │ ├── routes/
+│ │ ├── alerts.js
 │ │ ├── analytics.js
 │ │ ├── auth.js
+│ │ ├── logRoutes.js
 │ │ ├── logs.js
 │ │ ├── upload.js
+│ │ ├── users.js
 │ ├── uploads/ # Temp files from multer
 │ ├── utils/
 │ │ ├── logParser.js
 │ ├── .env
-│ ├── alerts.json
 │ ├── db.js
 │ ├── db.json
-│ ├── logs.json # Parsed logs storage
 │ ├── emailService.js
 │ ├── Dockerfile
 │ ├── package.json
 │ ├── package-lock.json
 │ ├── README.md
-│ └── server.js # Express API + Anomaly Detection
+│ ├── server.js # Express API + Anomaly Detection
+│ └── users.json 
 ├──.gitignore
 ├── LICENSE
 ├── README.md
