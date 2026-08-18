@@ -11,7 +11,6 @@ export default function AdminUsersTable() {
       const res = await API.get('/users'); 
       setUsers(res.data);
     } catch (err) {
-      console.error("Failed to fetch users:", err);
       toast.error("Failed to load users");
     } finally {
       setLoading(false);
@@ -20,7 +19,7 @@ export default function AdminUsersTable() {
 
   const handleRoleChange = async (userId, newRole) => {
     try {
-      await API.put(`/users/${userId}/role`, { role: newRole }); // CHANGED patch -> put
+      await API.put(`/users/${userId}/role`, { role: newRole });
       toast.success("Role updated");
       fetchUsers(); 
     } catch (err) {
@@ -51,12 +50,12 @@ export default function AdminUsersTable() {
             <tr key={user._id} className="border-b border-gray-700">
               <td className="py-2">{user.email}</td>
               <td className="py-2">
-                <span className={`px-2 py-1 rounded text-xs ${user.role === 'ADMIN' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
+                <span className={`px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
                   {user.role}
                 </span>
               </td>
               <td className="py-2">
-                {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'} {/* FIXED */}
+                {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}
               </td>
               <td className="py-2">
                 <select 
@@ -64,8 +63,8 @@ export default function AdminUsersTable() {
                   onChange={(e) => handleRoleChange(user._id, e.target.value)}
                   className="bg-gray-700 text-white rounded px-2 py-1 text-sm"
                 >
-                  <option value="USER">USER</option>
-                  <option value="ADMIN">ADMIN</option>
+                  <option value="user">user</option> {/* <- lowercase */}
+                  <option value="admin">admin</option>
                 </select>
               </td>
             </tr>

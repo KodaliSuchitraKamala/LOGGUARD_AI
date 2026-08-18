@@ -31,6 +31,6 @@ export const uploadLogFile = (formData) => API.post('/upload', formData, {
 export const getAnalytics = () => API.get('/analytics');
 export const getLatestLogs = () => API.get('/logs/latest');
 export const getAlerts = () => API.get('/alerts');
-export const getCurrentUser = () => API.get('/me'); // backend should return {email, role, id}
+export const getCurrentUser = () => API.get('/auth/me');
 
 export default API;

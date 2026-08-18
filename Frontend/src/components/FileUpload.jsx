@@ -13,7 +13,7 @@ export default function FileUpload({ onLogsLoaded }) {
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('logfile', file); // FIXED: lowercase f to match backend multer
+    formData.append('file', file); // <- CHANGED: was 'logfile', now 'file'
 
     try {
       const res = await uploadLogFile(formData);
@@ -22,7 +22,7 @@ export default function FileUpload({ onLogsLoaded }) {
       fileInputRef.current.value = "";
     } catch(err) {
       console.error("UPLOAD ERROR:", err.response);
-      toast.error(err.response?.data?.error || 'Upload failed');
+      toast.error(err.response?.data?.message || 'Upload failed'); // use.message
     }
     setUploading(false);
   };

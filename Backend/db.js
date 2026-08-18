@@ -4,11 +4,8 @@ dotenv.config();
 
 export const initDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URL, {
-            dbName: process.env.DB_NAME
-        });
-        console.log(`MongoDB Connected: ${mongoose.connection.host} ✅`);
-        console.log(`Database: ${process.env.DB_NAME}`);
+        const conn = await mongoose.connect(process.env.MONGO_URL);
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
         console.error(`DB Connection Error: ${error.message}`);
         process.exit(1);

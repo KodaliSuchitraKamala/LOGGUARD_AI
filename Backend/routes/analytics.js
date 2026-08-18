@@ -1,40 +1,67 @@
-import express from 'express';
-import Log from '../models/Log.js'; // we need to create this
-import User from '../models/User.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
-import { adminMiddleware } from '../middleware/adminMiddleware.js';
-
+import express from "express";
+import Log from "../models/Log.js";
+import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
-router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
+router.get("/", protect, async (req, res) => {
   try {
-    const totalLogs = await Log.countDocuments();
-    const errors = await Log.countDocuments({ level: 'ERROR' });
-    const warnings = await Log.countDocuments({ level: 'WARN' });
-    const info = await Log.countDocuments({ level: 'INFO' });
-    const critical = await Log.countDocuments({ level: 'CRITICAL' });
+    const userId = req.user._id;
+    const totalLogs = await Log.countDocuments({ userId });
+    const criticals = await Log.countDocuments({ userId, level: "CRITICAL" });
+    const errors = await Log.countDocuments({ userId, level: "ERROR" });
+    const warnings = await Log.countDocuments({ userId, level: "WARN" });
+    const info = await Log.countDocuments({ userId, level: "INFO" });
 
-    const users = await User.countDocuments();
-    const admins = await User.countDocuments({ role: 'ADMIN' });
+    const levelDistribution = [
+      { name: "INFO", value: info },
+      { name: "WARN", value: warnings },
+      { name: "ERROR", value: errors },
+      { name: "CRITICAL", value: criticals },
+    ];
 
-    const health = totalLogs > 0 ? Math.round(((totalLogs - errors) / totalLogs) * 100) : 100;
+    const health = totalLogs > 0? Math.max(0, 100 - (criticals * 10) - (errors * 5)) : 98;
 
-    res.json({
-      totalLogs,
-      errors,
+    // 1. Error Trend - Last 7 Days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const errorLogs = await Log.aggregate([
+      { $match: { userId, level: { $in: ["ERROR", "CRITICAL"] }, timestamp: { $gte: sevenDaysAgo } } },
+      { 
+        $group: { 
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } }, 
+          count: { $sum: 1 } 
+        } 
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    
+    const errorTrend = [];
+    for(let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      const found = errorLogs.find(e => e._id === dateStr);
+      errorTrend.push({ date: dateStr.slice(5), count: found? found.count : 0 }); // MM-DD
+    }
+
+    // 2. Response Time - Mock for now, since we don't track it yet
+    const responseTrend = errorTrend.map(d => ({ date: d.date, avg: Math.floor(Math.random() * 200) + 50 }));
+
+    res.json({ 
+      totalLogs, 
+      criticals, 
+      errors, 
       warnings,
-      info,
-      critical,
       health,
-      roleData: [
-        { name: 'USER', value: users - admins },
-        { name: 'ADMIN', value: admins }
-      ]
+      levelDistribution,
+      avgResponseTime: responseTrend[responseTrend.length-1]?.avg || 0,
+      errorTrend,
+      responseTrend
     });
   } catch (error) {
     console.error("ANALYTICS ERROR:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
-
 export default router;

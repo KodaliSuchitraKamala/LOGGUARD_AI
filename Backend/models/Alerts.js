@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
 
 const alertSchema = new mongoose.Schema({
-  logId: { type: mongoose.Schema.Types.ObjectId, ref: 'Log' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  logId: { type: mongoose.Schema.Types.ObjectId, ref: "Log" },
   message: String,
-  sentAt: { type: Date, default: Date.now },
-  status: { type: String, default: 'sent' }
+  level: { type: String, default: "critical" },
+  acknowledged: { type: Boolean, default: false },
+  timestamp: { type: Date, default: Date.now }
 });
 
-export default mongoose.model('Alert', alertSchema);
+export default mongoose.model("Alert", alertSchema);

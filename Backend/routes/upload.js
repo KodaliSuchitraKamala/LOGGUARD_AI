@@ -1,71 +1,76 @@
-import express from 'express';
-import multer from 'multer';
-import fs from 'fs';
-import { db } from '../db.js';
-import auth from '../middleware/auth.js';
-import { v4 as uuidv4 } from 'uuid';
-import { io } from '../server.js';
-import { sendAlert } from '../services/alertService.js';
-
+import express from "express";
+import multer from "multer";
+import fs from "fs";
+import { protect } from "../middleware/authMiddleware.js";
+import Log from "../models/Log.js";
+import Alert from "../models/Alerts.js";
+import { sendEmail } from "../emailService.js"; // ADD THIS
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
 
-router.post('/upload', auth, upload.single('logfile'), async (req, res) => {
-    try {
-        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+const upload = multer({ dest: "uploads/" });
 
-        const fileContent = fs.readFileSync(req.file.path, 'utf8');
-        const lines = fileContent.split('\n');
-        const newLogs = [];
+router.post("/upload", protect, upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-        await db.read();
+    const fileContent = fs.readFileSync(req.file.path, "utf-8");
+    const lines = fileContent.split("\n");
+    const logsToInsert = [];
+    const alertsToInsert = [];
 
-        lines.forEach(line => {
-            if (line.trim() === '') return;
-            const parts = line.split('|').map(p => p.trim());
+    lines.forEach(line => {
+      if(line.trim()) {
+        let level = "INFO";
+        if(line.toLowerCase().includes("critical")) level = "CRITICAL";
+        else if(line.toLowerCase().includes("error")) level = "ERROR";
+        else if(line.toLowerCase().includes("warn")) level = "WARN";
 
-            if (parts.length >= 4) {
-                const [timestamp, level, message, responseTimeStr] = parts;
-                const responseTime = parseInt(responseTimeStr.replace('ms', '')) || 0;
-                const logId = uuidv4();
+        const logDoc = {
+          userId: req.user._id,
+          message: line,
+          level,
+          timestamp: new Date()
+        };
+        logsToInsert.push(logDoc);
 
-                const log = { id: logId, userId: req.user.id, timestamp, level, message, responseTime };
-                newLogs.push(log);
-
-                // Auto-generate alerts
-                if(level === 'ERROR' || level === 'CRITICAL'){
-                    const alert = { id: uuidv4(), userId: req.user.id, logId, level, message, timestamp, acknowledged: false }
-                    db.data.alerts.push(alert);
-                    io.emit('new_alert', {...alert, userEmail: req.user.email });
-
-                    // Instant email for CRITICAL
-                    if(level === 'CRITICAL'){
-                        sendAlert('Critical Log Detected', 'CRITICAL', message, 1);
-                    }
-                }
-            }
-        });
-
-        if(newLogs.length === 0) return res.status(400).json({ error: "No valid log lines found" });
-
-        db.data.logs.push(...newLogs);
-        await db.write();
-
-        // Check threshold for failed logins
-        const failedLogins = newLogs.filter(l => l.level === 'ERROR' && l.message.toLowerCase().includes('login failed')).length;
-        if(failedLogins >= parseInt(process.env.ALERT_THRESHOLD_FAILED_LOGINS)){
-            sendAlert('Failed Login Threshold', 'ERROR', `${failedLogins} Failed Login Attempts`, failedLogins);
+        if(level === "CRITICAL") {
+          alertsToInsert.push({
+            userId: req.user._id,
+            message: `CRITICAL: ${line}`,
+            level: "CRITICAL",
+            acknowledged: false
+          });
         }
+      }
+    });
 
-        io.emit('new_log', { userId: req.user.id, count: newLogs.length });
+    const insertedLogs = await Log.insertMany(logsToInsert);
 
-        fs.unlinkSync(req.file.path);
-        res.json({ success: true, count: newLogs.length, message: `${newLogs.length} logs uploaded successfully` });
+    if(alertsToInsert.length > 0) {
+      const insertedAlerts = await Alert.insertMany(alertsToInsert);
 
-    } catch (error) {
-        console.error("UPLOAD ERROR:", error);
-        res.status(500).json({ error: error.message });
+      // Send Email + Socket for each CRITICAL
+      for(const alert of insertedAlerts) {
+        req.app.get('io').emit('new_alert', alert);
+
+        const emailBody = `
+          <h2>🚨 LogGuard AI - CRITICAL ALERT</h2>
+          <p><b>Message:</b> ${alert.message}</p>
+          <p><b>Time:</b> ${new Date(alert.timestamp).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
+          <p>Please login to dashboard to acknowledge.</p>
+        `;
+        await sendEmail(req.user.email, `LogGuard AI - CRITICAL Alert`, emailBody);
+      }
     }
+
+    fs.unlinkSync(req.file.path);
+    req.app.get('io').emit('new_log');
+
+    res.status(200).json({ message: `${logsToInsert.length} logs uploaded, ${alertsToInsert.length} critical alerts created` });
+  } catch (error) {
+    console.error("UPLOAD ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
 });
 
 export default router;

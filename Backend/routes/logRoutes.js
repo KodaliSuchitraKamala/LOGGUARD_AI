@@ -1,68 +1,32 @@
-import express from 'express';
-import { requireRole } from '../middleware/roleMiddleware.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
-import Log from '../models/Log.js';
-import User from '../models/User.js';
-import Alert from '../models/Alert.js';
-
+import express from "express";
+import Log from "../models/Log.js";
+import Alert from "../models/Alerts.js";
+import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
-// USER sees only their logs, ADMIN sees all
-router.get('/logs', authMiddleware, async (req, res) => {
-  try {
-    const filter = req.user.role === 'ADMIN' ? {} : { userId: req.user.id }; // make sure Log has userId
-    const logs = await Log.find(filter).sort({ timestamp: -1 }).limit(100);
-    res.json(logs);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+// POST /api/logs - ingest log
+router.post("/", protect, async (req, res) => { // protect it
+  const { level, message, source } = req.body;
+  const log = await Log.create({ level, message, source, userId: req.user._id });
+
+  if (level === "critical") {
+    await Alert.create({ logId: log._id, message: `Critical: ${message}`, userId: req.user._id });
+    req.app.get('io').emit('new_alert', { message }); // emit
   }
+  req.app.get('io').emit('new_log');
+  res.status(201).json(log);
 });
 
-// ADMIN only: Get all users
-router.get('/users', authMiddleware, requireRole(['ADMIN']), async (req, res) => {
-  try {
-    const users = await User.find().select('-password');
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+// GET /api/logs - get all logs
+router.get("/", protect, async (req, res) => {
+  const logs = await Log.find().sort({ timestamp: -1 }).limit(100);
+  res.json(logs);
 });
 
-// ADMIN only: Update user role
-router.patch('/users/:id/role', authMiddleware, requireRole(['ADMIN']), async (req, res) => {
-  try {
-    const { role } = req.body;
-    if(!['ADMIN', 'USER'].includes(role)) {
-      return res.status(400).json({ message: 'Invalid role' });
-    }
-    // prevent admin from demoting themselves
-    if (req.params.id === req.user.id && role !== 'ADMIN') {
-      return res.status(403).json({ message: 'Cannot demote yourself' });
-    }
-    const user = await User.findByIdAndUpdate(
-      req.params.id, 
-      { role }, 
-      { new: true }
-    ).select('-password');
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Acknowledge Alert API
-router.patch('/alerts/:id/acknowledge', authMiddleware, async (req, res) => {
-  try {
-    const alert = await Alert.findByIdAndUpdate(
-      req.params.id, 
-      { read: true, acknowledgedBy: req.user.id }, 
-      { new: true }
-    );
-    if(!alert) return res.status(404).json({message: 'Alert not found'});
-    res.json(alert);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+// GET /api/logs/latest - NEW for App.jsx
+router.get("/latest", protect, async (req, res) => {
+  const logs = await Log.find().sort({ timestamp: -1 }).limit(50);
+  res.json(logs);
 });
 
 export default router;

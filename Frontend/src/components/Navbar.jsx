@@ -1,3 +1,3 @@
-{user?.role === 'ADMIN' && (
+{user?.role === 'admin' && ( // <- lowercase
   <Link to="/admin">Admin Panel</Link>
 )}

@@ -1,24 +1,24 @@
-import express from 'express';
-import Log from '../models/Log.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
-
+import express from "express";
+import Alert from "../models/Alerts.js";
+import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
-router.get('/', authMiddleware, async (req, res) => {
-  try {
-    // Get last 24 hours of ERROR and CRITICAL logs
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
-    const alerts = await Log.find({
-      level: { $in: ['ERROR', 'CRITICAL'] },
-      timestamp: { $gte: oneDayAgo }
-    }).sort({ timestamp: -1 }).limit(20);
+// GET /api/alerts - get user's alerts
+router.get("/", protect, async (req, res) => {
+  const alerts = await Alert.find({ userId: req.user._id }).sort({ timestamp: -1 }).limit(50);
+  res.json(alerts);
+});
 
-    res.json(alerts);
-  } catch (error) {
-    console.error("ALERTS ERROR:", error);
-    res.status(500).json({ error: error.message });
+// PUT /api/alerts/:id/acknowledge
+router.put("/:id/acknowledge", protect, async (req, res) => {
+  const alert = await Alert.findById(req.params.id);
+  if (!alert) return res.status(404).json({ message: "Alert not found" });
+  if (alert.userId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Not authorized" });
   }
+  alert.acknowledged = true;
+  await alert.save();
+  res.json(alert);
 });
 
 export default router;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { getLatestLogs, getAnalytics, getCurrentUser } from './services/api'; // add getCurrentUser
+import { getLatestLogs, getAnalytics, getCurrentUser, getAlerts } from './services/api'; // added getAlerts
 import { logout } from './services/auth';
 import socket from './socket';
 import AlertToast from './components/AlertToast';
@@ -11,28 +11,23 @@ import Analytics from './components/Analytics';
 import Alerts from './components/Alerts';
 import FileUpload from './components/FileUpload';
 import LogTable from './components/LogTable';
-import AdminUsersTable from './components/AdminUsersTable'; // NEW
+import AdminUsersTable from './components/AdminUsersTable';
 
 function App() {
   const [logs, setLogs] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [auth, setAuth] = useState(!!localStorage.getItem('token'));
-  const [user, setUser] = useState(null); // NEW: store user role
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
   const [page, setPage] = useState('dashboard');
   const [loading, setLoading] = useState(true);
 
   const fetchLogs = async () => {
-    if(!auth) {
-      setLoading(false);
-      return;
-    }
+    if(!auth) return setLoading(false);
     try {
       const res = await getLatestLogs();
       setLogs(res.data);
-    } catch(err) {
-      console.error("FETCH ERROR:", err)
-    }
+    } catch(err) { console.error("FETCH ERROR:", err) }
     setLoading(false);
   }
 
@@ -42,19 +37,24 @@ function App() {
       const res = await getAnalytics();
       setAnalyticsData(res.data);
     } catch(err) {
+      if(err.response?.status!== 403) toast.error("Failed to load analytics")
       console.error("ANALYTICS ERROR:", err.response?.data || err)
-      toast.error("Failed to load analytics")
     }
   }
 
-  const fetchUser = async () => { // NEW
+  const fetchUser = async () => {
     if(!auth) return;
     try {
       const res = await getCurrentUser();
       setUser(res.data);
-    } catch(err) {
-      console.error("USER ERROR:", err)
-    }
+      localStorage.setItem('user', JSON.stringify(res.data));
+    } catch(err) { console.error("USER ERROR:", err) }
+  }
+
+  // NEW: fetch alerts for badge count
+  const fetchAlerts = async () => {
+    if(!auth) return;
+    try { await getAlerts(); } catch(err) { console.error("ALERTS ERROR:", err) }
   }
 
   useEffect(() => {
@@ -62,23 +62,36 @@ function App() {
       fetchUser();
       fetchLogs();
       fetchAnalytics();
+      fetchAlerts();
     } else setLoading(false);
   }, [auth, refreshKey]);
 
-  // SOCKET.IO LIVE UPDATE
   useEffect(() => {
     if (!auth) return;
     socket.on('new_log', () => {
-        console.log("New log detected via Socket, refetching...");
         fetchAnalytics();
         fetchLogs();
+        fetchAlerts();
     });
-    return () => socket.off('new_log');
+    socket.on('new_alert', () => fetchAlerts()); // listen for alerts too
+    return () => {
+      socket.off('new_log');
+      socket.off('new_alert');
+    };
   }, [auth]);
 
-  const handleUploadSuccess = () => {
-    setRefreshKey(prev => prev + 1);
-  }
+  // NEW: Live Auto-Refresh every 5 seconds
+  useEffect(() => {
+    if (!auth) return;
+    const interval = setInterval(() => {
+      fetchLogs();
+      fetchAnalytics();
+      fetchAlerts();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [auth]);
+
+  const handleUploadSuccess = () => setRefreshKey(prev => prev + 1)
 
   const handleLogout = () => {
     logout();
@@ -100,7 +113,7 @@ function App() {
           <div className="min-h-screen bg-gray-900 text-white p-8">
             <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
               <h1 className="text-3xl font-bold">LOGGUARD AI</h1>
-              <div className="flex gap-3">
+              <div className="flex gap-3 items-center">
                 <span className="text-sm text-gray-400">{user?.email} - {user?.role}</span>
                 <button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold">Logout</button>
               </div>
@@ -109,21 +122,21 @@ function App() {
               <button onClick={() => setPage('dashboard')} className={`pb-2 font-semibold ${page==='dashboard'? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400'}`}>Dashboard</button>
               <button onClick={() => setPage('analytics')} className={`pb-2 font-semibold ${page==='analytics'? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400'}`}>Analytics</button>
               <button onClick={() => setPage('alerts')} className={`pb-2 font-semibold ${page==='alerts'? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400'}`}>Alerts</button>
-              {user?.role === 'ADMIN' && ( // ROLE BASED TAB
+              {user?.role === 'admin' && (
                 <button onClick={() => setPage('admin')} className={`pb-2 font-semibold ${page==='admin'? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400'}`}>Admin Panel</button>
               )}
             </div>
 
             {page === 'dashboard' && (
               <div>
-                <Dashboard logs={logs} />
+                {analyticsData && <Dashboard data={analyticsData} />}
                 <FileUpload onLogsLoaded={handleUploadSuccess} />
                 <LogTable logs={logs} />
               </div>
             )}
-            {page === 'analytics' && (analyticsData? <Analytics data={analyticsData} /> : <p>Loading Analytics...</p>)}
+            {page === 'analytics' && (analyticsData? <Analytics data={analyticsData} /> : user?.role!== 'admin'? <p className="text-yellow-400">Analytics are for Admins only</p> : <p>Loading Analytics...</p>)}
             {page === 'alerts' && (<Alerts />)}
-            {page === 'admin' && user?.role === 'ADMIN' && (<AdminUsersTable />)} 
+            {page === 'admin' && user?.role === 'admin' && (<AdminUsersTable />)}
           </div>
         ) : <Navigate to='/login' />} />
       </Routes>

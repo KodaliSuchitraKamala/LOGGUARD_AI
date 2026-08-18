@@ -26,7 +26,7 @@ export default function AlertToast() {
   if(alerts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 space-y-2 z-50">
+    <div className="fixed bottom-4 right-4 space-y-2 z-50">
       {alerts.map((a) => (
         <div key={a._id || a.id || a.timestamp} className={`p-3 rounded shadow-lg text-white w-80 ${a.level === 'CRITICAL'? 'bg-red-700' : 'bg-orange-600'}`}>
           <p className="font-bold">🚨 {a.level} Alert</p>
