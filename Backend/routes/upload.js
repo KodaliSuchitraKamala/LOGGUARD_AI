@@ -14,30 +14,52 @@ const normalizeLevel = (line) => {
   const l = line.toLowerCase();
   if(l.includes("critical")) return "CRITICAL";
   if(l.includes("error")) return "ERROR";
-  if(l.includes("warn")) return "WARNING"; // <-- FIX: convert WARN to WARNING
+  if(l.includes("warn")) return "WARNING";
   return "INFO";
 }
 
+// Background tasks - don't await these
+const sendCriticalEmailInBackground = (user, alert) => {
+  const emailBody = `
+    <h2>🚨 LogGuard AI - CRITICAL ALERT</h2>
+    <p><b>Message:</b> ${alert.message}</p>
+    <p><b>Time:</b> ${new Date(alert.timestamp).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
+    <p>Please login to dashboard to acknowledge.</p>
+  `;
+  sendEmail(user.email, `LogGuard AI - CRITICAL Alert`, emailBody)
+    .catch(err => console.error("Background Email failed:", err));
+}
+
+const updateStatsInBackground = async (io) => {
+  try {
+    const counts = await Log.aggregate([{ $group: { _id: "$level", count: { $sum: 1 } } }]);
+    const countObj = {INFO:0, WARNING:0, ERROR:0, CRITICAL:0};
+    counts.forEach(c => countObj[c._id] = c.count);
+    io.emit('stats_update', countObj);
+  } catch(e) {
+    console.error("Stats update failed:", e)
+  }
+}
+
 router.post("/upload", protect, upload.single("file"), async (req, res) => {
+  let filePath = req.file?.path;
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-    const fileContent = fs.readFileSync(req.file.path, "utf-8");
+    const fileContent = fs.readFileSync(filePath, "utf-8");
     const lines = fileContent.split("\n");
     const logsToInsert = [];
     const alertsToInsert = [];
 
     lines.forEach(line => {
       if(line.trim()) {
-        const level = normalizeLevel(line); // <-- use normalized level
-
-        const logDoc = {
+        const level = normalizeLevel(line);
+        logsToInsert.push({
           userId: req.user._id,
           message: line,
-          level, // now always one of INFO, WARNING, ERROR, CRITICAL
+          level,
           timestamp: new Date()
-        };
-        logsToInsert.push(logDoc);
+        });
 
         if(level === "CRITICAL") {
           alertsToInsert.push({
@@ -45,45 +67,42 @@ router.post("/upload", protect, upload.single("file"), async (req, res) => {
             message: `CRITICAL: ${line}`,
             level: "CRITICAL",
             acknowledged: false,
-            timestamp: new Date() // add timestamp for email
+            timestamp: new Date()
           });
         }
       }
     });
 
     if(logsToInsert.length === 0) {
-      fs.unlinkSync(req.file.path);
+      fs.unlinkSync(filePath);
       return res.status(400).json({ message: "File is empty" });
     }
 
-    const insertedLogs = await Log.insertMany(logsToInsert);
+    await Log.insertMany(logsToInsert);
 
+    let insertedAlerts = [];
     if(alertsToInsert.length > 0) {
-      const insertedAlerts = await Alert.insertMany(alertsToInsert);
-
-      // Send Email + Socket for each CRITICAL
+      insertedAlerts = await Alert.insertMany(alertsToInsert);
       for(const alert of insertedAlerts) {
         req.app.get('io').emit('new_alert', alert);
-
-        const emailBody = `
-          <h2>🚨 LogGuard AI - CRITICAL ALERT</h2>
-          <p><b>Message:</b> ${alert.message}</p>
-          <p><b>Time:</b> ${new Date(alert.timestamp).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</p>
-          <p>Please login to dashboard to acknowledge.</p>
-        `;
-        await sendEmail(req.user.email, `LogGuard AI - CRITICAL Alert`, emailBody);
+        sendCriticalEmailInBackground(req.user, alert); // fire and forget
       }
     }
 
-    fs.unlinkSync(req.file.path);
-    req.app.get('io').emit('new_log');
+    fs.unlinkSync(filePath); // delete temp file
 
+    // Fire and forget: don't wait for these
+    req.app.get('io').emit('new_log');
+    updateStatsInBackground(req.app.get('io')); // runs in background
+
+    // Respond IMMEDIATELY
     res.status(200).json({ 
-      message: `${logsToInsert.length} logs uploaded, ${alertsToInsert.length} critical alerts created` 
+      message: `${logsToInsert.length} logs uploaded, ${alertsToInsert.length} critical alerts created`
     });
+
   } catch (error) {
     console.error("UPLOAD ERROR:", error);
-    if(req.file) fs.unlinkSync(req.file.path); // cleanup on error
+    if(filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath);
     res.status(500).json({ message: error.message });
   }
 });
