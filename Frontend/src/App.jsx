@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { getLatestLogs, getAnalytics, getCurrentUser, getAlerts } from './services/api'; // added getAlerts
+import { getLatestLogs, getAnalytics, getCurrentUser, getAlerts } from './services/api';
 import { logout } from './services/auth';
 import socket from './socket';
 import AlertToast from './components/AlertToast';
@@ -18,7 +18,7 @@ function App() {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [auth, setAuth] = useState(!!localStorage.getItem('token'));
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || 'null'));
   const [page, setPage] = useState('dashboard');
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +26,7 @@ function App() {
     if(!auth) return setLoading(false);
     try {
       const res = await getLatestLogs();
-      setLogs(res.data);
+      setLogs(res.data); // FIXED: was res.data.logs
     } catch(err) { console.error("FETCH ERROR:", err) }
     setLoading(false);
   }
@@ -51,7 +51,6 @@ function App() {
     } catch(err) { console.error("USER ERROR:", err) }
   }
 
-  // NEW: fetch alerts for badge count
   const fetchAlerts = async () => {
     if(!auth) return;
     try { await getAlerts(); } catch(err) { console.error("ALERTS ERROR:", err) }
@@ -73,14 +72,13 @@ function App() {
         fetchLogs();
         fetchAlerts();
     });
-    socket.on('new_alert', () => fetchAlerts()); // listen for alerts too
+    socket.on('new_alert', () => fetchAlerts());
     return () => {
       socket.off('new_log');
       socket.off('new_alert');
     };
   }, [auth]);
 
-  // NEW: Live Auto-Refresh every 5 seconds
   useEffect(() => {
     if (!auth) return;
     const interval = setInterval(() => {
