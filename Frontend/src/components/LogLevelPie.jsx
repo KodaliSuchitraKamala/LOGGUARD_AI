@@ -5,7 +5,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 export default function LogLevelPie({ logs }) {
   const counts = {
     INFO: logs.filter(l => l.level?.toUpperCase() === 'INFO').length,
-    WARN: logs.filter(l => l.level?.toUpperCase() === 'WARN').length,
+    WARNING: logs.filter(l => l.level?.toUpperCase() === 'WARNING').length,
     ERROR: logs.filter(l => l.level?.toUpperCase() === 'ERROR').length,
     CRITICAL: logs.filter(l => l.level?.toUpperCase() === 'CRITICAL').length,
   };

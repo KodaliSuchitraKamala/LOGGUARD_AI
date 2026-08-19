@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 
 const logSchema = new mongoose.Schema({
-  timestamp: { type: Date, default: Date.now },
-  level: { type: String, enum: ["INFO", "WARNING", "ERROR", "CRITICAL"], required: true },
+  timestamp: { type: Date, required: true },
+  level: { 
+    type: String, 
+    required: true,
+    enum: ["INFO", "WARNING", "WARN", "ERROR", "CRITICAL"] // <-- ADD WARN
+  },
   message: { type: String, required: true },
-  source: { type: String, default: "system" },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+  source: { type: String },
 }, { timestamps: true });
 
 export default mongoose.model("Log", logSchema);

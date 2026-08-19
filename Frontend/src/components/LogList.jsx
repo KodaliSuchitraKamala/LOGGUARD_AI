@@ -6,7 +6,7 @@ function LogList({ logs }) {
         {logs.map(log => (
           <div key={log.id} className="text-sm font-mono">
             <span className="text-gray-400">{log.timestamp}</span> 
-            <span className={`ml-2 font-bold ${log.level === 'ERROR' ? 'text-red-500' : log.level === 'WARN' ? 'text-yellow-500' : 'text-green-500'}`}>
+            <span className={`ml-2 font-bold ${log.level === 'ERROR' ? 'text-red-500' : log.level === 'WARNING' ? 'text-yellow-500' : 'text-green-500'}`}>
               [{log.level}]
             </span>
             <span className="ml-2">{log.message}</span>

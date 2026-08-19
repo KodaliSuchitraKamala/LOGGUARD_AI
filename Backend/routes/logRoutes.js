@@ -1,26 +1,25 @@
 import express from "express";
 import Log from "../models/Log.js";
 import { Parser } from "json2csv";
+import { protect } from "../middleware/authMiddleware.js"; // FIXED: was authMiddleware
 
 const router = express.Router();
 
-// GET /api/logs/latest - Get latest 100 logs for dashboard
-router.get("/latest", async (req, res) => {
+// GET /api/logs/latest
+router.get("/latest", protect, async (req, res) => { // FIXED
   try {
     const logs = await Log.find({})
-      .sort({ timestamp: -1 })
-      .limit(100);
-    
-    // FIX: your App.jsx expects res.data, not res.data.logs
-    res.json(logs); 
+     .sort({ timestamp: -1 })
+     .limit(100);
+    res.json(logs);
   } catch (err) {
     console.error("Latest logs API Error: ", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/logs/search - Advanced search + pagination + CSV export
-router.get("/search", async (req, res) => {
+// GET /api/logs/search
+router.get("/search", protect, async (req, res) => { // FIXED
   try {
     const {
       keyword = "",
@@ -34,7 +33,7 @@ router.get("/search", async (req, res) => {
 
     const query = {};
     if (keyword) query.message = { $regex: keyword, $options: "i" };
-    if (level && level !== "ALL") query.level = level;
+    if (level && level!== "ALL") query.level = level; 
     if (startDate || endDate) {
       query.timestamp = {};
       if (startDate) query.timestamp.$gte = new Date(startDate);
@@ -59,15 +58,15 @@ router.get("/search", async (req, res) => {
     const skip = (Number(page) - 1) * Number(limit);
     const total = await Log.countDocuments(query);
     const logs = await Log.find(query)
-      .sort({ timestamp: -1 })
-      .skip(skip)
-      .limit(Number(limit));
+     .sort({ timestamp: -1 })
+     .skip(skip)
+     .limit(Number(limit));
 
     res.json({
       logs,
       total,
       page: Number(page),
-      totalPages: Math.ceil(total / Number(limit)) // FIX: wrap limit in Number()
+      totalPages: Math.ceil(total / Number(limit))
     });
   } catch (err) {
     console.error("Search API Error: ", err);

@@ -39,7 +39,7 @@ export default function LogTable() {
   const getLevelColor = (level) => {
     if(level === 'CRITICAL') return 'bg-red-500';
     if(level === 'ERROR') return 'bg-orange-500';
-    if(level === 'WARNING') return 'bg-yellow-500 text-black';
+    if(level === 'WARNING') return 'bg-yellow-500';
     return 'bg-blue-500';
   }
 

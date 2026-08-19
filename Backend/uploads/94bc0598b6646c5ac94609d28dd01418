@@ -1,0 +1,3 @@
+2026-08-13T14:00:00Z | ERROR | login failed for user admin | 120ms
+2026-08-13T14:01:00Z | CRITICAL | DB Connection Lost | 0ms
+2026-08-13T14:02:00Z | WARNING | Restart Server | 250ms
