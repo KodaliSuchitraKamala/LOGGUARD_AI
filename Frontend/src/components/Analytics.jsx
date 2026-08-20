@@ -4,80 +4,40 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 const COLORS = { INFO: '#3B82F6', WARN: '#F59E0B', ERROR: '#EF4444', CRITICAL: '#7F1D1D' };
 
 export default function Analytics({ data }) {
-    if (!data) return <p className="text-gray-400">Loading analytics...</p>;
-
-    // Safety: default to empty array if backend hasn't sent it yet
+    if (!data) return <p className="text-gray-400 p-6 animate-pulse">Loading analytics...</p>;
     const levelData = data.levelDistribution || [];
 
     return (
-        <div>
-            <h2 className="text-2xl font-bold mb-6">Analytics</h2>
-            
-            {/* KPI Cards */}
+        <div className="animate-in fade-in">
+            <h2 className="text-2xl font-bold mb-6">Analytics Overview</h2>
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-800 p-4 rounded-lg">Total Logs: <span className="font-bold text-xl">{data.totalLogs}</span></div>
-                <div className="bg-red-900 p-4 rounded-lg">Errors: <span className="font-bold text-xl">{data.errors}</span></div>
-                <div className="bg-blue-900 p-4 rounded-lg">Avg Response: <span className="font-bold text-xl">{data.avgResponseTime}ms</span></div>
-                <div className="bg-green-900 p-4 rounded-lg">Health: <span className="font-bold text-xl">{data.health}%</span></div>
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">Total Logs: <span className="font-bold text-xl float-right">{data.totalLogs}</span></div>
+                <div className="bg-red-900/30 border border-red-800 p-4 rounded-lg">Errors: <span className="font-bold text-xl float-right text-red-400">{data.errors + data.criticals}</span></div>
+                <div className="bg-blue-900/30 border border-blue-800 p-4 rounded-lg">Avg Response: <span className="font-bold text-xl float-right text-blue-400">{data.avgResponseTime}ms</span></div>
+                <div className="bg-green-900/30 border border-green-800 p-4 rounded-lg">Health: <span className="font-bold text-xl float-right text-green-400">{data.health}%</span></div>
             </div>
 
-            {/* Charts Row 1 */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div className="bg-gray-800 p-4 rounded-lg">
-                    <h3 className="font-bold mb-2">Error Trend - 7 Days</h3>
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <h3 className="font-bold mb-4">Error Trend - 7 Days</h3>
                     <ResponsiveContainer width="100%" height={250}>
-                        <LineChart data={data.errorTrend || []}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151"/>
-                            <XAxis dataKey="date" stroke="#9CA3AF"/>
-                            <YAxis stroke="#9CA3AF"/>
-                            <Tooltip />
-                            <Legend />
-                            <Line type="monotone" dataKey="count" stroke="#EF4444" name="Errors per Day" />
-                        </LineChart>
+                        <LineChart data={data.errorTrend}><CartesianGrid strokeDasharray="3 3" stroke="#374151"/><XAxis dataKey="date" stroke="#9CA3AF"/><YAxis stroke="#9CA3AF"/><Tooltip contentStyle={{background:'#1f2937', border:'none'}}/><Legend/><Line type="monotone" dataKey="count" stroke="#EF4444" strokeWidth={2} dot={{fill:'#EF4444'}}/></LineChart>
                     </ResponsiveContainer>
                 </div>
-
-                <div className="bg-gray-800 p-4 rounded-lg">
-                    <h3 className="font-bold mb-2">Response Time</h3>
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <h3 className="font-bold mb-4">Response Time Trend</h3>
                     <ResponsiveContainer width="100%" height={250}>
-                        <LineChart data={data.responseTrend || []}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151"/>
-                            <XAxis dataKey="date" stroke="#9CA3AF"/>
-                            <YAxis stroke="#9CA3AF"/>
-                            <Tooltip />
-                            <Legend />
-                            <Line type="monotone" dataKey="avg" stroke="#3B82F6" name="Avg Response Time (ms)" />
-                        </LineChart>
+                        <LineChart data={data.responseTrend}><CartesianGrid strokeDasharray="3 3" stroke="#374151"/><XAxis dataKey="date" stroke="#9CA3AF"/><YAxis stroke="#9CA3AF"/><Tooltip contentStyle={{background:'#1f2937', border:'none'}}/><Legend/><Line type="monotone" dataKey="avg" stroke="#3B82F6" strokeWidth={2} /></LineChart>
                     </ResponsiveContainer>
                 </div>
             </div>
 
-            {/* PIE CHART */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
                 <h3 className="font-bold mb-2">Log Level Distribution</h3>
-                {levelData.length > 0? (
-                    <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                            <Pie 
-                                data={levelData} 
-                                dataKey="value" 
-                                nameKey="name" 
-                                cx="50%" 
-                                cy="50%" 
-                                outerRadius={100} 
-                                label
-                            >
-                                {levelData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#6B7280'} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                ) : (
-                    <p className="text-gray-400 text-center py-10">Upload logs to see distribution</p>
-                )}
+                {levelData.reduce((a,b)=>a+b.value,0) > 0? (
+                    <ResponsiveContainer width="100%" height={300}><PieChart><Pie data={levelData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({name,value})=> `${name}: ${value}`} >{levelData.map((e,i)=><Cell key={i} fill={COLORS[e.name]}/>)}</Pie><Tooltip/><Legend/></PieChart></ResponsiveContainer>
+                ) : <p className="text-gray-400 text-center py-16">No logs yet - Upload.log files to see charts</p>}
             </div>
         </div>
     );
