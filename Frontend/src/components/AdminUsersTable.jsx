@@ -1,76 +1,63 @@
-import { useEffect, useState } from 'react';
-import API from '../services/api'; 
-import { toast } from 'react-hot-toast';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-export default function AdminUsersTable() {
+function AdminUsersTable() {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem('token');
 
   const fetchUsers = async () => {
     try {
-      const res = await API.get('/users'); 
+      const res = await axios.get("http://localhost:5000/api/users", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setUsers(res.data);
-    } catch (err) {
-      toast.error("Failed to load users");
-    } finally {
-      setLoading(false);
+    } catch(err) {
+      console.error(err);
     }
-  };
+  }
 
-  const handleRoleChange = async (userId, newRole) => {
-    try {
-      await API.put(`/users/${userId}/role`, { role: newRole });
-      toast.success("Role updated");
-      fetchUsers(); 
-    } catch (err) {
-      toast.error("Failed to update role");
-    }
-  };
+  useEffect(() => { fetchUsers(); }, []);
 
-  useEffect(() => {
+  const updateRole = async (id, role) => {
+    await axios.put(`http://localhost:5000/api/users/${id}/role`, {role}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
     fetchUsers();
-  }, []);
+  }
 
-  if (loading) return <p className="text-gray-400">Loading users...</p>
+  const deleteUser = async (id) => {
+    if(!confirm("Delete user?")) return;
+    await axios.delete(`http://localhost:5000/api/users/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    fetchUsers();
+  }
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow">
-      <h2 className="text-xl font-bold mb-4">All Users</h2>
-      <table className="w-full">
-        <thead>
-          <tr className="text-left border-b border-gray-600">
-            <th className="pb-2">Email</th>
-            <th className="pb-2">Role</th>
-            <th className="pb-2">Last Login</th>
-            <th className="pb-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(user => (
-            <tr key={user._id} className="border-b border-gray-700">
-              <td className="py-2">{user.email}</td>
-              <td className="py-2">
-                <span className={`px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
-                  {user.role}
-                </span>
-              </td>
-              <td className="py-2">
-                {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}
-              </td>
-              <td className="py-2">
-                <select 
-                  value={user.role}
-                  onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                  className="bg-gray-700 text-white rounded px-2 py-1 text-sm"
-                >
-                  <option value="user">user</option> {/* <- lowercase */}
-                  <option value="admin">admin</option>
-                </select>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="bg-gray-800 p-4 rounded-lg mt-6">
+      <h2 className="text-xl font-bold mb-4">Admin Panel - User Management</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead><tr className="text-left border-b border-gray-600"><th className="p-2">Email</th><th>Role</th><th>Total Logs</th><th>Critical</th><th>Actions</th></tr></thead>
+          <tbody>
+            {users.map(u => (
+              <tr key={u._id} className="border-b border-gray-700">
+                <td className="p-2">{u.email}</td>
+                <td>
+                  <select value={u.role} onChange={(e)=>updateRole(u._id, e.target.value)} className="bg-gray-700 p-1 rounded">
+                    <option value="user">user</option>
+                    <option value="admin">admin</option>
+                  </select>
+                </td>
+                <td>{u.totalLogs}</td>
+                <td className="text-red-400">{u.stats?.CRITICAL || 0}</td>
+                <td><button onClick={()=>deleteUser(u._id)} className="bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs">Delete</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
+export default AdminUsersTable;

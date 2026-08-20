@@ -5,7 +5,7 @@ import { getLatestLogs, getAnalytics, getCurrentUser, getAlerts } from './servic
 import { logout } from './services/auth';
 import socket from './socket';
 import AlertToast from './components/AlertToast';
-import Dashboard from './components/Dashboard';
+import Dashboard from './components/DashBoard';
 import Login from './components/Login';
 import Analytics from './components/Analytics';
 import Alerts from './components/Alerts';

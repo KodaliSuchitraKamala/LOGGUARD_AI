@@ -77,6 +77,7 @@ LOGGUARD_AI/
 │ │ ├── adminMiddleware.js
 │ │ ├── auth.js
 │ │ ├── authMiddleware.js
+│ │ ├── roleCheck.js
 │ │ ├── roleMiddleware.js
 │ ├── models/
 │ │ ├── Alerts.js
@@ -227,6 +228,7 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 23** | **Live Analytics, Alerts & Email Notifications** | 1. Fixed Analytics API to return real 7-day Error Trend + Response Time data<br>2. Added Live Auto-Refresh every 5s for Dashboard, Analytics, Alerts<br>3. Implemented CRITICAL Alert creation in MongoDB on log upload<br>4. Added Real-time Socket alerts + Sound notification<br>5. Integrated Email alerts for CRITICAL logs using Nodemailer | Node.js, Express, MongoDB, Mongoose, Socket.io, React, TailwindCSS, Recharts, Nodemailer, react-hot-toast | **Deliverable:**<br>Fully working LogGuard AI Dashboard with live updating cards, charts, alerts tab, and email notifications. All components sync in real-time. |
 | **Day 24** | **Advanced Search + Filter + Export CSV + Dark UI** | 1. Built global search with debounce<br>2. Added multi-column filters + date range<br>3. Implemented CSV export with PapaParse<br>4. Integrated dark/light theme toggle with persistence | React, Tailwind, Shadcn UI, PapaParse, Zustand | **Deliverable:**<br>Users can search/filter data, export reports to CSV, and switch to dark mode|
 | **Day 25** | **Instant File Upload + Auto Cleanup** | 1. Built /api/upload route with Multer for .log file upload<br>2. Parsed logs and bulk inserted into MongoDB<br>3. Created CRITICAL alerts and triggered socket events<br>4. Moved email + stats aggregation to background to prevent UI hang<br>5. Added auto-delete of temp files from uploads/ folder<br>6. Normalized log levels for dashboard consistency | Node.js, Express, Multer, MongoDB, Socket.io, Nodemailer, React, Axios | **Deliverable:**<br>Uploaded files are processed instantly. Uploading... clears in <1s. Temp files auto-delete. Logs & alerts reflect in dashboard. Emails sent in background for CRITICAL logs. |
+| **Day 26** | **RBAC + Admin Panel + User Management + Stats Bug Fix** | 1. Updated authMiddleware.js with protect, admin, authorize(...roles) middlewares<br>2. Added role field in User.js model with enum ['user','admin']<br>3. Built GET /api/users admin-only API with per-user stats aggregation<br>4. Fixed stats 0-count bug by using regex /WARN/i for WARN/WARNING levels<br>5. Added orphan logs fallback logic for logs without userId and mongosh migration fix<br>6. Created PUT /api/users/:id/role API for role update<br>7. Created DELETE /api/users/:id API with self-delete check and cascade log deletion<br>8. Fixed upload.js to save userId: req.user._id for every log and emit socket events<br>9. Built AdminUsersTable.jsx with email, role dropdown, total logs, critical count, delete button<br>10. Added conditional Admin Panel tab in App.jsx and live socket updates for dashboard counts | Node.js, Express, MongoDB, Mongoose, JWT, Socket.io, React, Axios, Tailwind CSS | **Deliverable:**<br>RBAC working, Admin Panel shows Total Logs: 3 Critical: 1 matching Dashboard, Role management and user deletion functional, Analytics filtering by role implemented |
 
 ---
 
