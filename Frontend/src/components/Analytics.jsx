@@ -9,13 +9,13 @@ export default function Analytics({ data }) {
 
     return (
         <div className="animate-in fade-in">
-            <h2 className="text-2xl font-bold mb-6">Analytics Overview</h2>
+            <h2 className="text-2xl font-bold mb-6">Analytics</h2>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">Total Logs: <span className="font-bold text-xl float-right">{data.totalLogs}</span></div>
-                <div className="bg-red-900/30 border border-red-800 p-4 rounded-lg">Errors: <span className="font-bold text-xl float-right text-red-400">{data.errors + data.criticals}</span></div>
-                <div className="bg-blue-900/30 border border-blue-800 p-4 rounded-lg">Avg Response: <span className="font-bold text-xl float-right text-blue-400">{data.avgResponseTime}ms</span></div>
-                <div className="bg-green-900/30 border border-green-800 p-4 rounded-lg">Health: <span className="font-bold text-xl float-right text-green-400">{data.health}%</span></div>
+                <div className="bg-gray-800 p-4 rounded-lg">Total Logs: <span className="font-bold text-xl float-right">{data.totalLogs}</span></div>
+                <div className="bg-red-800 p-4 rounded-lg">Errors: <span className="font-bold text-xl float-right text-red-400">{data.errors + data.criticals}</span></div>
+                <div className="bg-blue-800 p-4 rounded-lg">Avg Response: <span className="font-bold text-xl float-right text-blue-400">{data.avgResponseTime}ms</span></div>
+                <div className="bg-green-800 p-4 rounded-lg">Health: <span className="font-bold text-xl float-right text-green-400">{data.health}%</span></div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

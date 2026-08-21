@@ -82,6 +82,7 @@ LOGGUARD_AI/
 │ ├── models/
 │ │ ├── Alerts.js
 │ │ ├── Log.js
+│ │ ├── Notification.js
 │ │ ├── User.js
 │ ├── routes/
 │ │ ├── alerts.js
@@ -89,6 +90,7 @@ LOGGUARD_AI/
 │ │ ├── auth.js
 │ │ ├── logRoutes.js
 │ │ ├── logs.js
+│ │ ├── notification.js
 │ │ ├── upload.js
 │ │ ├── users.js
 │ ├── uploads/ # Temp files from multer
@@ -117,16 +119,19 @@ LOGGUARD_AI/
 | │ | ├── Alerts.jsx # Alerts dashoboard
 | │ | ├── AlertsToast.jsx
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts
+| │ | ├── AuthContext.jsx
 │ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
+| │ | ├── ErrorTrenChart.jsx
 │ │ │ ├── FileUpload.jsx # Drag & Drop log upload
-│ │ │ ├── LogTable.jsx # Filterable log table
+| │ | ├── Login.jsx
+| │ | ├── LogLevelPie.jsx
 | │ | ├── LogList.jsx
+│ │ │ ├── LogTable.jsx # Filterable log table
 | │ | ├── Navbar.jsx
-│ │ │ ├── ErrorTrendChart.jsx # Line chart: Errors per day
+| │ | ├── NotificationBell.jsx
 │ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
-│ │ │ ├── LogLevelPie.jsx # Pie chart: Log level distribution
-| │ | ├── Upload.jsx 
-│ │ │ └── Login.jsx # Auth page
+| │ | ├── SocketContext.jsx
+│ │ │ └── Upload.jsx 
 │ │ ├── services/
 │ │ │ ├── api.js # All axios API calls
 │ │ │ ├── auth.js # Auth helpers
@@ -230,6 +235,7 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 25** | **Instant File Upload + Auto Cleanup** | 1. Built /api/upload route with Multer for .log file upload<br>2. Parsed logs and bulk inserted into MongoDB<br>3. Created CRITICAL alerts and triggered socket events<br>4. Moved email + stats aggregation to background to prevent UI hang<br>5. Added auto-delete of temp files from uploads/ folder<br>6. Normalized log levels for dashboard consistency | Node.js, Express, Multer, MongoDB, Socket.io, Nodemailer, React, Axios | **Deliverable:**<br>Uploaded files are processed instantly. Uploading... clears in <1s. Temp files auto-delete. Logs & alerts reflect in dashboard. Emails sent in background for CRITICAL logs. |
 | **Day 26** | **RBAC + Admin Panel + User Management + Stats Bug Fix** | 1. Updated authMiddleware.js with protect, admin, authorize(...roles) middlewares<br>2. Added role field in User.js model with enum ['user','admin']<br>3. Built GET /api/users admin-only API with per-user stats aggregation<br>4. Fixed stats 0-count bug by using regex /WARN/i for WARN/WARNING levels<br>5. Added orphan logs fallback logic for logs without userId and mongosh migration fix<br>6. Created PUT /api/users/:id/role API for role update<br>7. Created DELETE /api/users/:id API with self-delete check and cascade log deletion<br>8. Fixed upload.js to save userId: req.user._id for every log and emit socket events<br>9. Built AdminUsersTable.jsx with email, role dropdown, total logs, critical count, delete button<br>10. Added conditional Admin Panel tab in App.jsx and live socket updates for dashboard counts | Node.js, Express, MongoDB, Mongoose, JWT, Socket.io, React, Axios, Tailwind CSS | **Deliverable:**<br>RBAC working, Admin Panel shows Total Logs: 3 Critical: 1 matching Dashboard, Role management and user deletion functional, Analytics filtering by role implemented |
 | **Day 27** | **Analytics Dashboard + Health Monitoring | 1. Build new backend API GET /api/analytics with role-based filter and parallel counts<br>2. Fix level regex to /^WARN/i, /^ERROR$/i, /^CRITICAL$/i for correct distribution<br>3. Implement Health formula: 100 - (critical_10 + error_5 + warn*2) = 83%<br>4. Create 7-day aggregation pipeline for Error Trend with $dateToString grouping<br>5. Install recharts and create Analytics.jsx with KPI cards: Total Logs 3, Errors 2, Avg 87ms, Health 83%<br>6. Build Error Trend - 7 Days line chart (0 from 08-14 to 08-19, spike to 2 on 08-20)<br>7. Build Response Time Trend line chart (50ms to 200ms peak)<br>8. Build Log Level Distribution Pie Chart with colors - WARN:1, ERROR:1, CRITICAL:1, INFO:0<br>9. Integrate Analytics tab in App.jsx and test live at localhost:5173 | Node.js, Express, MongoDB Aggregation, Mongoose countDocuments, Recharts (LineChart, PieChart, ResponsiveContainer), Socket.io, React, Tailwind CSS | **Deliverable:**<br>Analytics Overview fully live at localhost:5173 with live KPI cards matching backend, both trend charts rendering correctly, pie distribution accurate, dark UI consistent |
+| **Day 28** | **Real-time Notification System & Navbar UI Fix** | 1. Created Notification model<br>2. Auto-create Notification on CRITICAL/ERROR logs<br>3. Emitted newNotification via Socket.io<br>4. Built NotificationBell with unread badge & dropdown<br>5. Created Notifications page with filter, mark-all-read, delete<br>6. Fixed App.jsx routing to pages/Notifications.jsx<br>7. Centered Navbar links using left-1/2 -translate-x-1/2 | Node.js, Express, MongoDB, Socket.io, React, Tailwind CSS, Nodemailer | **Deliverable:**<br>Live notification bell with real-time count, full notification center page, email alerts, centered navbar UI |
 
 ---
 

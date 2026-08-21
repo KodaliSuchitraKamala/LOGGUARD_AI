@@ -59,16 +59,19 @@ LOGGUARD_AI/
 | │ | ├── Alerts.jsx # Alerts dashoboard
 | │ | ├── AlertsToast.jsx
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts
+| │ | ├── AuthContext.jsx
 │ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
+| │ | ├── ErrorTrenChart.jsx
 │ │ │ ├── FileUpload.jsx # Drag & Drop log upload
-│ │ │ ├── LogTable.jsx # Filterable log table
+| │ | ├── Login.jsx
+| │ | ├── LogLevelPie.jsx
 | │ | ├── LogList.jsx
+│ │ │ ├── LogTable.jsx # Filterable log table
 | │ | ├── Navbar.jsx
-│ │ │ ├── ErrorTrendChart.jsx # Line chart: Errors per day
+| │ | ├── NotificationBell.jsx
 │ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
-│ │ │ ├── LogLevelPie.jsx # Pie chart: Log level distribution
-| │ | ├── Upload.jsx 
-│ │ │ └── Login.jsx # Auth page
+| │ | ├── SocketContext.jsx
+│ │ │ └── Upload.jsx 
 │ │ ├── services/
 │ │ │ ├── api.js # All axios API calls
 │ │ │ ├── auth.js # Auth helpers

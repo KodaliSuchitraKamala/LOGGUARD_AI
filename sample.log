@@ -1,3 +1,5 @@
 2026-08-13T14:00:00Z | ERROR | login failed for user admin | 120ms
 2026-08-13T14:01:00Z | CRITICAL | DB Connection Lost | 0ms
 2026-08-13T14:02:00Z | WARNING | Restart Server | 250ms
+2026-08-20 19:00:00 | CRITICAL | Server crash | 2000ms
+2026-08-20 19:01:00 | CRITICAL | DB down | 1000ms

@@ -71,6 +71,7 @@ LOGGUARD_AI/
 │ ├── models/
 │ │ ├── Alerts.js
 │ │ ├── Log.js
+│ │ ├── Notification.js
 │ │ ├── User.js
 │ ├── routes/
 │ │ ├── alerts.js
@@ -78,6 +79,7 @@ LOGGUARD_AI/
 │ │ ├── auth.js
 │ │ ├── logRoutes.js
 │ │ ├── logs.js
+│ │ ├── notification.js
 │ │ ├── upload.js
 │ │ ├── users.js
 │ ├── uploads/ # Temp files from multer

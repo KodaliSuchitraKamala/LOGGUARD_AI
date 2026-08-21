@@ -14,6 +14,7 @@ import analyticsRoutes from './routes/analytics.js';
 import logRoutes from './routes/logRoutes.js';
 import alertRoutes from './routes/alerts.js';
 import userRoutes from './routes/users.js';
+import notificationRoutes from './routes/notification.js'; // DAY 28 FIX
 import Alert from './models/Alerts.js';
 import User from './models/User.js';
 
@@ -22,12 +23,8 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Day 25: allow multiple origins for dev + prod
 export const io = new Server(server, {
-  cors: {
-    origin: ["http://localhost:5173", "http://localhost:3000"],
-    methods: ["GET", "POST"]
-  }
+  cors: { origin: ["http://localhost:5173", "http://localhost:3000"], methods: ["GET", "POST"] }
 });
 
 app.set('io', io);
@@ -40,9 +37,7 @@ io.on('connection', (socket) => {
 
 app.use(cors());
 app.use(express.json());
-
 await initDB();
-console.log("DB Initialized");
 
 app.use('/api/auth', authRoute);
 app.use('/api', uploadRoute);
@@ -50,9 +45,9 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes); // DAY 28 FIX
 
 app.get("/", (req, res) => res.send("LogGuard AI API Running"));
-app.use(express.static('public'));
 
 // Daily summary cron - FIXED: Added 5th * for dayOfWeek
 cron.schedule('0 21 * * *', async () => { // <-- FIX: 9PM IST daily
@@ -94,7 +89,7 @@ cron.schedule('0 21 * * *', async () => { // <-- FIX: 9PM IST daily
   }
 }, { timezone: "Asia/Kolkata" });
 
-// Error handler
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: err.message });
