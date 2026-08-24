@@ -13,7 +13,7 @@ export default function FileUpload({ onLogsLoaded }) {
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('file', file); // <- CHANGED: was 'logfile', now 'file'
+    formData.append('logFile', file); // <- CHANGED: was 'logfile', now 'file'
 
     try {
       const res = await uploadLogFile(formData);

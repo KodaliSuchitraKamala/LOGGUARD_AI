@@ -1,101 +1,73 @@
 import { useState, useEffect } from "react";
-import AdvancedLogSearch from "./AdvancedLogSearch";
-import api from "../services/api";
+import { searchLogs, getLatestLogs } from "../services/api";
 
-export default function LogTable() {
-  const [logs, setLogs] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [filters, setFilters] = useState({keyword: "", level: "ALL", startDate: "", endDate: ""});
+const levelColors = {
+  CRITICAL: "bg-red-500 text-white-400",
+  ERROR: "bg-orange-500 text-white-400",
+  WARNING: "bg-yellow-500 text-white-400",
+  WARN: "bg-yellow-500 text-white-400",
+  INFO: "bg-blue-500 text-white-400",
+};
+
+export default function LogTable({ initialLogs = [] }) {
+  const [logs, setLogs] = useState(initialLogs);
+  const [keyword, setKeyword] = useState("");
+  const [level, setLevel] = useState("ALL");
   const [loading, setLoading] = useState(false);
 
-  const fetchLogs = async (pageNum = 1, newFilters = filters) => {
+  useEffect(() => { if(initialLogs?.length) setLogs(initialLogs); }, [initialLogs]);
+
+  const handleSearch = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({...newFilters, page: pageNum, limit: 20});
-      const res = await api.get(`/logs/search?${params}`);
-      setLogs(res.data.logs);
-      setTotalPages(res.data.totalPages);
-      setPage(res.data.page);
-    } catch(err) {
-      console.error("Fetch logs error", err)
-    }
+      const res = await searchLogs({ keyword, level, page: 1, limit: 100 });
+      const data = Array.isArray(res.data)? res.data : (res.data.logs || []);
+      setLogs(data);
+    } catch(e) {}
     setLoading(false);
-  }
+  };
 
-  const handleSearch = (results) => {
-    setLogs(results); // instant results from AdvancedLogSearch
-    setTotalPages(1);
-    setPage(1);
-  }
-
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    fetchLogs(1, newFilters);
-  }
-
-  useEffect(() => { fetchLogs(1) }, [])
-
-  const getLevelColor = (level) => {
-    if(level === 'CRITICAL') return 'bg-red-500';
-    if(level === 'ERROR') return 'bg-orange-500';
-    if(level === 'WARNING') return 'bg-yellow-500';
-    return 'bg-blue-500';
-  }
+  const handleClear = async () => {
+    setKeyword(""); setLevel("ALL");
+    const res = await getLatestLogs();
+    setLogs(Array.isArray(res.data)? res.data : []);
+  };
 
   return (
-    <div className="mt-6">
-      <AdvancedLogSearch onResults={handleSearch} />
-      
-      <div className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-700 text-xs uppercase text-gray-300">
-            <tr>
-              <th className="p-3 text-left">TIME</th>
-              <th className="p-3 text-left">LEVEL</th>
-              <th className="p-3 text-left">MESSAGE</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan="3" className="p-4 text-center text-gray-400">Loading...</td></tr>
-            ) : logs.length === 0 ? (
-              <tr><td colSpan="3" className="p-4 text-center text-gray-400">No logs found</td></tr>
-            ) : logs.map((log, i) => (
-              <tr key={log._id || i} className={`border-t border-gray-700 ${log.level === 'CRITICAL' ? 'bg-red-900/20' : log.level === 'ERROR' ? 'bg-orange-900/10' : ''}`}>
-                <td className="p-3 text-gray-400">{new Date(log.timestamp).toLocaleString('en-IN')}</td>
-                <td className="p-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-bold text-white ${getLevelColor(log.level)}`}>
-                    {log.level}
-                  </span>
-                </td>
-                <td className="p-3 text-white">{log.message}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="mt-8 bg-[#0f172a]/60 backdrop-blur border border-white/10 p-5 rounded-2xl shadow-2xl">
+      <div className="flex justify-between items-center mb-5">
+        <h3 className="text-white font-bold text-lg">Live Log Stream <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full ml-2">● {logs.length} logs</span></h3>
+        <div className="flex gap-2">
+          <input value={keyword} onChange={e=>setKeyword(e.target.value)} placeholder="Search message, user, IP..." className="bg-zinc-800/80 border border-white/10 p-2.5 rounded-xl w-64 text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+          <select value={level} onChange={e=>setLevel(e.target.value)} className="bg-zinc-800 border border-white/10 p-2.5 rounded-xl text-white text-sm">
+            <option value="ALL">ALL LEVELS</option><option value="INFO">INFO</option><option value="WARNING">WARNING</option><option value="ERROR">ERROR</option><option value="CRITICAL">CRITICAL</option>
+          </select>
+          <button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-500 px-5 rounded-xl text-sm font-semibold transition">{loading?"Searching...":"Search"}</button>
+          <button onClick={handleClear} className="bg-zinc-700 hover:bg-zinc-600 px-4 rounded-xl text-sm">Clear</button>
+        </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-between items-center mt-3">
-          <button 
-            disabled={page <= 1}
-            onClick={() => fetchLogs(page - 1)}
-            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
-          >
-            Prev
-          </button>
-          <span className="text-gray-400">Page {page} of {totalPages}</span>
-          <button 
-            disabled={page >= totalPages}
-            onClick={() => fetchLogs(page + 1)}
-            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <div className="overflow-auto rounded-xl border border-white/5">
+        <table className="w-full text-sm">
+          <thead className="bg-zinc-900/80 text-white/60 text-xs uppercase tracking-wider"><tr><th className="text-left p-3">Time</th><th className="text-left p-3">Level</th><th className="text-left p-3">Message</th><th className="text-left p-3">Response</th></tr></thead>
+          <tbody className="divide-y divide-white/5">
+            {logs.map((log,i)=>{
+              const lvl = (log.level||"INFO").toUpperCase();
+              const color = levelColors[lvl] || levelColors.INFO;
+              const parts = log.message.split("|");
+              return (
+                <tr key={i} className="hover:bg-white/[0.03] transition">
+                  <td className="p-3 text-white/50 whitespace-nowrap">{new Date(log.timestamp).toLocaleString('en-IN')}</td>
+                  <td className="p-3"><span className={`px-2.5 py-1 rounded-full text-xs font-bold ${color}`}>{lvl}</span></td>
+                  <td className="p-3 text-white/90 font-mono text-xs truncate max-w-[500px]">{log.message}</td>
+                  <td className="p-3 text-white/60">{parts[2]? parts[2].trim() : "-"}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+        {logs.length===0 && <div className="p-10 text-center text-white/30">No logs. Upload a file to see magic ✨</div>}
+      </div>
     </div>
   )
 }

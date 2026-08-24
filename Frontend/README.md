@@ -56,6 +56,7 @@ LOGGUARD_AI/
 | | │ | ├── AdminStats.jsx
 | │ | ├── AdminUsersTable.jsx
 | │ | ├── AdvancedLogSearch.jsx
+| │ | ├── AIInsightCard.jsx
 | │ | ├── Alerts.jsx # Alerts dashoboard
 | │ | ├── AlertsToast.jsx
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts

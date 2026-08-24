@@ -5,16 +5,25 @@ import api from '../services/api';
 import socket from '../socket';
 
 export default function NotificationBell() {
-  const [unread, setUnread] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [unread, setUnread] = useState(0);
   const [show, setShow] = useState(false);
 
   const fetchNotifs = async () => {
     try {
       const { data } = await api.get('/notifications');
-      setNotifications(data.notifications);
-      setUnread(data.unreadCount);
-    } catch(e) { console.error(e) }
+      // Handle both formats: [] or {notifications, unreadCount}
+      if(Array.isArray(data)){
+        setNotifications(data);
+        setUnread(0);
+      } else {
+        setNotifications(data.notifications || []);
+        setUnread(data.unreadCount || 0);
+      }
+    } catch(e) {
+      setNotifications([]);
+      setUnread(0);
+    }
   };
 
   useEffect(() => {
@@ -30,7 +39,7 @@ export default function NotificationBell() {
   }, []);
 
   const markAllRead = async () => {
-    await api.put('/notifications/read-all');
+    try { await api.put('/notifications/read-all'); } catch(e) {}
     fetchNotifs();
   }
 
@@ -48,9 +57,9 @@ export default function NotificationBell() {
           </div>
           {notifications.length === 0? <p className="p-4 text-sm text-gray-500 text-center">No notifications</p> :
             notifications.slice(0,5).map((n) => (
-              <div key={n._id} className={`p-3 border-b text-sm ${!n.isRead? 'bg-blue-50' : ''}`}>
+              <div key={n._id || Math.random()} className={`p-3 border-b text-sm ${!n.isRead? 'bg-blue-50' : ''}`}>
                 <p className="font-medium truncate">{n.message}</p>
-                <p className="text-xs text-gray-500">{new Date(n.createdAt).toLocaleString('en-IN')}</p>
+                <p className="text-xs text-gray-500">{n.createdAt? new Date(n.createdAt).toLocaleString('en-IN') : ''}</p>
               </div>
             ))
           }

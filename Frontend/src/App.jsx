@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { getLatestLogs, getAnalytics } from './services/api';
@@ -11,36 +11,55 @@ import Alerts from './components/Alerts';
 import FileUpload from './components/FileUpload';
 import LogTable from './components/LogTable';
 import AdminUsersTable from './components/AdminUsersTable';
-import Notifications from './components/NotificationBell';
+import NotificationsPage from './components/NotificationBell';
 import Navbar from './components/Navbar';
+import AIInsightCard from './components/AIInsightCard';
 import { AuthProvider } from './components/AuthContext';
 import { SocketProvider } from './components/SocketContext';
 
 function MainApp() {
   const [logs, setLogs] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const auth = !!localStorage.getItem('token');
 
-  const fetchLogs = async () => { try { const res = await getLatestLogs(); setLogs(res.data); } catch(err) {} }
-  const fetchAnalytics = async () => { try { const res = await getAnalytics(); setAnalyticsData(res.data); } catch(err) {} }
-
-  useEffect(() => { if(auth) { fetchLogs(); fetchAnalytics(); } }, [auth, refreshKey]);
-  useEffect(() => {
-    socket.on('new_log', () => { fetchLogs(); fetchAnalytics(); });
-    return () => socket.off('new_log');
+  const fetchLogs = useCallback(async () => {
+    try {
+      const res = await getLatestLogs();
+      if(Array.isArray(res.data) && res.data.length > 0) setLogs(res.data);
+    } catch(err) {}
   }, []);
+
+  const fetchAnalytics = useCallback(async () => {
+    try { const res = await getAnalytics(); setAnalyticsData(res.data); } catch(err) {}
+  }, []);
+
+  useEffect(() => {
+    fetchLogs();
+    fetchAnalytics();
+  }, [fetchLogs, fetchAnalytics]);
+
+  useEffect(() => {
+    const onNewLog = () => { fetchLogs(); fetchAnalytics(); };
+    socket.on('new_log', onNewLog);
+    return () => socket.off('new_log', onNewLog);
+  }, [fetchLogs, fetchAnalytics]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Navbar />
-      <div className="p-8">
+      <div className="p-8 pt-20">
         <Routes>
-          <Route path="/" element={<><Dashboard data={analyticsData} /><FileUpload onLogsLoaded={()=>setRefreshKey(k=>k+1)} /><LogTable logs={logs} /></>} />
+          <Route path="/" element={
+            <>
+              <Dashboard data={analyticsData} />
+              <FileUpload onLogsLoaded={()=>{ fetchLogs(); fetchAnalytics(); }} />
+              <LogTable initialLogs={logs} />
+              <AIInsightCard logs={logs} />
+            </>
+          } />
           <Route path="/analytics" element={<Analytics data={analyticsData} />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/admin" element={<AdminUsersTable />} />
-          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Routes>
       </div>
     </div>
@@ -48,7 +67,7 @@ function MainApp() {
 }
 
 export default function App() {
-  const [auth, setAuth] = useState(!!localStorage.getItem('token'));
+  const [auth] = useState(()=>!!localStorage.getItem('token'));
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -56,7 +75,7 @@ export default function App() {
           <Toaster position='top-right' />
           <AlertToast />
           <Routes>
-            <Route path='/login' element={!auth? <Login setAuth={setAuth} /> : <Navigate to='/' />} />
+            <Route path='/login' element={!auth? <Login setAuth={()=>{}} /> : <Navigate to='/' />} />
             <Route path='/*' element={auth? <MainApp /> : <Navigate to='/login' />} />
           </Routes>
         </SocketProvider>
