@@ -62,6 +62,7 @@ LOGGUARD_AI/
 │ │ │ ├── Analytics.jsx # Analytics dashboard with charts
 | │ | ├── AuthContext.jsx
 │ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
+| │ | ├── EmptyState.jsx
 | │ | ├── ErrorTrenChart.jsx
 │ │ │ ├── FileUpload.jsx # Drag & Drop log upload
 | │ | ├── Login.jsx

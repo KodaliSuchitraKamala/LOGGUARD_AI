@@ -18,7 +18,7 @@ export default function AIInsightCard({ logs }) {
     }, [logs]);
 
     return (
-        <div className="mt-8">
+        <div className="mt-5">
             <button onClick={analyze} disabled={loading ||!logs?.length} className="group relative bg-[#a3ff12] text-black px-8 py-3.5 rounded-2xl font-black text-sm tracking-wide shadow-[0_0_20px_rgba(163,255,18,0.4)] flex items-center gap-2">
                 <Brain className="w-5 h-5" /> {loading? "AI Analyzing..." : "Run AI Root Cause Analysis"} <Sparkles className="w-4 h-4 group-hover:rotate-12 transition" />
             </button>

@@ -11,7 +11,7 @@ import Alerts from './components/Alerts';
 import FileUpload from './components/FileUpload';
 import LogTable from './components/LogTable';
 import AdminUsersTable from './components/AdminUsersTable';
-import NotificationsPage from './components/NotificationBell';
+import NotificationsBell from './components/NotificationBell';
 import Navbar from './components/Navbar';
 import AIInsightCard from './components/AIInsightCard';
 import { AuthProvider } from './components/AuthContext';
@@ -46,7 +46,7 @@ function MainApp() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Navbar />
-      <div className="p-8 pt-20">
+      <div className="p-8 pt-5">
         <Routes>
           <Route path="/" element={
             <>
@@ -59,7 +59,7 @@ function MainApp() {
           <Route path="/analytics" element={<Analytics data={analyticsData} />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/admin" element={<AdminUsersTable />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/notifications" element={<NotificationsBell />} />
         </Routes>
       </div>
     </div>

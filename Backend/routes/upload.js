@@ -3,14 +3,15 @@ import multer from "multer";
 import fs from "fs";
 import Log from "../models/Log.js";
 import Alert from "../models/Alerts.js";
+import Notification from "../models/Notification.js"; // <--- ADDED
 import User from "../models/User.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { sendEmail } from "../emailService.js";
+import { sendAlert } from "../services/alertService.js"; // <--- ADDED
 
 const router = express.Router();
 const upload = multer({ dest: "uploads/", limits: { fileSize: 20 * 1024 * 1024 } });
 
-// use.any() so it never throws "Unexpected field"
 router.post("/upload", protect, upload.any(), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
@@ -47,7 +48,7 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
     }
     fs.unlinkSync(file.path);
 
-    // --- CREATE ALERTS FOR CRITICAL ---
+    // --- CREATE ALERTS + NOTIFICATIONS FOR CRITICAL ---
     const criticals = savedLogs.filter(l => l.level === "CRITICAL" || l.level === "ERROR");
     if (criticals.length > 0) {
       const alertsToInsert = criticals.map(l => ({
@@ -58,11 +59,25 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
         timestamp: l.timestamp
       }));
       await Alert.insertMany(alertsToInsert);
+
+      // *** THIS WAS MISSING - NOW NOTIFICATIONS COLLECTION WILL HAVE DATA ***
+      const notifsToInsert = criticals.map(l => ({
+        message: l.message,
+        level: l.level,
+        type: "CRITICAL_LOG",
+        isRead: false,
+        timestamp: l.timestamp,
+        createdAt: new Date()
+      }));
+      await Notification.insertMany(notifsToInsert);
+      console.log(`✅ Saved ${notifsToInsert.length} to notifications collection`);
+
+      // Trigger socket + alert service
+      await sendAlert('CRITICAL_LOG', 'CRITICAL', `${criticals.length} critical log(s) found`, criticals.length);
     }
 
-    // --- INSTANT EMAIL LOGIC ---
+    // --- INSTANT EMAIL ---
     if (criticals.length > 0) {
-      // Send to uploader + all admins
       const recipients = new Set();
       recipients.add(req.user.email);
       const admins = await User.find({ role: 'admin' }).select('email');
@@ -92,7 +107,7 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
       const io = req.app.get('io');
       if (io) {
         io.emit("new_log", savedLogs);
-        if (criticals.length > 0) io.emit("new_alert", { count: criticals.length });
+        if (criticals.length > 0) io.emit("newNotification", { count: criticals.length });
       }
     } catch (e) {}
 
