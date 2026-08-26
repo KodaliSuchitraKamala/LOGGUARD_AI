@@ -9,7 +9,6 @@ import { initAlertSocket } from './services/alertService.js';
 import { sendEmail } from './emailService.js';
 import Alert from './models/Alerts.js';
 import User from './models/User.js';
-
 import authRoute from './routes/auth.js';
 import uploadRoute from './routes/upload.js';
 import analyticsRoutes from './routes/analytics.js';
@@ -26,7 +25,6 @@ const server = http.createServer(app);
 export const io = new Server(server, {
   cors: { origin: ["http://localhost:5173", "http://localhost:3000"], methods: ["GET", "POST"] }
 });
-
 app.set('io', io);
 initAlertSocket(io);
 
@@ -39,7 +37,6 @@ await initDB();
 app.get("/", (req,res)=>res.send("LogGuard API Running - Email Enabled ✅"));
 app.get("/api/health", (req,res)=>res.json({ status: "LogGuard AI Running 🚀", time: new Date() }));
 
-// All routes - KEEP /api upload at END
 app.use('/api/auth', authRoute);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/logs', logRoutes);
@@ -49,6 +46,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api', aiAnalysisRoute);
 app.use('/api', uploadRoute); // MUST BE LAST
 
+// Cron Job - 9 PM IST
 cron.schedule('0 21 * * *', async () => {
   console.log('Running Daily Summary Job...');
   try {
@@ -57,12 +55,7 @@ cron.schedule('0 21 * * *', async () => {
     const todaysCriticals = await Alert.find({ level: { $regex: /^critical$/i }, acknowledged: false, timestamp: { $gte: today, $lt: tomorrow } }).populate('userId');
     if (todaysCriticals.length === 0) return console.log("No criticals today");
     const alertsByUser = {};
-    todaysCriticals.forEach(alert => {
-      if (!alert.userId) return;
-      const userId = alert.userId._id.toString();
-      if (!alertsByUser[userId]) alertsByUser[userId] = [];
-      alertsByUser[userId].push(alert);
-    });
+    todaysCriticals.forEach(alert => { if (!alert.userId) return; const userId = alert.userId._id.toString(); if (!alertsByUser[userId]) alertsByUser[userId] = []; alertsByUser[userId].push(alert); });
     for (const userId in alertsByUser) {
       const user = await User.findById(userId);
       if (!user) continue;
@@ -70,13 +63,12 @@ cron.schedule('0 21 * * *', async () => {
       let htmlTable = `<table border="1" cellpadding="5"><tr><th>Time</th><th>Message</th></tr>`;
       userAlerts.forEach(a => { htmlTable += `<tr><td>${new Date(a.timestamp).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}</td><td>${a.message}</td></tr>`; });
       htmlTable += `</table>`;
-      const emailBody = `<h2>🚨 LogGuard AI - Daily Critical Summary</h2><p>You had <b>${userAlerts.length} CRITICAL alert(s)</b> today</p>${htmlTable}`;
-      await sendEmail(user.email, `LogGuard Daily Summary: ${userAlerts.length} Critical Alert(s)`, emailBody);
+      const emailBody = `<h2>🚨 LogGuard AI - Daily Critical Summary</h2><p>You had <b>${userAlerts.length} CRITICAL</b> today</p>${htmlTable}`;
+      await sendEmail(user.email, `Daily Summary: ${userAlerts.length} Critical`, emailBody);
     }
   } catch (error) { console.error("Cron job error:", error); }
 }, { timezone: "Asia/Kolkata" });
 
 app.use((err, req, res, next) => { console.error(err.stack); res.status(500).json({ message: err.message }); });
-
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

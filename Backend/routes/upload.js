@@ -36,7 +36,7 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
         let level = "INFO";
         const low = line.toLowerCase();
         if (low.includes("critical") || low.includes("crash") || low.includes("down")) level = "CRITICAL";
-        else if (low.includes("error") || low.includes("fail")) level = "ERROR";
+        else if (low.includes("error") || low.includes("erkor") || low.includes("fail")) level = "ERROR";
         else if (low.includes("warn")) level = "WARNING";
         return { message: line, level, timestamp: new Date(), source: "upload", userId: req.user._id };
       }

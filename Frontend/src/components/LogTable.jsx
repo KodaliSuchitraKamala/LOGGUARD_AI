@@ -5,6 +5,7 @@ import EmptyState from "./EmptyState";
 const levelColors = {
   CRITICAL: "bg-red-600 text-white",
   ERROR: "bg-orange-600 text-white",
+  ERKOR: "bg-orange-600 text-white",
   WARNING: "bg-yellow-500 text-black",
   WARN: "bg-yellow-500 text-black",
   INFO: "bg-blue-600 text-white",
