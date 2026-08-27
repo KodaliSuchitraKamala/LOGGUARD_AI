@@ -23,5 +23,5 @@ export const searchLogs = (params) => API.get('/logs/search', { params });
 export const getAlerts = () => API.get('/alerts');
 export const getCurrentUser = () => API.get('/auth/me');
 export const getNotifications = () => API.get('/notifications');
-export const analyzeLogsAI = (logs) => API.post('/ai-analyze', { logs });
+export const analyzeLogsAI = (logs) => API.post('/logs/analyze', { logs });
 export default API;

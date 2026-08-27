@@ -45,7 +45,8 @@ This folder contains only the client-side application. The backend API handles p
 ## Folder Sturcture
 ```
 LOGGUARD_AI/
-├── Backend/
+├── Backend-Java/
+├── Backend-MERN/
 ├── Frontend/
 │ ├── node_modules/
 │ ├── public/

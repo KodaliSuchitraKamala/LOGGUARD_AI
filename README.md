@@ -71,7 +71,8 @@ The system has 2 main parts:
 ## Folder Structure
 ```
 LOGGUARD_AI/
-├── Backend/
+├── Backend-Java/
+├── Backend-MERN/
 │ ├── node_modules/
 │ ├── middleware/
 │ │ ├── adminMiddleware.js
@@ -94,19 +95,20 @@ LOGGUARD_AI/
 │ │ ├── notification.js
 │ │ ├── upload.js
 │ │ ├── users.js
+│ ├── services/
+│ │ ├── aiService.js
+│ │ ├── alertService.js
 │ ├── uploads/ # Temp files from multer
 │ ├── utils/
 │ │ ├── logParser.js
 │ ├── .env
 │ ├── db.js
-│ ├── db.json
 │ ├── emailService.js
 │ ├── Dockerfile
 │ ├── package.json
 │ ├── package-lock.json
 │ ├── README.md
-│ ├── server.js # Express API + Anomaly Detection
-│ └── users.json 
+│ └── server.js # Express API + Anomaly Detection
 ├── Frontend/
 │ ├── node_modules/
 │ ├── public/
