@@ -1,6 +1,6 @@
 # LogGuard AI - Backend
 
-Backend server for LogGuard AI. Handles log file uploads, parsing, filtering and API endpoints.
+Backend server with MERN for LogGuard AI. Handles log file uploads, parsing, filtering and API endpoints.
 
 --- 
 
@@ -50,7 +50,7 @@ Server runs on http://localhost:5000
 4. **Clone the repository**
 ```bash
 git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
-cd LOGGUARD_AI/Backend
+cd LOGGUARD_AI/Backend-MERN
 ```
 
 ---

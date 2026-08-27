@@ -72,6 +72,51 @@ The system has 2 main parts:
 ```
 LOGGUARD_AI/
 ├── Backend-Java/
+│ ├── mvn/wrapper/
+│ │ ├── maven-wrapper.properties
+│ ├── src/main/
+│ │ ├── java/com/logguard/
+│ │ │ ├── config/
+│ │ │ │ ├── CorsConfig.java
+│ │ │ ├── controller/
+│ │ │ │ ├── LogController.java
+│ │ │ ├── model/
+│ │ │ │ ├── Log.java
+│ │ │ ├── repository/
+│ │ │ │ ├── LogRepository.java
+│ │ │ ├── service/
+│ │ │ │ ├── AiService.java
+│ │ │ │ ├── LogParserService.java
+│ │ │ ├── LogguardApplication.java
+│ │ ├── resources/
+│ │ │ ├── application.properties
+│ ├── target/
+│ │ ├── classes/
+│ │ │ ├── com/logguard/
+│ │ │ │ ├── config/
+│ │ │ │ │ ├── CorsConfig.class
+│ │ │ │ ├── controller/
+│ │ │ │ │ ├── LogController.class
+│ │ │ │ ├── model/
+│ │ │ │ │ ├── Log.class
+│ │ │ │ ├── respository/
+│ │ │ │ │ ├── LogRepository.class
+│ │ │ │ ├── service/
+│ │ │ │ │ ├── AiService.class
+│ │ │ │ │ ├── LogParserService.class
+│ │ │ │ ├── LogguardApplication.class
+│ │ │ ├── application.properties
+│ │ ├── generated-sources/annotations
+│ │ ├── maven-status/maven-compiler-plugin/compile/default-compile/
+│ │ │ ├── createdFiles.lst
+│ │ │ ├── inputFiles.lst
+│ ├── .gitattributes
+│ ├── .gitignore
+│ ├── HELP.md
+│ ├── mvnw
+│ ├── mvnw.cmd
+│ ├── pom.xml
+│ └── README.md
 ├── Backend-MERN/
 │ ├── node_modules/
 │ ├── middleware/
@@ -244,6 +289,7 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 29** | **Critical Bug Fixes, Email Alert System & UI Enhancement** | 1. Fixed 404 /api/upload error by reordering routes in server.js<br>2. Fixed Multer Unexpected field error using upload.any()<br>3. Implemented Instant Email Alert on critical log upload<br>4. Configured Nodemailer with Gmail App Password and added transporter verification<br>5. Created Daily Cron job (9 PM IST) for critical alerts summary<br>6. Redesigned Live Log Stream table with color-coded badges and premium UI<br>7. Fixed React AlertToast key prop warning and Invalid Date issue<br>8. Tested end-to-end flow: Upload → DB → Socket → Alert → Email | React, Node.js, Express, Multer, Socket.IO, MongoDB, Nodemailer, Node-cron, Tailwind CSS | **Deliverable:**<br>Achieved 100% working upload with instant critical email alerts, premium log table UI, and zero console errors for a production-ready LogGuard system. |
 | **Da 30** | **Final Integration & Notification System** | 1. Fixed upload.js to detect CRITICAL/ERROR logs and save to notifications collection<br>2. Created Notification.js model with message, level, type, isRead, timestamp<br>3. Updated alertService.js to save to both Alert and Notification collections<br>4. Implemented 3-level fallback in notification.js route: notifications -> alerts -> logs<br>5. Resolved route conflict - kept only notification.js (singular) and removed notifications.js (plural)<br>6. Connected Socket.IO emits (newNotification, new_log) for real-time bell updates<br>7. Added read-all API to update isRead: true in MongoDB<br>8. Verified data in MongoDB Atlas - test > notifications now shows documents<br>9. Tested end-to-end: Upload -> MongoDB -> Dashboard counts -> Bell -> Mark all read | Node.js, Express, MongoDB Atlas, Mongoose, Socket.IO, Multer, JWT Auth | **Deliverable:**<br>Notifications collection populating in Atlas, Bell icon shows unread count, Mark all read updates DB, Email + Dashboard + Live Log Stream all working in production |
 | **Day 31** | **Final Auth & Pre-Java Validation** | 1. Tested complete Register -> Login flow with JWT<br>2. Validated Upload -> AI Analysis -> Email ALert flow<br>3. Fixed CORS & token expiry bugs<br>4. Captured dashboard & AI root cause (94% confidence)<br>5. Prepared project for Spring Boot migration | Node.js, Express, JWT, React, Postman, Nodemailer | **Deliverable:**<br>Stable MERN buld ready, Project ready for Full Stack Java (Spring Boot) conversion |
+| **Day 32** | **LogGuard AI - Analytics & Health Fix** | 1. Fixed Map.of() limit compilation error (12 entries > 10 limit) using HashMap<br>2. Fixed NaN% Health bug by returning health as int 100 not String 100%<br>3. Fixed Analytics API to return totalLogs, criticals, avgResponseTime, levelDistribution, errorTrend, responseTrend<br>4. Fixed Frontend Analytics.jsx NaN parsing with Number() & parseInt(String().replace('%',''))<br>5. Verified Analytics Dashboard: Total Logs 21, Errors 11, Avg 125ms, Health 100%, Charts & Pie working | Backend-Java (Spring Boot 3.5.0, Java 21), MongoDB Atlas, React + Recharts, Maven | **Deliverable:**<br>Analytics page 100% working, BUILD SUCCESS, all charts rendering, Day 32 Completed |
 
 ---
 

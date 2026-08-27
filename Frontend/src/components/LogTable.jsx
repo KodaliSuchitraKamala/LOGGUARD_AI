@@ -74,11 +74,11 @@ export default function LogTable({ initialLogs = [] }) {
         <table className="w-full text-sm">
           <thead className="bg-zinc-900/80 text-white/60 text-xs uppercase sticky top-0"><tr><th className="text-left p-3">TIME</th><th className="text-left p-3">LEVEL</th><th className="text-left p-3">MESSAGE</th><th className="text-left p-3">RESPONSE</th></tr></thead>
           <tbody className="divide-y divide-white/5">
-            {logs.map((log) => {
+            {logs.map((log, index) => {
               const { displayTime, realLevel, realMessage, response } = parseLogLine(log);
               const lvl = realLevel.toUpperCase();
               return (
-                <tr key={log._id} className="hover:bg-white/[0.03]">
+                <tr key={log._id || log.id || index} className="hover:bg-white/[0.03]">
                   <td className="p-3 text-white/60 whitespace-nowrap text-xs font-mono">{displayTime}</td>
                   <td className="p-3"><span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${levelColors[lvl] || levelColors.INFO}`}>{lvl}</span></td>
                   <td className="p-3 text-white/90 font-mono text-xs truncate max-w-[500px]">{realMessage}</td>
