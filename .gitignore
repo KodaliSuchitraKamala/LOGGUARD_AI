@@ -42,6 +42,11 @@ Backend-Java/src/main/resources/application.properties
 Backend-Java/.env
 application-*.properties
 
+# --- Secrets ---
+Backend-Java/.env
+Backend-MERN/.env
+.env
+
 # --- Logs ---
 logs/
 *.log
