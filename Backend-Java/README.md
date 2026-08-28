@@ -54,19 +54,14 @@ LOGGUARD_AI/
 │ │ ├── java/com/logguard/
 │ │ │ ├── config/
 │ │ │ │ ├── CorsConfig.java
-│ │ │ │ ├── SecurityConfig.java
 │ │ │ ├── controller/
 │ │ │ │ ├── AuthController.java
 │ │ │ │ ├── LogController.java
-│ │ │ │ ├── NotificationController.java
-│ │ │ │ ├── UserController.java
 │ │ │ ├── model/
 │ │ │ │ ├── Log.java
-│ │ │ │ ├── Notification.java
 │ │ │ │ ├── User.java
 │ │ │ ├── repository/
 │ │ │ │ ├── LogRepository.java
-│ │ │ │ ├── NotificationRepository.java
 │ │ │ │ ├── UserRepository.java
 │ │ │ ├── service/
 │ │ │ │ ├── AiService.java
@@ -81,19 +76,14 @@ LOGGUARD_AI/
 │ │ │ ├── com/logguard/
 │ │ │ │ ├── config/
 │ │ │ │ │ ├── CorsConfig.class
-│ │ │ │ │ ├── SecurityConfig.class
 │ │ │ │ ├── controller/
 │ │ │ │ │ ├── AuthController.class
 │ │ │ │ │ ├── LogController.class
-│ │ │ │ │ ├── NotificationController.class
-│ │ │ │ │ ├── UserController.class
 │ │ │ │ ├── model/
 │ │ │ │ │ ├── Log.class
-│ │ │ │ │ ├── Notification.class
 │ │ │ │ │ ├── User.class
 │ │ │ │ ├── respository/
 │ │ │ │ │ ├── LogRepository.class
-│ │ │ │ │ ├── NotificationRepository.class
 │ │ │ │ │ ├── UserRepository.class
 │ │ │ │ ├── service/
 │ │ │ │ │ ├── AiService.class
