@@ -1,11 +1,70 @@
-# Node
+# --- Node (Frontend + Backend-MERN) ---
 node_modules/
-.env
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
 
-# Build
+# Env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+Backend-MERN/.env
+Frontend/.env
+Frontend/.env.local
+
+# Build outputs
 dist/
 build/
+Frontend/dist/
+Frontend/build/
+Frontend/.vite/
+Backend-MERN/dist/
 
-# OS
+# --- Java / Maven (Backend-Java) ---
+Backend-Java/target/
+Backend-Java/.mvn/wrapper/maven-wrapper.jar
+Backend-Java/mvnw.cmd
+Backend-Java/*.class
+Backend-Java/*.jar
+Backend-Java/*.war
+Backend-Java/*.log
+Backend-Java/.settings/
+Backend-Java/.classpath
+Backend-Java/.project
+Backend-Java/.factorypath
+
+# Secrets - NEVER commit
+Backend-Java/src/main/resources/application.properties
+Backend-Java/.env
+application-*.properties
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+lerna-debug.log*
+
+# --- OS ---
 .DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- IDE ---
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*~
+
+# --- Misc ---
+coverage/
+.nyc_output/
+.cache/
