@@ -1,38 +1,12 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { io } from "socket.io-client";
-
-const SocketContext = createContext();
+import { createContext, useContext } from "react";
+const SocketContext = createContext({ on: () => {}, off: () => {}, emit: () => {} });
 
 export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState({
-    on: () => {},
-    off: () => {},
-    emit: () => {},
-    disconnect: () => {},
-    connected: false
-  });
-
-  useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
-    const isMern = API_URL.includes("5000");
-
-    if (!isMern) {
-      console.log("Java backend active - socket disabled");
-      return; // keep dummy
-    }
-
-    console.log("MERN backend active - connecting socket to 5000");
-    const s = io("http://localhost:5000");
-    setSocket(s);
-    
-    return () => s.disconnect();
-  }, []);
-
+  console.log("Java backend active - socket disabled (polling mode)");
   return (
-    <SocketContext.Provider value={socket}>
+    <SocketContext.Provider value={{ on: () => {}, off: () => {}, emit: () => {}, connected: false }}>
       {children}
     </SocketContext.Provider>
   );
 };
-
 export const useSocket = () => useContext(SocketContext);
