@@ -79,13 +79,18 @@ LOGGUARD_AI/
 │ │ │ ├── config/
 │ │ │ │ ├── CorsConfig.java
 │ │ │ ├── controller/
+│ │ │ │ ├── AuthController.java
 │ │ │ │ ├── LogController.java
 │ │ │ ├── model/
 │ │ │ │ ├── Log.java
+│ │ │ │ ├── User.java
 │ │ │ ├── repository/
 │ │ │ │ ├── LogRepository.java
+│ │ │ │ ├── UserRepository.java
 │ │ │ ├── service/
 │ │ │ │ ├── AiService.java
+│ │ │ │ ├── AlertService.java
+│ │ │ │ ├── EmailService.java
 │ │ │ │ ├── LogParserService.java
 │ │ │ ├── LogguardApplication.java
 │ │ ├── resources/
@@ -96,13 +101,18 @@ LOGGUARD_AI/
 │ │ │ │ ├── config/
 │ │ │ │ │ ├── CorsConfig.class
 │ │ │ │ ├── controller/
+│ │ │ │ │ ├── AuthController.class
 │ │ │ │ │ ├── LogController.class
 │ │ │ │ ├── model/
 │ │ │ │ │ ├── Log.class
+│ │ │ │ │ ├── User.class
 │ │ │ │ ├── respository/
 │ │ │ │ │ ├── LogRepository.class
+│ │ │ │ │ ├── UserRepository.class
 │ │ │ │ ├── service/
 │ │ │ │ │ ├── AiService.class
+│ │ │ │ │ ├── AlertService.class
+│ │ │ │ │ ├── EmailService.class
 │ │ │ │ │ ├── LogParserService.class
 │ │ │ │ ├── LogguardApplication.class
 │ │ │ ├── application.properties
@@ -110,6 +120,7 @@ LOGGUARD_AI/
 │ │ ├── maven-status/maven-compiler-plugin/compile/default-compile/
 │ │ │ ├── createdFiles.lst
 │ │ │ ├── inputFiles.lst
+│ ├── .env
 │ ├── .gitattributes
 │ ├── .gitignore
 │ ├── HELP.md
@@ -290,6 +301,7 @@ Open http://localhost:5173 to see the dashboard.
 | **Da 30** | **Final Integration & Notification System** | 1. Fixed upload.js to detect CRITICAL/ERROR logs and save to notifications collection<br>2. Created Notification.js model with message, level, type, isRead, timestamp<br>3. Updated alertService.js to save to both Alert and Notification collections<br>4. Implemented 3-level fallback in notification.js route: notifications -> alerts -> logs<br>5. Resolved route conflict - kept only notification.js (singular) and removed notifications.js (plural)<br>6. Connected Socket.IO emits (newNotification, new_log) for real-time bell updates<br>7. Added read-all API to update isRead: true in MongoDB<br>8. Verified data in MongoDB Atlas - test > notifications now shows documents<br>9. Tested end-to-end: Upload -> MongoDB -> Dashboard counts -> Bell -> Mark all read | Node.js, Express, MongoDB Atlas, Mongoose, Socket.IO, Multer, JWT Auth | **Deliverable:**<br>Notifications collection populating in Atlas, Bell icon shows unread count, Mark all read updates DB, Email + Dashboard + Live Log Stream all working in production |
 | **Day 31** | **Final Auth & Pre-Java Validation** | 1. Tested complete Register -> Login flow with JWT<br>2. Validated Upload -> AI Analysis -> Email ALert flow<br>3. Fixed CORS & token expiry bugs<br>4. Captured dashboard & AI root cause (94% confidence)<br>5. Prepared project for Spring Boot migration | Node.js, Express, JWT, React, Postman, Nodemailer | **Deliverable:**<br>Stable MERN buld ready, Project ready for Full Stack Java (Spring Boot) conversion |
 | **Day 32** | **LogGuard AI - Analytics & Health Fix** | 1. Fixed Map.of() limit compilation error (12 entries > 10 limit) using HashMap<br>2. Fixed NaN% Health bug by returning health as int 100 not String 100%<br>3. Fixed Analytics API to return totalLogs, criticals, avgResponseTime, levelDistribution, errorTrend, responseTrend<br>4. Fixed Frontend Analytics.jsx NaN parsing with Number() & parseInt(String().replace('%',''))<br>5. Verified Analytics Dashboard: Total Logs 21, Errors 11, Avg 125ms, Health 100%, Charts & Pie working | Backend-Java (Spring Boot 3.5.0, Java 21), MongoDB Atlas, React + Recharts, Maven | **Deliverable:**<br>Analytics page 100% working, BUILD SUCCESS, all charts rendering, Day 32 Completed |
+| **Day 33** | **Critical Email Alert System** | 1. Fixed duplicate dependencies in pom.xml (spring-boot-starter-mail, spring-dotenv)<br>2. Fixed Lombok compilation error in User.java by using manual getters/setters<br>3. Resolved ambiguous mapping error for /api/auth/me endpoint<br>4. Implemented EmailService & AlertService for CRITICAL log detection<br>5. Configured Gmail SMTP with App Password & dotenv<br>6. Tested upload -> 5 critical logs detected, email alerts sent & verified in Gmail | Java, Spring Boot, Spring Mail, Maven, MongoDB Atlas, Gmail SMTP, dotenv | **Deliverable:**<br>Spring Boot backend stable on :8080, Critical alert email system 100% working, Deliverable: Automated email with Level, Message, Time sent to admin |
 
 ---
 

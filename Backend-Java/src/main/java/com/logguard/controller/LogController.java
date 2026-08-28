@@ -2,6 +2,7 @@ package com.logguard.controller;
 
 import com.logguard.model.Log;
 import com.logguard.repository.LogRepository;
+import com.logguard.service.AlertService;
 import com.logguard.service.LogParserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +20,13 @@ public class LogController {
 
     @Autowired private LogParserService parserService;
     @Autowired private LogRepository logRepo;
+    @Autowired private AlertService alertService; // Day 33
 
     @GetMapping("/health")
     public Map<String, String> health() {
         return Map.of("status", "Java Backend Running", "port", "8080", "ai", "active", "db", "Atlas Connected");
     }
 
-    // --- FIXED ANALYZE - accepts both single log and logs array ---
     @PostMapping({"/analyze", "/logs/analyze"})
     public ResponseEntity<?> analyze(@RequestBody Map<String, Object> body) {
         // Case 1: Frontend sends { logs: [...] } for AI Root Cause
@@ -37,6 +38,11 @@ public class LogController {
                 Optional<?> err = list.stream().filter(o -> o.toString().contains("ERROR") || o.toString().contains("CRITICAL")).findFirst();
                 if (err.isPresent()) firstError = err.get().toString();
             }
+            // Day 33 - Alert if critical
+            if (firstError.toUpperCase().contains("CRITICAL") || firstError.toUpperCase().contains("ERROR")) {
+                alertService.checkAndAlert("CRITICAL", firstError);
+            }
+
             Map<String, Object> result = new HashMap<>();
             result.put("rootCause", firstError.contains("DB") || firstError.contains("Connection") ? "DB Connection Lost" : firstError);
             result.put("suggestedFix", "Restart DB and check connection pool. Check Atlas IP whitelist, increase poolSize, and add retryWrites=true in connection string.");
@@ -48,8 +54,16 @@ public class LogController {
         // Case 2: Single message
         String logMessage = (String) body.getOrDefault("message", body.getOrDefault("log", "Test log"));
         Log parsed = parserService.parse(logMessage);
-        try { Log saved = logRepo.save(parsed); return ResponseEntity.ok(saved); } 
-        catch (Exception e) { return ResponseEntity.ok(parsed); }
+        try { 
+            Log saved = logRepo.save(parsed);
+            // Day 33 - Trigger email alert
+            alertService.checkAndAlert(saved.getLevel(), saved.getMessage());
+            return ResponseEntity.ok(saved); 
+        } 
+        catch (Exception e) { 
+            alertService.checkAndAlert(parsed.getLevel(), parsed.getMessage());
+            return ResponseEntity.ok(parsed); 
+        }
     }
 
     @PostMapping(value = "/upload", consumes = "multipart/form-data")
@@ -62,13 +76,24 @@ public class LogController {
             String content = new String(file.getBytes(), StandardCharsets.UTF_8);
             String[] lines = content.split("\\r?\\n");
             int count = 0;
+            int criticalCount = 0;
             for (String line : lines) {
                 if (!line.trim().isEmpty()) {
                     Log parsed = parserService.parse(line);
-                    try { logRepo.save(parsed); count++; } catch (Exception ignore) {}
+                    try { 
+                        logRepo.save(parsed); 
+                        count++;
+                        if ("CRITICAL".equalsIgnoreCase(parsed.getLevel()) || "ERROR".equalsIgnoreCase(parsed.getLevel())) {
+                            criticalCount++;
+                        }
+                    } catch (Exception ignore) {}
                 }
             }
-            return Map.of("message", "Uploaded " + count + " logs", "count", count);
+            // Day 33 - Bulk alert summary
+            if (criticalCount > 0) {
+                alertService.checkAndAlert("CRITICAL", criticalCount + " critical logs found in uploaded file. Total logs: " + count);
+            }
+            return Map.of("message", "Uploaded " + count + " logs", "count", count, "critical", criticalCount);
         } catch (Exception e) {
             e.printStackTrace();
             return Map.of("error", e.getMessage());
@@ -112,7 +137,6 @@ public class LogController {
             long errors = logs.stream().filter(l -> "ERROR".equalsIgnoreCase(l.getLevel()) || "ERKOR".equalsIgnoreCase(l.getLevel())).count();
             long warnings = logs.stream().filter(l -> "WARN".equalsIgnoreCase(l.getLevel()) || "WARNING".equalsIgnoreCase(l.getLevel())).count();
             long info = logs.stream().filter(l -> "INFO".equalsIgnoreCase(l.getLevel())).count();
-            if (info < 0) info = logs.size() - critical - errors - warnings;
 
             List<Map<String, Object>> errorTrend = new ArrayList<>();
             List<Map<String, Object>> responseTrend = new ArrayList<>();
@@ -172,9 +196,7 @@ public class LogController {
         catch (Exception e) { return List.of(); }
     }
 
-    @GetMapping("/notifications")
+        @GetMapping("/notifications")
     public List<Map<String, String>> notifications() { return List.of(); }
 
-    @GetMapping("/auth/me")
-    public Map<String, String> me() { return Map.of("email", "kodalisuchitrakamala@gmail.com", "role", "admin"); }
 }

@@ -55,13 +55,18 @@ LOGGUARD_AI/
 │ │ │ ├── config/
 │ │ │ │ ├── CorsConfig.java
 │ │ │ ├── controller/
+│ │ │ │ ├── AuthController.java
 │ │ │ │ ├── LogController.java
 │ │ │ ├── model/
 │ │ │ │ ├── Log.java
+│ │ │ │ ├── User.java
 │ │ │ ├── repository/
 │ │ │ │ ├── LogRepository.java
+│ │ │ │ ├── UserRepository.java
 │ │ │ ├── service/
 │ │ │ │ ├── AiService.java
+│ │ │ │ ├── AlertService.java
+│ │ │ │ ├── EmailService.java
 │ │ │ │ ├── LogParserService.java
 │ │ │ ├── LogguardApplication.java
 │ │ ├── resources/
@@ -72,13 +77,18 @@ LOGGUARD_AI/
 │ │ │ │ ├── config/
 │ │ │ │ │ ├── CorsConfig.class
 │ │ │ │ ├── controller/
+│ │ │ │ │ ├── AuthController.class
 │ │ │ │ │ ├── LogController.class
 │ │ │ │ ├── model/
 │ │ │ │ │ ├── Log.class
+│ │ │ │ │ ├── User.class
 │ │ │ │ ├── respository/
 │ │ │ │ │ ├── LogRepository.class
+│ │ │ │ │ ├── UserRepository.class
 │ │ │ │ ├── service/
 │ │ │ │ │ ├── AiService.class
+│ │ │ │ │ ├── AlertService.class
+│ │ │ │ │ ├── EmailService.class
 │ │ │ │ │ ├── LogParserService.class
 │ │ │ │ ├── LogguardApplication.class
 │ │ │ ├── application.properties
@@ -86,6 +96,7 @@ LOGGUARD_AI/
 │ │ ├── maven-status/maven-compiler-plugin/compile/default-compile/
 │ │ │ ├── createdFiles.lst
 │ │ │ ├── inputFiles.lst
+│ ├── .env
 │ ├── .gitattributes
 │ ├── .gitignore
 │ ├── HELP.md
