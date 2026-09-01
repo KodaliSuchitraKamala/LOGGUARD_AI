@@ -54,14 +54,23 @@ LOGGUARD_AI/
 │ │ ├── java/com/logguard/
 │ │ │ ├── config/
 │ │ │ │ ├── CorsConfig.java
+│ │ │ │ ├── RateLimitFilter.java
+│ │ │ │ ├── SecurityConfig.java
+│ │ │ │ ├── SecurityHeaderFilter.java
 │ │ │ ├── controller/
+│ │ │ │ ├── AlertController.java
 │ │ │ │ ├── AuthController.java
 │ │ │ │ ├── LogController.java
+│ │ │ │ ├── UserController.java
 │ │ │ ├── model/
+│ │ │ │ ├── Alert.java
 │ │ │ │ ├── Log.java
+│ │ │ │ ├── Notification.java
 │ │ │ │ ├── User.java
-│ │ │ ├── repository/
+│ │ │ ├── repository/mongo/
+│ │ │ │ ├── AlertMongoRepository.java
 │ │ │ │ ├── LogRepository.java
+│ │ │ │ ├── NotificationRepository.java
 │ │ │ │ ├── UserRepository.java
 │ │ │ ├── service/
 │ │ │ │ ├── AiService.java
@@ -76,14 +85,23 @@ LOGGUARD_AI/
 │ │ │ ├── com/logguard/
 │ │ │ │ ├── config/
 │ │ │ │ │ ├── CorsConfig.class
+│ │ │ │ │ ├── RateLimitFilter.class
+│ │ │ │ │ ├── SecurityConfig.class
+│ │ │ │ │ ├── SecurityHeaderFilter.class
 │ │ │ │ ├── controller/
+│ │ │ │ │ ├── AlertController.class
 │ │ │ │ │ ├── AuthController.class
 │ │ │ │ │ ├── LogController.class
+│ │ │ │ │ ├── UserController.class
 │ │ │ │ ├── model/
+│ │ │ │ │ ├── Alert.class
 │ │ │ │ │ ├── Log.class
+│ │ │ │ │ ├── Notification.class
 │ │ │ │ │ ├── User.class
-│ │ │ │ ├── respository/
+│ │ │ │ ├── respository/mongo/
+│ │ │ │ │ ├── AlertMongoRepository.class
 │ │ │ │ │ ├── LogRepository.class
+│ │ │ │ │ ├── NotificationRepository.class
 │ │ │ │ │ ├── UserRepository.class
 │ │ │ │ ├── service/
 │ │ │ │ │ ├── AiService.class

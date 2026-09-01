@@ -13,7 +13,8 @@ public class Log {
     private String fix;
     private LocalDateTime timestamp = LocalDateTime.now();
     private String confidence = "92%";
-
+    
+    // ... getters and setters same
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getLevel() { return level; }
@@ -27,5 +28,7 @@ public class Log {
     public String getFix() { return fix; }
     public void setFix(String f) { this.fix = f; }
     public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime t) { this.timestamp = t; }
     public String getConfidence() { return confidence; }
+    public void setConfidence(String c) { this.confidence = c; }
 }

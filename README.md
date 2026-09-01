@@ -78,14 +78,23 @@ LOGGUARD_AI/
 │ │ ├── java/com/logguard/
 │ │ │ ├── config/
 │ │ │ │ ├── CorsConfig.java
+│ │ │ │ ├── RateLimitFilter.java
+│ │ │ │ ├── SecurityConfig.java
+│ │ │ │ ├── SecurityHeaderFilter.java
 │ │ │ ├── controller/
+│ │ │ │ ├── AlertController.java
 │ │ │ │ ├── AuthController.java
 │ │ │ │ ├── LogController.java
+│ │ │ │ ├── UserController.java
 │ │ │ ├── model/
+│ │ │ │ ├── Alert.java
 │ │ │ │ ├── Log.java
+│ │ │ │ ├── Notification.java
 │ │ │ │ ├── User.java
-│ │ │ ├── repository/
+│ │ │ ├── repository/mongo/
+│ │ │ │ ├── AlertMongoRepository.java
 │ │ │ │ ├── LogRepository.java
+│ │ │ │ ├── NotificationRepository.java
 │ │ │ │ ├── UserRepository.java
 │ │ │ ├── service/
 │ │ │ │ ├── AiService.java
@@ -100,14 +109,23 @@ LOGGUARD_AI/
 │ │ │ ├── com/logguard/
 │ │ │ │ ├── config/
 │ │ │ │ │ ├── CorsConfig.class
+│ │ │ │ │ ├── RateLimitFilter.class
+│ │ │ │ │ ├── SecurityConfig.class
+│ │ │ │ │ ├── SecurityHeaderFilter.class
 │ │ │ │ ├── controller/
+│ │ │ │ │ ├── AlertController.class
 │ │ │ │ │ ├── AuthController.class
 │ │ │ │ │ ├── LogController.class
+│ │ │ │ │ ├── UserController.class
 │ │ │ │ ├── model/
+│ │ │ │ │ ├── Alert.class
 │ │ │ │ │ ├── Log.class
+│ │ │ │ │ ├── Notification.class
 │ │ │ │ │ ├── User.class
-│ │ │ │ ├── respository/
+│ │ │ │ ├── respository/mongo/
+│ │ │ │ │ ├── AlertMongoRepository.class
 │ │ │ │ │ ├── LogRepository.class
+│ │ │ │ │ ├── NotificationRepository.class
 │ │ │ │ │ ├── UserRepository.class
 │ │ │ │ ├── service/
 │ │ │ │ │ ├── AiService.class
@@ -302,6 +320,8 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 31** | **Final Auth & Pre-Java Validation** | 1. Tested complete Register -> Login flow with JWT<br>2. Validated Upload -> AI Analysis -> Email ALert flow<br>3. Fixed CORS & token expiry bugs<br>4. Captured dashboard & AI root cause (94% confidence)<br>5. Prepared project for Spring Boot migration | Node.js, Express, JWT, React, Postman, Nodemailer | **Deliverable:**<br>Stable MERN buld ready, Project ready for Full Stack Java (Spring Boot) conversion |
 | **Day 32** | **LogGuard AI - Analytics & Health Fix** | 1. Fixed Map.of() limit compilation error (12 entries > 10 limit) using HashMap<br>2. Fixed NaN% Health bug by returning health as int 100 not String 100%<br>3. Fixed Analytics API to return totalLogs, criticals, avgResponseTime, levelDistribution, errorTrend, responseTrend<br>4. Fixed Frontend Analytics.jsx NaN parsing with Number() & parseInt(String().replace('%',''))<br>5. Verified Analytics Dashboard: Total Logs 21, Errors 11, Avg 125ms, Health 100%, Charts & Pie working | Backend-Java (Spring Boot 3.5.0, Java 21), MongoDB Atlas, React + Recharts, Maven | **Deliverable:**<br>Analytics page 100% working, BUILD SUCCESS, all charts rendering, Day 32 Completed |
 | **Day 33** | **Critical Email Alert System** | 1. Fixed duplicate dependencies in pom.xml (spring-boot-starter-mail, spring-dotenv)<br>2. Fixed Lombok compilation error in User.java by using manual getters/setters<br>3. Resolved ambiguous mapping error for /api/auth/me endpoint<br>4. Implemented EmailService & AlertService for CRITICAL log detection<br>5. Configured Gmail SMTP with App Password & dotenv<br>6. Tested upload -> 5 critical logs detected, email alerts sent & verified in Gmail | Java, Spring Boot, Spring Mail, Maven, MongoDB Atlas, Gmail SMTP, dotenv | **Deliverable:**<br>Spring Boot backend stable on :8080, Critical alert email system 100% working, Deliverable: Automated email with Level, Message, Time sent to admin |
+| **Day 34** | **Notification & Admin Module Migration to Java + Frontend Dual Compatibility** | 1. Fixed LogController ambiguous mapping - removed duplicate /api/notifications endpoint<br>2. Migrated Notification model to Java - changed from empty list to per-CRITICAL-log creation<br>3. Updated LogService to generate notification on each CRITICAL log with format 🚨 CRITICAL: message<br>4. Implemented NotificationController - GET /api/notifications, PUT /api/notifications/read-all, PUT /api/notifications/mark-all-read<br>5. Created UserController.java - GET /api/users, PUT /api/users/:id/role, DELETE /api/users/:id for Admin Panel<br>6. Made frontend dual-compatible - updated api.js to auto-detect MERN (5000) vs JAVA (8080) and call /logs vs /logs/search<br>7. Fixed AdminUserTable.jsx to use unified API service with .env switch VITE_API_URL<br>8. Fixed NotificationBell.jsx polling (10s) and unread badge for Java backend<br>9. Fixed Alerts.jsx polling and acknowledge flow for Java backend<br>10. Tested E2E with .env switching - upload logs on localhost:5173 and verified bell, alerts, admin tabs on both backends | Spring Boot, React, MongoDB Atlas, REST API, Vite Env | **Deliverable:**<br>Java Notification system working, User management API functional, Frontend works on both MERN & Java backends | 
+| **Day 35** | **Alerting & Notification Module + Security Hardening** | 1. Fixed SecurityConfig.java (CORS, CSRF disable, permitAll) for 403 Forbidden<br>2. Fixed path collision: Renamed LogController /api/alerts to /api/alerts-legacy to resolve Whitelabel 404<br>3. Created Alert model & AlertMongoRepository with findByResolvedFalseOrderByTimestampDesc()<br>4. Implemented AlertService.checkAndAlert() for auto-creation of CRITICAL/ERROR alerts to Atlas<br>5. Built 3 endpoints: GET /api/alerts/test, GET /api/alerts/active, PUT /api/alerts/{id}/resolve<br>6. Verified ALERT SAVED TO ATLAS logs and alerts collection in MongoDB Atlas<br>7. Verified browser JSON output and LogGuard AI dashboard integration (11 critical, 98% health) | Spring Boot, Spring Security, MongoDB Atlas, REST API | **Deliverable:**<br>Active alerts API working, Auto-alert generation functional, Resolve feature working, Verified in browser, terminal & Atlas dashboard |
 
 ---
 

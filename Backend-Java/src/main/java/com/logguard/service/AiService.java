@@ -1,17 +1,24 @@
 package com.logguard.service;
+
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
 public class AiService {
+    
+    private final AlertService alertService;
+
+    public AiService(AlertService alertService) {
+        this.alertService = alertService;
+    }
+
     public Map<String, String> analyze(String logMessage) {
         String low = logMessage.toLowerCase();
         String severity = "LOW";
         String rootCause = "Routine operation";
         String fix = "No action needed";
 
-        // FIXED ERKOR BUG - Day 32 Advanced
         if (low.contains("erkor")) {
             low = low.replace("erkor", "error");
         }
@@ -27,7 +34,12 @@ public class AiService {
         } else if (low.contains("warn")) {
             severity = "MEDIUM";
             rootCause = "High resource usage";
-            fix = "Scale up or optimize query";
+            fix = "Scale up or optime query";
+        }
+
+        if (severity.equals("CRITICAL")) {
+            System.out.println("🚨 AiService detected CRITICAL: " + logMessage);
+            alertService.checkAndAlert(severity, logMessage);
         }
 
         Map<String, String> result = new HashMap<>();

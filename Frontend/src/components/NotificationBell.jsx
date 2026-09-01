@@ -62,8 +62,8 @@ export default function NotificationBell() {
           </div>
           {notifications.length === 0? <p className="p-4 text-sm text-gray-500 text-center">No notifications</p> :
             notifications.slice(0,10).map((n) => (
-              <div key={n._id} className={`p-3 border-b text-sm hover:bg-gray-50 ${!n.isRead? 'bg-blue-50' : ''}`}>
-                <p className="font-medium text-xs truncate">{n.message}</p>
+              <div key={n._id || n.id || index} className={`p-3 border-b text-sm hover:bg-gray-50 ${!n.isRead? 'bg-blue-50' : ''}`}>
+                <p className="font-medium text-xs truncate">{n.message || n.msg}</p>
                 <p className="text-[11px] text-gray-500 mt-1">{n.createdAt? new Date(n.createdAt).toLocaleString('en-IN') : ''}</p>
               </div>
             ))

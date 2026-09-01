@@ -1,7 +1,7 @@
 package com.logguard.controller;
 
 import com.logguard.model.User;
-import com.logguard.repository.UserRepository;
+import com.logguard.repository.mongo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

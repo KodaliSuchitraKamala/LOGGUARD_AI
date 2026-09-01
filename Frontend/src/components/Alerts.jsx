@@ -72,7 +72,7 @@ export default function Alerts() {
             ) : (
                 <div className="space-y-3">
                     {alerts.map((alert) => (
-                        <div key={alert._id} className={`border-l-4 p-4 rounded shadow-sm flex justify-between items-center ${alert.level === 'CRITICAL'? 'border-red-500 bg-red-900/30 animate-pulse' : 'border-orange-500 bg-orange-900/30'}`}>
+                        <div key={alert._id || alert.id} className={`border-l-4 p-4 rounded shadow-sm flex justify-between items-center ${alert.level === 'CRITICAL'? 'border-red-500 bg-red-900/30 animate-pulse' : 'border-orange-500 bg-orange-900/30'}`}>
                             <div className="flex-1">
                                 <div className="flex gap-3 items-center">
                                     <span className={`px-3 py-1 text-white text-xs font-bold rounded ${alert.level === 'CRITICAL'? 'bg-red-500' : 'bg-orange-500'}`}>{alert.level}</span>

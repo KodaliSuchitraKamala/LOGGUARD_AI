@@ -1,4 +1,5 @@
-package com.logguard.repository;
+package com.logguard.repository.mongo;
+
 import com.logguard.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;

@@ -1,5 +1,6 @@
 package com.logguard.service;
 import com.logguard.model.Log;
+import com.logguard.repository.mongo.LogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Map;
@@ -7,6 +8,7 @@ import java.util.Map;
 @Service
 public class LogParserService {
     @Autowired private AiService aiService;
+    @Autowired private LogRepository logRepository;
 
     public Log parse(String rawLog) {
         Log log = new Log();
@@ -27,6 +29,7 @@ public class LogParserService {
         log.setSeverity(ai.get("severity"));
         log.setRootCause(ai.get("rootCause"));
         log.setFix(ai.get("fix"));
-        return log;
+
+        return logRepository.save(log);
     }
 }
