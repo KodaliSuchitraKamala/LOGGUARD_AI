@@ -10,4 +10,5 @@ public interface LogRepository extends MongoRepository<Log, String> {
     long countByLevel(String level);
     List<Log> findByLevel(String level);
     List<Log> findTop20ByOrderByTimestampDesc();
+    List<Log> findByLevelOrderByTimestampDesc(String level);
 }
