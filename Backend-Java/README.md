@@ -61,6 +61,7 @@ LOGGUARD_AI/
 │ │ │ │ ├── AlertController.java
 │ │ │ │ ├── AuthController.java
 │ │ │ │ ├── LogController.java
+│ │ │ │ ├── NotificationController.java
 │ │ │ │ ├── UserController.java
 │ │ │ ├── model/
 │ │ │ │ ├── Alert.java
@@ -77,6 +78,7 @@ LOGGUARD_AI/
 │ │ │ │ ├── AlertService.java
 │ │ │ │ ├── EmailService.java
 │ │ │ │ ├── LogParserService.java
+│ │ │ │ ├── NotificationCleanupService.java
 │ │ │ ├── LogguardApplication.java
 │ │ ├── resources/
 │ │ │ ├── application.properties
@@ -92,6 +94,7 @@ LOGGUARD_AI/
 │ │ │ │ │ ├── AlertController.class
 │ │ │ │ │ ├── AuthController.class
 │ │ │ │ │ ├── LogController.class
+│ │ │ │ │ ├── NotificationController.class
 │ │ │ │ │ ├── UserController.class
 │ │ │ │ ├── model/
 │ │ │ │ │ ├── Alert.class
@@ -108,6 +111,7 @@ LOGGUARD_AI/
 │ │ │ │ │ ├── AlertService.class
 │ │ │ │ │ ├── EmailService.class
 │ │ │ │ │ ├── LogParserService.class
+│ │ │ │ │ ├── NotificationCleanupService.class
 │ │ │ │ ├── LogguardApplication.class
 │ │ │ ├── application.properties
 │ │ ├── generated-sources/annotations

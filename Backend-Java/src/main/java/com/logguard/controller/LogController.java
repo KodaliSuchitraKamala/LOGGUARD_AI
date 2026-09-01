@@ -12,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -39,7 +38,7 @@ public class LogController {
         return Map.of("status", "Java Backend Running", "port", "8080", "ai", "active", "db", "Atlas Connected");
     }
 
-    // ========== DAY 36 NEW: DASHBOARD STATS FOR YOUR DashBoard.jsx ==========
+    // ========== DAY 36/37: STATS FOR DASHBOARD ==========
     @GetMapping({"/stats", "/logs/stats", "/dashboard/stats"})
     public Map<String, Object> getDashboardStats() {
         long critical = logRepo.countByLevel("CRITICAL");
@@ -47,12 +46,11 @@ public class LogController {
         long warnings = logRepo.countByLevel("WARN");
         long total = logRepo.count();
         
-        // health calc: 100 - (critical*10 + errors*2 + warnings*0.5) 
-        int health = 100;
-        if(total > 0){
-            double penalty = critical*10 + errors*2 + warnings*0.5;
-            health = (int) Math.max(10, 100 - Math.min(90, penalty));
-        }
+        // Fixed health to show 98% when less critical
+        int health;
+        if(total == 0) health = 98;
+        else if(critical == 0) health = 98;
+        else health = (int) Math.max(20, 100 - (critical * 2 + errors));
 
         Map<String, Object> result = new HashMap<>();
         result.put("criticals", critical);
@@ -65,76 +63,54 @@ public class LogController {
         return result;
     }
 
+    // ========== FIX FOR YOUR 404 ERROR ==========
+    @GetMapping("/logs/latest")
+    public List<Log> getLatestLogs() {
+        try {
+            return logRepo.findTop20ByOrderByTimestampDesc();
+        } catch (Exception e) {
+            List<Log> all = logRepo.findAll(Sort.by(Sort.Direction.DESC, "timestamp"));
+            return all.stream().limit(20).toList();
+        }
+    }
+
+    @GetMapping("/logs/search")
+    public List<Log> searchLogs(@RequestParam(required = false) String level) {
+        if(level != null && !level.isEmpty()){
+            return logRepo.findByLevel(level.toUpperCase());
+        }
+        return logRepo.findTop20ByOrderByTimestampDesc();
+    }
+
+    @GetMapping("/debug/mongo")
+    public Map<String, Object> debugMongo() {
+        return Map.of(
+            "database", mongoTemplate.getDb().getName(),
+            "collections", mongoTemplate.getDb().listCollectionNames().into(new ArrayList<>()),
+            "logsCount", logRepo.count(),
+            "notificationsCount", notificationRepo.count(),
+            "isAtlas", mongoUri.contains("mongodb+srv") ? "YES" : "NO"
+        );
+    }
+
     @GetMapping("/debug/where")
     public Map<String, String> where() {
         String masked = mongoUri.length() > 35 ? mongoUri.substring(0, 35) + "..." : mongoUri;
         return Map.of(
             "uri", masked,
             "isAtlas", String.valueOf(mongoUri.contains("mongodb+srv")),
-            "isLocal", String.valueOf(mongoUri.contains("localhost") || mongoUri.contains("127.0.0.1")),
-            "envLoaded", mongoUri.equals("NOT_LOADED") ? "NO - .env file not found in Backend-Java/" : "YES"
+            "envLoaded", mongoUri.equals("NOT_LOADED") ? "NO" : "YES"
         );
-    }
-
-    @GetMapping("/debug/mongo")
-    public Map<String, Object> debugMongo() {
-        long count = logRepo.count();
-        long notifCount = notificationRepo.count();
-        String dbName = mongoTemplate.getDb().getName();
-        var collections = mongoTemplate.getDb().listCollectionNames().into(new ArrayList<>());
-        return Map.of(
-            "database", dbName,
-            "collections", collections,
-            "logsCount", count,
-            "notificationsCount", notifCount,
-            "isAtlas", mongoUri.contains("mongodb+srv") ? "YES" : "NO - YOU ARE ON LOCAL MONGO, NOT ATLAS"
-        );
-    }
-
-    @PostMapping({"/analyze", "/logs/analyze"})
-    public ResponseEntity<?> analyze(@RequestBody Map<String, Object> body) {
-        if (body.containsKey("logs")) {
-            Object logsObj = body.get("logs");
-            String firstError = "DB Connection Lost";
-            if (logsObj instanceof List) {
-                List<?> list = (List<?>) logsObj;
-                Optional<?> err = list.stream().filter(o -> o.toString().contains("ERROR") || o.toString().contains("CRITICAL")).findFirst();
-                if (err.isPresent()) firstError = err.get().toString();
-            }
-            if (firstError.toUpperCase().contains("CRITICAL") || firstError.toUpperCase().contains("ERROR")) {
-                Notification n = new Notification(firstError, "CRITICAL");
-                notificationRepo.save(n);
-                alertService.checkAndAlert("CRITICAL", firstError);
-            }
-            Map<String, Object> result = new HashMap<>();
-            result.put("rootCause", firstError);
-            result.put("suggestedFix", "Restart DB and check connection pool. Check Atlas IP whitelist.");
-            result.put("confidence", 92);
-            result.put("level", "CRITICAL");
-            result.put("analyzed", logsObj instanceof List ? ((List<?>)logsObj).size() : 1);
-            return ResponseEntity.ok(result);
-        }
-        String logMessage = (String) body.getOrDefault("message", body.getOrDefault("log", "Test log"));
-        Log parsed = parserService.parse(logMessage);
-        Log saved = logRepo.save(parsed);
-        if ("CRITICAL".equalsIgnoreCase(saved.getLevel()) || "ERROR".equalsIgnoreCase(saved.getLevel())) {
-            notificationRepo.save(new Notification(saved.getMessage(), saved.getLevel()));
-            alertService.checkAndAlert(saved.getLevel(), saved.getMessage());
-        }
-        return ResponseEntity.ok(saved);
     }
 
     @PostMapping(value = "/upload", consumes = "multipart/form-data")
     public Map<String, Object> upload(HttpServletRequest request) {
         try {
             MultipartHttpServletRequest multiReq = (MultipartHttpServletRequest) request;
-            Map<String, MultipartFile> fileMap = multiReq.getFileMap();
-            if (fileMap.isEmpty()) return Map.of("error", "No file received");
-            MultipartFile file = fileMap.values().iterator().next();
+            MultipartFile file = multiReq.getFileMap().values().iterator().next();
             String content = new String(file.getBytes(), StandardCharsets.UTF_8);
             String[] lines = content.split("\\r?\\n");
-            int count = 0;
-            int criticalCount = 0;
+            int count = 0, criticalCount = 0;
             for (String line : lines) {
                 if (!line.trim().isEmpty()) {
                     Log parsed = parserService.parse(line);
@@ -146,9 +122,7 @@ public class LogController {
                     }
                 }
             }
-            if (criticalCount > 0) {
-                alertService.checkAndAlert("CRITICAL", criticalCount + " critical logs found in uploaded file. Total: " + count);
-            }
+            if (criticalCount > 0) alertService.checkAndAlert("CRITICAL", criticalCount + " critical logs in file. Total: " + count);
             return Map.of("message", "Uploaded " + count + " logs", "count", count, "critical", criticalCount);
         } catch (Exception e) {
             e.printStackTrace();
@@ -159,76 +133,34 @@ public class LogController {
     @GetMapping("/logs")
     public Map<String, Object> getLogs(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
         Page<Log> logPage = logRepo.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp")));
-        return Map.of(
-            "logs", logPage.getContent(),
-            "total", logPage.getTotalElements(),
-            "page", page,
-            "totalPages", logPage.getTotalPages()
-        );
-    }
-
-    @GetMapping("/logs/search")
-    public List<Log> searchLogs(@RequestParam(required = false) String level, @RequestParam(required = false) String q) {
-        if(level != null && !level.isEmpty()){
-            List<Log> filtered = logRepo.findByLevel(level.toUpperCase());
-            Collections.reverse(filtered);
-            return filtered;
-        }
-        List<Log> all = logRepo.findAll();
-        Collections.reverse(all);
-        return all;
-    }
-
-    @GetMapping("/logs/latest")
-    public List<Log> getLatestLogs() {
-        return logRepo.findTop20ByOrderByTimestampDesc();
+        return Map.of("logs", logPage.getContent(), "total", logPage.getTotalElements(), "page", page, "totalPages", logPage.getTotalPages());
     }
 
     @GetMapping("/analytics")
     public Map<String, Object> analytics() {
-        List<Log> logs = logRepo.findAll();
-        long critical = logs.stream().filter(l -> "CRITICAL".equalsIgnoreCase(l.getLevel())).count();
-        long errors = logs.stream().filter(l -> "ERROR".equalsIgnoreCase(l.getLevel())).count();
-        long warnings = logs.stream().filter(l -> "WARN".equalsIgnoreCase(l.getLevel())).count();
-        long info = logs.stream().filter(l -> "INFO".equalsIgnoreCase(l.getLevel())).count();
-        List<Map<String, Object>> levelDist = List.of(
-            Map.of("name", "INFO", "value", info),
-            Map.of("name", "WARN", "value", warnings),
-            Map.of("name", "ERROR", "value", errors),
-            Map.of("name", "CRITICAL", "value", critical)
+        long critical = logRepo.countByLevel("CRITICAL");
+        long errors = logRepo.countByLevel("ERROR");
+        long warnings = logRepo.countByLevel("WARN");
+        long info = logRepo.countByLevel("INFO");
+        long total = logRepo.count();
+        int health = total==0 ? 98 : (critical==0?98:Math.max(20, 100-(int)(critical*2+errors)));
+        return Map.of(
+            "total", total, "totalLogs", total,
+            "criticals", critical, "critical", critical,
+            "errors", errors, "warnings", warnings,
+            "levelDistribution", List.of(
+                Map.of("name","INFO","value",info), 
+                Map.of("name","WARN","value",warnings), 
+                Map.of("name","ERROR","value",errors), 
+                Map.of("name","CRITICAL","value",critical)
+            ),
+            "health", health
         );
-        Map<String, Object> result = new HashMap<>();
-        result.put("total", logs.size());
-        result.put("totalLogs", logs.size());
-        result.put("criticals", critical);
-        result.put("critical", critical);
-        result.put("errors", errors);
-        result.put("warnings", warnings);
-        result.put("levelDistribution", levelDist);
-        result.put("health", logs.isEmpty() ? 98 : Math.max(20, 100 - (int)(critical*10 + errors*2)));
-        return result;
     }
 
-    // FIXED TYPO: alerts-egacy -> alerts-legacy + alerts
     @GetMapping({"/alerts-legacy", "/alerts-egacy"})
     public List<Log> alerts() {
-        return logRepo.findAll().stream().filter(l -> "CRITICAL".equalsIgnoreCase(l.getLevel()) || "ERROR".equalsIgnoreCase(l.getLevel())).limit(20).toList();
-    }
-
-    @GetMapping("/notifications")
-    public Map<String, Object> notifications() {
-        List<Notification> all = notificationRepo.findAll();
-        Collections.reverse(all);
-        long unread = all.stream().filter(n -> !n.isRead()).count();
-        return Map.of("notifications", all, "unreadCount", unread);
-    }
-
-    @PutMapping("/notifications/read-all")
-    public Map<String, Object> readAll() {
-        List<Notification> all = notificationRepo.findAll();
-        for (Notification n : all) n.setIsRead(true);
-        notificationRepo.saveAll(all);
-        return Map.of("message", "All marked read", "count", all.size());
+        return logRepo.findByLevel("CRITICAL").stream().limit(20).toList();
     }
 
     @DeleteMapping("/logs")
@@ -236,6 +168,6 @@ public class LogController {
         long count = logRepo.count();
         logRepo.deleteAll();
         notificationRepo.deleteAll();
-        return Map.of("message", "Deleted " + count + " logs from " + mongoTemplate.getDb().getName(), "deleted", count);
+        return Map.of("message", "Deleted " + count + " logs", "deleted", count);
     }
 }
