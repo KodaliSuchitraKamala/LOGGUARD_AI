@@ -8,6 +8,9 @@ import com.logguard.service.AlertService;
 import com.logguard.service.LogParserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +37,32 @@ public class LogController {
     @GetMapping("/health")
     public Map<String, String> health() {
         return Map.of("status", "Java Backend Running", "port", "8080", "ai", "active", "db", "Atlas Connected");
+    }
+
+    // ========== DAY 36 NEW: DASHBOARD STATS FOR YOUR DashBoard.jsx ==========
+    @GetMapping({"/stats", "/logs/stats", "/dashboard/stats"})
+    public Map<String, Object> getDashboardStats() {
+        long critical = logRepo.countByLevel("CRITICAL");
+        long errors = logRepo.countByLevel("ERROR");
+        long warnings = logRepo.countByLevel("WARN");
+        long total = logRepo.count();
+        
+        // health calc: 100 - (critical*10 + errors*2 + warnings*0.5) 
+        int health = 100;
+        if(total > 0){
+            double penalty = critical*10 + errors*2 + warnings*0.5;
+            health = (int) Math.max(10, 100 - Math.min(90, penalty));
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("criticals", critical);
+        result.put("critical", critical);
+        result.put("errors", errors);
+        result.put("warnings", warnings);
+        result.put("totalLogs", total);
+        result.put("total", total);
+        result.put("health", health);
+        return result;
     }
 
     @GetMapping("/debug/where")
@@ -128,20 +157,31 @@ public class LogController {
     }
 
     @GetMapping("/logs")
-    public List<Log> getLogs() {
+    public Map<String, Object> getLogs(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
+        Page<Log> logPage = logRepo.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp")));
+        return Map.of(
+            "logs", logPage.getContent(),
+            "total", logPage.getTotalElements(),
+            "page", page,
+            "totalPages", logPage.getTotalPages()
+        );
+    }
+
+    @GetMapping("/logs/search")
+    public List<Log> searchLogs(@RequestParam(required = false) String level, @RequestParam(required = false) String q) {
+        if(level != null && !level.isEmpty()){
+            List<Log> filtered = logRepo.findByLevel(level.toUpperCase());
+            Collections.reverse(filtered);
+            return filtered;
+        }
         List<Log> all = logRepo.findAll();
         Collections.reverse(all);
         return all;
     }
 
-    @GetMapping("/logs/search")
-    public List<Log> searchLogs() { return getLogs(); }
-
     @GetMapping("/logs/latest")
     public List<Log> getLatestLogs() {
-        List<Log> all = logRepo.findAll();
-        Collections.reverse(all);
-        return all.stream().limit(20).toList();
+        return logRepo.findTop20ByOrderByTimestampDesc();
     }
 
     @GetMapping("/analytics")
@@ -159,36 +199,34 @@ public class LogController {
         );
         Map<String, Object> result = new HashMap<>();
         result.put("total", logs.size());
+        result.put("totalLogs", logs.size());
+        result.put("criticals", critical);
         result.put("critical", critical);
         result.put("errors", errors);
         result.put("warnings", warnings);
         result.put("levelDistribution", levelDist);
+        result.put("health", logs.isEmpty() ? 98 : Math.max(20, 100 - (int)(critical*10 + errors*2)));
         return result;
     }
 
-    @GetMapping("/alerts-egacy")
+    // FIXED TYPO: alerts-egacy -> alerts-legacy + alerts
+    @GetMapping({"/alerts-legacy", "/alerts-egacy"})
     public List<Log> alerts() {
         return logRepo.findAll().stream().filter(l -> "CRITICAL".equalsIgnoreCase(l.getLevel()) || "ERROR".equalsIgnoreCase(l.getLevel())).limit(20).toList();
     }
 
-    // --- FIXED NOTIFICATIONS ---
     @GetMapping("/notifications")
     public Map<String, Object> notifications() {
         List<Notification> all = notificationRepo.findAll();
         Collections.reverse(all);
         long unread = all.stream().filter(n -> !n.isRead()).count();
-        return Map.of(
-            "notifications", all,
-            "unreadCount", unread
-        );
+        return Map.of("notifications", all, "unreadCount", unread);
     }
 
     @PutMapping("/notifications/read-all")
     public Map<String, Object> readAll() {
         List<Notification> all = notificationRepo.findAll();
-        for (Notification n : all) {
-            n.setIsRead(true);
-        }
+        for (Notification n : all) n.setIsRead(true);
         notificationRepo.saveAll(all);
         return Map.of("message", "All marked read", "count", all.size());
     }

@@ -12,24 +12,21 @@ public class LogParserService {
 
     public Log parse(String rawLog) {
         Log log = new Log();
-        String level = "INFO";
         String upper = rawLog.toUpperCase();
+        String level = "INFO";
         
-        if (upper.contains("ERROR") || upper.contains("ERKOR")) {
-            level = "ERROR";
-        } else if (upper.contains("WARN")) {
-            level = "WARN";
-        } else if (upper.contains("CRITICAL")) {
-            level = "CRITICAL";
-        }
+        if (upper.contains("CRITICAL")) level = "CRITICAL";
+        else if (upper.contains("ERROR") || upper.contains("ERKOR") || upper.contains("FATAL")) level = "ERROR";
+        else if (upper.contains("WARN")) level = "WARN";
         
         log.setLevel(level);
         log.setMessage(rawLog);
+        
         Map<String, String> ai = aiService.analyze(rawLog);
-        log.setSeverity(ai.get("severity"));
-        log.setRootCause(ai.get("rootCause"));
-        log.setFix(ai.get("fix"));
+        log.setSeverity(ai.getOrDefault("severity", level));
+        log.setRootCause(ai.getOrDefault("rootCause", "Unknown"));
+        log.setFix(ai.getOrDefault("fix", "Check logs"));
 
-        return logRepository.save(log);
+        return log; // don't save here, save in controller to avoid double save
     }
 }
