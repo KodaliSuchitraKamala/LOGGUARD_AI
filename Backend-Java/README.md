@@ -57,7 +57,9 @@ LOGGUARD_AI/
 │ │ │ │ ├── RateLimitFilter.java
 │ │ │ │ ├── SecurityConfig.java
 │ │ │ │ ├── SecurityHeaderFilter.java
+│ │ │ │ ├── WebConfig.java
 │ │ │ ├── controller/
+│ │ │ │ ├── AiController.java
 │ │ │ │ ├── AlertController.java
 │ │ │ │ ├── AuthController.java
 │ │ │ │ ├── LogController.java
@@ -90,7 +92,9 @@ LOGGUARD_AI/
 │ │ │ │ │ ├── RateLimitFilter.class
 │ │ │ │ │ ├── SecurityConfig.class
 │ │ │ │ │ ├── SecurityHeaderFilter.class
+│ │ │ │ │ ├── WebConfig.class
 │ │ │ │ ├── controller/
+│ │ │ │ │ ├── AiController.class
 │ │ │ │ │ ├── AlertController.class
 │ │ │ │ │ ├── AuthController.class
 │ │ │ │ │ ├── LogController.class

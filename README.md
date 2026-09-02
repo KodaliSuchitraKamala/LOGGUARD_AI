@@ -81,7 +81,9 @@ LOGGUARD_AI/
 │ │ │ │ ├── RateLimitFilter.java
 │ │ │ │ ├── SecurityConfig.java
 │ │ │ │ ├── SecurityHeaderFilter.java
+│ │ │ │ ├── WebConfig.java
 │ │ │ ├── controller/
+│ │ │ │ ├── AiController.java
 │ │ │ │ ├── AlertController.java
 │ │ │ │ ├── AuthController.java
 │ │ │ │ ├── LogController.java
@@ -114,7 +116,9 @@ LOGGUARD_AI/
 │ │ │ │ │ ├── RateLimitFilter.class
 │ │ │ │ │ ├── SecurityConfig.class
 │ │ │ │ │ ├── SecurityHeaderFilter.class
+│ │ │ │ │ ├── WebConfig.class
 │ │ │ │ ├── controller/
+│ │ │ │ │ ├── AiController.class
 │ │ │ │ │ ├── AlertController.class
 │ │ │ │ │ ├── AuthController.class
 │ │ │ │ │ ├── LogController.class
@@ -329,6 +333,7 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 36** | **Dashboard Stats API & E2E Analytics Integration** | 1. Added countByLevel(), findTop20ByOrderByTimestampDesc() in LogRepository.java<br>2. Fixed double-save bug in LogParserService.java and optimized level detection (CRITICAL/ERROR/WARN)<br>3. Created new endpoints /api/stats, /api/logs/stats, /api/dashboard/stats returning { criticals, errors, warnings, totalLogs, health } matching DashBoard.jsx props<br>4. Implemented pagination /api/logs?page&size and search filter /api/logs/search?level<br>5. Fixed /alerts-egacy typo to /alerts-legacy and retained upload/analyze/notifications flow<br>6. Verified E2E on localhost:5173 showing 11 Critical, 23 Errors, 15 Warnings, 98% Health, 120 Total Logs and on 8080/api/analytics & /debug/mongo with Atlas DB proof | React, Spring Boot 3, MongoDB Atlas, MongoTemplate, REST APIs | **Deliverable:**<br>Java backend without frontend change, /api/stats returns exact props needed for DashBoard.jsx, Pagination & search working, 120 logs uploaded & counted correctly, No CORS/403 errors |
 | **Day 37** | **Dashboard Final Verification & Live Stream Fix** | 1. Fixed /api/logs/latest 404 error by adding findTop20ByOrderByTimestampDesc() in LogRepository<br>2. Added getLatestLogs() endpoint in LogController<br>3. Rebuilt backend with mvn clean compile and restarted server<br>4. Verified dashboard at localhost:5173 showing 21 Critical, 11 Errors, 5 Warnings, 47% Health<br>5. Confirmed Live Log Stream renders 20 logs with badges and 4 columns<br>6. Validated Drag & Drop upload, ALL LEVELS filter, Admin Panel | Spring Boot, MongoDB Atlas, React.js, REST API | **Deliverable:**<br>Dashboard fully functional, Live Stream fixed, Final output |
 | **Day 38** | **Backend API Verification & Dashboard Fix** | 1. Fixed and verified /api/stats, /api/dashboard/stats, /api/logs/stats returning 11 Critical, 98% Health, 120 totalLogs<br>2. Fixed /api/logs/latest 404 error for Live Log Stream with Top 20 logs (TIME, LEVEL, MESSAGE)<br>3. Tested /api/logs/search?level filter for ALL LEVELS dropdown, fixed WARN/WARNING bug<br>4. Validated /api/debug/mongo showing Atlas DB logguard with 4 collections and 120 logs<br>5. Verified auto-alert system with terminal log ALERT SAVED TO ATLAS | Spring Boot, MongoDB Atlas, React, REST API, Postman | **Deliverable:**<br>Backend APIs verified, Live Log Stream functional, Atlas sync confirmed with 11 Critical target achieved |
+| **Day 39** | **Dashboard API** | 1. Created DashboardStatsDTO, RecentLogsDTO, AlertSummaryDTO<br>2. Built GET /api/dashboard/stats endpoints<br>3. Built GET /api/dashboard/recent-logs endpoints<br>4. Built GET /api/dashboard/chart-data?days=7 with aggregation<br>5. Built GET /api/dashboard/alerts-summary endpoint<br>6. Added MongoDB indexing on timestamp & level<br>7. Secured APIs with JWT + @PreAuthorize | Spring Boot, MongoDB Aggregation (MongoTemplate), Spring Security, JWT, DTO Pattern | **Deliverable:**<br>Dashboard APIs fully working, Stats & chart data returning correctly, Frontend Integrated |
 
 ---
 

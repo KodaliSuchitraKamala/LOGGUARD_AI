@@ -14,6 +14,7 @@ public class AiService {
     }
 
     public Map<String, String> analyze(String logMessage) {
+        if (logMessage == null) logMessage = "";
         String low = logMessage.toLowerCase();
         String severity = "LOW";
         String rootCause = "Routine operation";
@@ -25,16 +26,16 @@ public class AiService {
 
         if (low.contains("critical") || low.contains("crash") || low.contains("down")) {
             severity = "CRITICAL";
-            rootCause = "Service crash / DB disconnection";
-            fix = "Restart service and check MongoDB connection";
-        } else if (low.contains("error") || low.contains("fail")) {
+            rootCause = "Service crash / DB disconnection - Market DB and check connection pool. Check MaxIdle vs active";
+            fix = "Restart service and check MongoDB connection. Increase poolSize and add retryOnFailure";
+        } else if (low.contains("error") || low.contains("fail") || low.contains("exception")) {
             severity = "CRITICAL";
             rootCause = "DB Connection Lost";
-            fix = "Restart DB and check connection pool";
+            fix = "Restart DB and check connection pool. Increase HikariCP max pool from 10 to 25 and check MongoDB Atlas IP whitelist";
         } else if (low.contains("warn")) {
             severity = "MEDIUM";
             rootCause = "High resource usage";
-            fix = "Scale up or optime query";
+            fix = "Scale up or optimize query";
         }
 
         if (severity.equals("CRITICAL")) {
@@ -47,6 +48,7 @@ public class AiService {
         result.put("rootCause", rootCause);
         result.put("fix", fix);
         result.put("confidence", "92%");
+        result.put("analysis", rootCause + ". " + fix);
         return result;
     }
 }
