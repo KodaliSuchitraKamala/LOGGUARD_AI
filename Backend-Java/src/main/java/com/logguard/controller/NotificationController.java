@@ -5,6 +5,7 @@ import com.logguard.repository.mongo.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -17,15 +18,15 @@ public class NotificationController {
 
     @GetMapping
     public Map<String, Object> getAll() {
-        var all = notificationRepository.findAll();
-        java.util.Collections.reverse(all);
+        List<Notification> all = notificationRepository.findAllByOrderByCreatedAtDesc();
         long unread = all.stream().filter(n -> !n.isRead()).count();
         return Map.of("notifications", all, "unreadCount", unread);
     }
 
+    // THIS FIXES YOUR "Mark all read" CLICK BUG
     @PutMapping("/read-all")
     public ResponseEntity<?> readAll() {
-        var all = notificationRepository.findAll();
+        List<Notification> all = notificationRepository.findAll();
         all.forEach(n -> n.setIsRead(true));
         notificationRepository.saveAll(all);
         return ResponseEntity.ok(Map.of("message", "All marked as read", "count", all.size()));
@@ -35,14 +36,15 @@ public class NotificationController {
     public ResponseEntity<?> deleteAll() {
         long count = notificationRepository.count();
         notificationRepository.deleteAll();
-        return ResponseEntity.ok(Map.of("message", "All notifications deleted", "deleted", count));
+        return ResponseEntity.ok(Map.of("message", "All deleted", "deleted", count));
     }
 
-    // Extra for frontend compatibility
-    @PutMapping("/read-all-legacy")
-    @DeleteMapping("/delete-all-legacy")
-    @RequestMapping(value = {"/read-all", "/delete-all"}, method = {RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.POST})
-    public ResponseEntity<?> handleLegacy() {
-        return ResponseEntity.ok(Map.of("status","ok"));
+    @PutMapping("/{id}/read")
+    public ResponseEntity<?> readOne(@PathVariable String id) {
+        return notificationRepository.findById(id).map(n -> {
+            n.setIsRead(true);
+            notificationRepository.save(n);
+            return ResponseEntity.ok(Map.of("message", "Marked read"));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }
