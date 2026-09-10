@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  backend-java:
+    build: ./Backend-Java
+    container_name: logguard-java
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=${MONGO_URI}
+      - SPRING_MAIL_USERNAME=${MAIL_USER}
+      - SPRING_MAIL_PASSWORD=${MAIL_PASS}
+    networks:
+      - logguard-network
+
+  backend-mern:
+    build: ./Backend-MERN
+    container_name: logguard-mern
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - PORT=5000
+    networks:
+      - logguard-network
+
+  frontend:
+    build: ./Frontend
+    container_name: logguard-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend-java
+      - backend-mern
+    networks:
+      - logguard-network
+
+networks:
+  logguard-network:
+    driver: bridge
