@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "start": "bash start.sh"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}
