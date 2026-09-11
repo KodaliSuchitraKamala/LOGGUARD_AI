@@ -22,17 +22,44 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+// FIX 1: Allow Vercel frontend
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://logguardai.vercel.app",
+  "https://logguard-mern-api.vercel.app",
+  "https://logguard-ai.vercel.app"
+];
+
 export const io = new Server(server, {
-  cors: { origin: ["http://localhost:5173", "http://localhost:3000"], methods: ["GET", "POST"] }
+  cors: { origin: allowedOrigins, methods: ["GET", "POST"], credentials: true }
 });
 app.set('io', io);
 initAlertSocket(io);
 
-app.use(cors({ origin: ["http://localhost:5173", "http://localhost:3000"], credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-await initDB();
+// FIX 2: DB connect - don't crash if fails
+let dbConnected = false;
+const connectDB = async () => {
+  if (dbConnected) return;
+  try {
+    await initDB();
+    dbConnected = true;
+    console.log("MongoDB Connected");
+  } catch (err) {
+    console.error("DB Error:", err.message);
+  }
+};
+await connectDB();
+
+// Add middleware to ensure DB connected for every request
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
 
 app.get("/", (req,res)=>res.send("LogGuard API Running - Email Enabled ✅"));
 app.get("/api/health", (req,res)=>res.json({ status: "LogGuard AI Running 🚀", time: new Date() }));
@@ -44,9 +71,8 @@ app.use('/api/alerts', alertRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', aiAnalysisRoute);
-app.use('/api', uploadRoute); // MUST BE LAST
+app.use('/api', uploadRoute);
 
-// Cron Job - 9 PM IST
 cron.schedule('0 21 * * *', async () => {
   console.log('Running Daily Summary Job...');
   try {
@@ -70,5 +96,11 @@ cron.schedule('0 21 * * *', async () => {
 }, { timezone: "Asia/Kolkata" });
 
 app.use((err, req, res, next) => { console.error(err.stack); res.status(500).json({ message: err.message }); });
+
+// FIX 3: Export for Vercel, listen only locally
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+if (process.env.NODE_ENV!== 'production') {
+  server.listen(PORT, () => console.log(`Server running on ${PORT}`));
+}
+
+export default app;
