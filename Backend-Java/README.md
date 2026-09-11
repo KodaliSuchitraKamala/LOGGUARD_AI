@@ -45,6 +45,7 @@ cd LOGGUARD_AI/Backend-Java
 ```
 
 LOGGUARD_AI/
+├── .vercel/
 ├── Backend-MERN/
 ├── Frontend/
 ├── Backend-Java/
@@ -125,16 +126,22 @@ LOGGUARD_AI/
 │ ├── .env
 │ ├── .gitattributes
 │ ├── .gitignore
+│ ├── Dockerfile
 │ ├── HELP.md
 │ ├── mvnw
 │ ├── mvnw.cmd
 │ ├── pom.xml
 │ └── README.md
-├──.gitignore
+├── .gitignore
+├── docker-compose.yml
+├── package.json
+├── file.log
+├── start.sh
+├── vercel.json
 ├── LICENSE
 ├── README.md
 ├── sample.log
-└── test.log # Sample log file for testing
+└── test.log 
 ```
 
 ---

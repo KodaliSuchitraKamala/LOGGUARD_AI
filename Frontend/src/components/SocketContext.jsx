@@ -1,31 +1,34 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { io } from "socket.io-client";
 
 const SocketContext = createContext();
 
+const dummySocket = {
+  on: () => {},
+  off: () => {},
+  emit: () => {},
+  disconnect: () => {},
+  connected: false,
+  isDummy: true
+};
+
 export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState({
-    on: () => {},
-    off: () => {},
-    emit: () => {},
-    disconnect: () => {},
-    connected: false
-  });
+  const [socket] = useState(dummySocket);
 
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
-    const isMern = API_URL.includes("5000");
+    const isVercelMern = import.meta.env.VITE_API_URL_MERN?.includes('vercel.app');
+    const isJavaActive = import.meta.env.VITE_API_URL_JAVA?.includes('railway.app');
 
-    if (!isMern) {
-      console.log("Java backend active - socket disabled");
-      return; // keep dummy
+    if (isJavaActive) {
+      console.log("✅ HYBRID MODE: Java Docker API is ACTIVE for logs/analytics");
+      console.log("ℹ️ Socket disabled - Vercel does not support WebSockets (using REST polling instead)");
     }
 
-    console.log("MERN backend active - connecting socket to 5000");
-    const s = io("http://localhost:5000");
-    setSocket(s);
-    
-    return () => s.disconnect();
+    if (isVercelMern) {
+      console.log("ℹ️ MERN on Vercel detected - WebSocket 404 is expected, app will use API polling");
+    }
+
+    // Don't try to connect websocket on Vercel - it will always 404
+    // Your Java API polling is enough for LogGuard AI
   }, []);
 
   return (

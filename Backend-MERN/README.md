@@ -59,10 +59,19 @@ cd LOGGUARD_AI/Backend-MERN
 ```
 
 LOGGUARD_AI/
+├── .vercel/
 ├── Frontend/
 ├── Backend-Java/
 ├── Backend-MERN/
-│ ├── node_modules/
+│ ├── .vercel/
+│ │ ├── project.json
+│ │ ├── README.txt
+│ ├── api/
+│ │ ├── index.js
+│ ├── apimiddleware/
+│ ├── apimodels/
+│ ├── apiroutes/
+│ ├── apisesrvices/
 │ ├── middleware/
 │ │ ├── adminMiddleware.js
 │ │ ├── auth.js
@@ -74,6 +83,7 @@ LOGGUARD_AI/
 │ │ ├── Log.js
 │ │ ├── Notification.js
 │ │ ├── User.js
+│ ├── node_modules/
 │ ├── routes/
 │ │ ├── aiAnalysis.js
 │ │ ├── alerts.js
@@ -97,12 +107,19 @@ LOGGUARD_AI/
 │ ├── package.json
 │ ├── package-lock.json
 │ ├── README.md
+│ ├── vercel.json
+│ ├── server-minimal.js
 │ └── server.js # Express API + Anomaly Detection
-├──.gitignore
+├── .gitignore
+├── docker-compose.yml
+├── package.json
+├── file.log
+├── start.sh
+├── vercel.json
 ├── LICENSE
 ├── README.md
 ├── sample.log
-└── test.log # Sample log file for testing
+└── test.log 
 ```
 
 ---

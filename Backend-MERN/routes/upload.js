@@ -1,16 +1,21 @@
 import express from "express";
 import multer from "multer";
-import fs from "fs";
 import Log from "../models/Log.js";
 import Alert from "../models/Alerts.js";
-import Notification from "../models/Notification.js"; // <--- ADDED
+import Notification from "../models/Notification.js";
 import User from "../models/User.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { sendEmail } from "../emailService.js";
-import { sendAlert } from "../services/alertService.js"; // <--- ADDED
+import { sendAlert } from "../services/alertService.js";
 
 const router = express.Router();
-const upload = multer({ dest: "uploads/", limits: { fileSize: 20 * 1024 * 1024 } });
+
+// ✅ VERCEL FIX: memoryStorage instead of diskStorage
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 20 * 1024 * 1024 }
+});
 
 router.post("/upload", protect, upload.any(), async (req, res) => {
   try {
@@ -19,7 +24,8 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
     }
 
     const file = req.files[0];
-    const content = fs.readFileSync(file.path, "utf-8");
+    // ✅ VERCEL FIX: use buffer, not file.path
+    const content = file.buffer.toString("utf-8");
     const lines = content.split("\n").filter(l => l.trim());
 
     const parsedLogs = lines.map(line => {
@@ -46,7 +52,7 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
     if (parsedLogs.length > 0) {
       savedLogs = await Log.insertMany(parsedLogs);
     }
-    fs.unlinkSync(file.path);
+    // ❌ REMOVED: fs.unlinkSync - not needed with memoryStorage
 
     // --- CREATE ALERTS + NOTIFICATIONS FOR CRITICAL ---
     const criticals = savedLogs.filter(l => l.level === "CRITICAL" || l.level === "ERROR");
@@ -60,7 +66,6 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
       }));
       await Alert.insertMany(alertsToInsert);
 
-      // *** THIS WAS MISSING - NOW NOTIFICATIONS COLLECTION WILL HAVE DATA ***
       const notifsToInsert = criticals.map(l => ({
         message: l.message,
         level: l.level,
@@ -72,7 +77,6 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
       await Notification.insertMany(notifsToInsert);
       console.log(`✅ Saved ${notifsToInsert.length} to notifications collection`);
 
-      // Trigger socket + alert service
       await sendAlert('CRITICAL_LOG', 'CRITICAL', `${criticals.length} critical log(s) found`, criticals.length);
     }
 
@@ -93,7 +97,7 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
               <tr><td>${new Date(c.timestamp).toLocaleString('en-IN')}</td><td style="color:${c.level==='CRITICAL'?'red':'orange'}"><b>${c.level}</b></td><td>${c.message}</td></tr>
             `).join('')}
           </table>
-          <p style="margin-top:15px;"><a href="http://localhost:5173" style="background:#a3ff12; padding:10px 20px; text-decoration:none; color:black; border-radius:8px; font-weight:bold;">Open Dashboard</a></p>
+          <p style="margin-top:15px;"><a href="https://logguardai.vercel.app" style="background:#a3ff12; padding:10px 20px; text-decoration:none; color:black; border-radius:8px; font-weight:bold;">Open Dashboard</a></p>
         </div>
       `;
 
@@ -102,7 +106,6 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
       }
     }
 
-    // Socket emit
     try {
       const io = req.app.get('io');
       if (io) {

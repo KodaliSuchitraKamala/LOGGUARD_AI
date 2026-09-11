@@ -71,6 +71,9 @@ The system has 2 main parts:
 ## Folder Structure
 ```
 LOGGUARD_AI/
+├── .vercel/
+│ ├── project.json
+│ ├── README.txt
 ├── Backend-Java/
 │ ├── mvn/wrapper/
 │ │ ├── maven-wrapper.properties
@@ -149,13 +152,22 @@ LOGGUARD_AI/
 │ ├── .env
 │ ├── .gitattributes
 │ ├── .gitignore
+│ ├── Dockerfile
 │ ├── HELP.md
 │ ├── mvnw
 │ ├── mvnw.cmd
 │ ├── pom.xml
 │ └── README.md
 ├── Backend-MERN/
-│ ├── node_modules/
+│ ├── .vercel/
+│ │ ├── project.json
+│ │ ├── README.txt
+│ ├── api/
+│ │ ├── index.js
+│ ├── apimiddleware/
+│ ├── apimodels/
+│ ├── apiroutes/
+│ ├── apisesrvices/
 │ ├── middleware/
 │ │ ├── adminMiddleware.js
 │ │ ├── auth.js
@@ -167,6 +179,7 @@ LOGGUARD_AI/
 │ │ ├── Log.js
 │ │ ├── Notification.js
 │ │ ├── User.js
+│ ├── node_modules/
 │ ├── routes/
 │ │ ├── aiAnalysis.js
 │ │ ├── alerts.js
@@ -190,8 +203,19 @@ LOGGUARD_AI/
 │ ├── package.json
 │ ├── package-lock.json
 │ ├── README.md
+│ ├── vercel.json
+│ ├── server-minimal.js
 │ └── server.js # Express API + Anomaly Detection
 ├── Frontend/
+│ ├── .vercel/
+│ │ ├── project.json
+│ │ ├── README.txt
+│ ├── dist/
+│ │ ├── assets/
+| │ | ├── index-DufBVQMF.css
+| │ | ├── index-eYx7h8pX.js
+│ │ ├── alarm.mp3
+│ │ ├── index.html
 │ ├── node_modules/
 │ ├── public/
 │ │ ├── alarm.mp3
@@ -230,20 +254,26 @@ LOGGUARD_AI/
 │ │ └── socket.js
 │ ├──.env
 │ ├──.gitignore
-│ ├──.eslintrc.json
+│ ├──.oxlintrc.json
 │ ├── Dockerfile
 │ ├── index.html
+│ ├── nginx.conf
 │ ├── package.json
 │ ├── package-lock.json
 │ ├── postcss.config.js
 │ ├── README.md
 │ ├── tailwind.config.js
 │ └── vite.config.js
-├──.gitignore
+├── .gitignore
+├── docker-compose.yml
+├── package.json
+├── file.log
+├── start.sh
+├── vercel.json
 ├── LICENSE
 ├── README.md
 ├── sample.log
-└── test.log # Sample log file for testing
+└── test.log 
 ```
 
 ---
@@ -337,6 +367,7 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 40** | **LogGuard AI Dashboard Fix & Final Testing** | 1. Fixed Whitelabel Method Not Allowed for /api/logs/clear (added GET + DELETE)<br>2. Fixed /api/logs/analyze endpoint (added GET + POST)<br>3. Cleared 49 old logs from database<br>4. Re-uploaded clean dataset (4 logs, 1 critical, 1 error)<br>5. Verified Live Log Stream, health cards, and AI Analysis button | Spring Boot, React, REST API, H2 DB | **Deliverable:**<br>98% system health achieved, dashboard fully functional, ready for final demo |
 | **Day 41** | **LogGuard AI Dashboard Integration & Testing** | 1. Upload log file via drag & drop and file chooser<br>2. Live Log Stream with search, level filter & sort<br>3. Stats cards - Errors, Warnings, Info & Health 98%<br>4. AI Root Cause Analysis with Insight & Recommendation<br>5. Real-Time Alerts panel<br>6. Admin User Management panel | React, Vite, FastAPI, MongoDB, AI Module | **Deliverable:**<br>Core dashboard fully functional on localhost:5173 - Verified, 90% project done |
 | **Day 42** | **Log Analytics, Alerts & Notifications Fix** | 1. Fixed log file upload for 4 logs with level detection<br>2. Fixed Analytics Dashboard (Error Over Time, Response Time, Level Distribution charts)<br>3. Implemented Real-time Alerts for CRITICAL logs<br>4. Fixed notification bell with unread count and mark-as-read<br>5. Verified Email Alert service with Gmail SMTP proof<br>6. Validated Admin Panel and Live Log Stream filters | React, Recharts, Spring Boot, MongoDB, Gmail SMTP, Render/Vercel (Local) | **Deliverable:**<br>Analytics charts working, Notifications working, Email alerts received |
+| **Day 43** | **Full Stack Hybrid Deployment - Frontend + MERN + Java Docker** | 1. Deployed Backend-Java Docker to Railway & verified /api/health LIVE<br>2. Deployed Backend-MERN API to Vercel<br>3. Deployed Frontend on Vercel + Localhost:5173<br>4. Fixed WebSocket 404 (wss) error with dummy socket fallback<br>5. Implemented Hybrid Mode: REST polling to Java API for logs/analytics<br>6. Verified Dashboard data flow (Critical 11, Errors 5, Health 55%) | Java Spring Boot, Docker, Railway CLI, Node.js/Express, MongoDB Atlas, React+Vite, Vercel, Socket.IO (fallback), REST API | **Deliverable:**<br>Hybrid Architecture LIVE - 3 Services Running, Clean Console (Zero Errors), Dashboard with Real-time Logs & Drag & Drop Upload Working |
 
 ---
 

@@ -2,37 +2,53 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
 
-if(!process.env.EMAIL_USER ||!process.env.EMAIL_PASS){
-  console.warn("⚠️ EMAIL_USER or EMAIL_PASS missing in.env - Mail will fail");
+if(!process.env.EMAIL_USER || !process.env.EMAIL_PASS){
+  console.warn("⚠️ EMAIL_USER or EMAIL_PASS missing - Mail will be disabled");
 }
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+let transporter = null;
 
-// Verify on startup
-transporter.verify((err, success) => {
-  if(err) console.error("❌ EMAIL CONFIG ERROR:", err.message);
-  else console.log("✅ Email server ready -", process.env.EMAIL_USER);
-});
+const getTransporter = () => {
+  if (transporter) return transporter;
+  transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+  });
+  return transporter;
+};
+
+// Non-blocking verify
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  getTransporter().verify()
+    .then(() => console.log(`✅ Email ready - ${process.env.EMAIL_USER}`))
+    .catch(err => console.warn(`⚠️ Email not ready (${err.message}) - API will still work. Fix App Password.`));
+}
 
 export const sendEmail = async (to, subject, html) => {
   try {
-    if(!to) throw new Error("No recipient email");
-    const info = await transporter.sendMail({
+    if(!to) throw new Error("No recipient");
+    if(!process.env.EMAIL_USER || !process.env.EMAIL_PASS){
+      console.log(`📧 Mock Email to ${to}: ${subject}`);
+      return true;
+    }
+    const info = await getTransporter().sendMail({
       from: `"LogGuard AI 🚨" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      html,
+      to, subject, html,
     });
-    console.log(`📧 REAL EMAIL sent to: ${to} | ID: ${info.messageId}`);
+    console.log(`📧 Email sent to: ${to} | ${info.messageId}`);
     return true;
   } catch (error) {
     console.error("❌ EMAIL ERROR:", error.message);
     return false;
   }
-}
+};
+
+export default { sendEmail };

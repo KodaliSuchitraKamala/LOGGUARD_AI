@@ -45,9 +45,19 @@ This folder contains only the client-side application. The backend API handles p
 ## Folder Sturcture
 ```
 LOGGUARD_AI/
+├── .vercel/
 ├── Backend-Java/
 ├── Backend-MERN/
 ├── Frontend/
+│ ├── .vercel/
+│ │ ├── project.json
+│ │ ├── README.txt
+│ ├── dist/
+│ │ ├── assets/
+| │ | ├── index-DufBVQMF.css
+| │ | ├── index-eYx7h8pX.js
+│ │ ├── alarm.mp3
+│ │ ├── index.html
 │ ├── node_modules/
 │ ├── public/
 │ │ ├── alarm.mp3
@@ -86,20 +96,26 @@ LOGGUARD_AI/
 │ │ └── socket.js
 │ ├──.env
 │ ├──.gitignore
-│ ├──.eslintrc.json
+│ ├──.oxlintrc.json
 │ ├── Dockerfile
 │ ├── index.html
+│ ├── nginx.conf
 │ ├── package.json
 │ ├── package-lock.json
 │ ├── postcss.config.js
 │ ├── README.md
 │ ├── tailwind.config.js
 │ └── vite.config.js
-├──.gitignore
+├── .gitignore
+├── docker-compose.yml
+├── package.json
+├── file.log
+├── start.sh
+├── vercel.json
 ├── LICENSE
 ├── README.md
 ├── sample.log
-└── test.log # Sample log file for testing
+└── test.log 
 ```
 
 ----
