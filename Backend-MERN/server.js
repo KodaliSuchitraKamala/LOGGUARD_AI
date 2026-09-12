@@ -18,10 +18,10 @@ const app = express();
 
 // FINAL CORS - WORKS WITH VERCEL
 app.use(cors({
-  origin: true, // reflects request origin
+  origin: true,
   credentials: true,
-  methods: ["GET","POST","PUT","DELETE","OPTIONS","PATCH"],
-  allowedHeaders: ["Content-Type","Authorization","X-Requested-With","Accept","Origin"]
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["*"]
 }));
 
 app.use(express.json({ limit: '10mb' }));
