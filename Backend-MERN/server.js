@@ -19,12 +19,28 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-  "https://logguardai.vercel.app",
-  "https://logguard-mern-api.vercel.app",
-  "https://logguard-ai.vercel.app"
+  "https://logguard-ai-frontend.vercel.app",
+  "https://logguard-ai-frontend-cc19eiwcj-log-guard-ai.vercel.app",
+  "https://logguard-ai.vercel.app",
+  "https://logguardai.vercel.app"
 ];
 
-app.use(cors({ origin: (origin, cb) => cb(null, true), credentials: true }));
+app.use(cors({ 
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes("vercel.app")) {
+      callback(null, true);
+    } else {
+      callback(null, true); // temporarily allow all for debug
+    }
+  }, 
+  credentials: true,
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization","X-Requested-With"]
+}));
+app.options('*', cors()); // handle preflight
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
