@@ -1,6 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/api/java/:path*", "destination": "https://logguard-java.up.railway.app/api/:path*" },
-    { "source": "/api/mern/:path*", "destination": "https://logguard-mern.onrender.com/api/:path*" }
-  ]
-}
