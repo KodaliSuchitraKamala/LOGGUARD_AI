@@ -49,4 +49,13 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api', aiAnalysisRoute);
 app.use('/api', uploadRoute);
 
+// REMOVE this line: app.listen(5000...)
+// ADD THIS:
+
+const PORT = process.env.PORT || 5000;
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`Local MERN on ${PORT}`));
+}
+
+export default app;
 export default app;
