@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(originPatterns = "*", allowedHeaders = "*", allowCredentials = "true")
 public class LogController {
 
     @Autowired private LogParserService parserService;

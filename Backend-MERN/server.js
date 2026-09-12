@@ -16,56 +16,28 @@ dotenv.config();
 process.removeAllListeners('warning');
 const app = express();
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://logguard-ai-frontend.vercel.app",
-  "https://logguard-ai-frontend-cc19eiwcj-log-guard-ai.vercel.app",
-  "https://logguard-ai.vercel.app",
-  "https://logguardai.vercel.app"
-];
-
-app.use(cors({ 
-  origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps, curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes("vercel.app")) {
-      callback(null, true);
-    } else {
-      callback(null, true); // temporarily allow all for debug
-    }
-  }, 
+// FINAL CORS - WORKS WITH VERCEL
+app.use(cors({
+  origin: true, // reflects request origin
   credentials: true,
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization","X-Requested-With"]
+  methods: ["GET","POST","PUT","DELETE","OPTIONS","PATCH"],
+  allowedHeaders: ["Content-Type","Authorization","X-Requested-With","Accept","Origin"]
 }));
-app.options('*', cors()); // handle preflight
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-let dbConnected = false;
-let dbError = null;
-
 try { 
   await initDB(); 
-  dbConnected = true; 
-  console.log("✅ MongoDB Connected & API Ready"); 
-} catch(e){ 
-  dbError = e.message;
-  console.log("DB Error:", e.message); 
-}
+  console.log("✅ MongoDB Connected"); 
+} catch(e){ console.log("DB Error:", e.message); }
 
 app.get("/", (req,res)=>res.send("LogGuard API Running ✅"));
-app.get("/api/health", (req,res)=>{
-  res.json({ 
-    status: "LogGuard AI Running 🚀", 
-    db: mongoose.connection.readyState === 1,
-    readyState: mongoose.connection.readyState,
-    dbError: mongoose.connection.readyState !== 1 ? dbError : null,
-    time: new Date() 
-  });
-});
+app.get("/api/health", (req,res)=>res.json({ 
+  status: "LogGuard AI Running 🚀", 
+  db: mongoose.connection.readyState === 1,
+  time: new Date() 
+}));
 
 app.use('/api/auth', authRoute);
 app.use('/api/analytics', analyticsRoutes);
