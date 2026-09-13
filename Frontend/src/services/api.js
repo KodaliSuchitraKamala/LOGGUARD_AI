@@ -3,7 +3,7 @@ import axios from 'axios';
 // Use env var first, fallback to Render Java backend
 const JAVA_BASE = import.meta.env.VITE_API_URL || "https://logguard-backend.onrender.com/api";
 // Force MERN to same Java backend to kill CORS error forever
-const MERN_BASE = import.meta.env.VITE_API_URL || "https://logguard-backend.onrender.com/api";
+const MERN_BASE = import.meta.env.VITE_API_URL || "https://logguard-mern-api.vercel.app/api";
 
 const createInstance = (baseURL) => {
   const instance = axios.create({ baseURL, timeout: 30000 });
