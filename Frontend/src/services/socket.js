@@ -1,16 +1,14 @@
-// Socket disabled for Vercel deployment
-// Using REST polling via Java Docker API instead
+// src/services/socket.js
+import { io } from "socket.io-client";
 
-const socket = {
-  on: () => {},
-  off: () => {},
-  emit: () => {},
-  disconnect: () => {},
-  connected: false,
-  isDummy: true
-};
+const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api','') || "https://logguard-mern-api.vercel.app";
 
-console.log("ℹ️ Socket disabled - Using Java Docker API polling (Vercel doesn't support WebSockets)");
+const isVercel = SOCKET_URL.includes("vercel.app");
 
-export const connectSocket = () => socket;
-export default socket;
+export const socket = isVercel ? null : io(SOCKET_URL, {
+  autoConnect: false,
+});
+
+if(isVercel){
+  console.log("MERN on Vercel - socket disabled, using polling");
+}
