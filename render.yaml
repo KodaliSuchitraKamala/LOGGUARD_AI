@@ -1,0 +1,15 @@
+services:
+    - type: web
+    name: logguard-backend
+    env: docker
+    dockerfilePath: ./Backend-Java/Dockerfile
+    dockerContext: ./Backend-Java
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+            - key: PORT
+        value: 8080
+            - key: MONGO_URI
+        sync: false
+            - key: MONGO_URL
+        sync: false
