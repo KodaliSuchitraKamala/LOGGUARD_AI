@@ -6,7 +6,6 @@ import com.logguard.repository.mongo.LogRepository;
 import com.logguard.repository.mongo.NotificationRepository;
 import com.logguard.service.AlertService;
 import com.logguard.service.LogParserService;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,8 +65,25 @@ public class LogController {
         return current;
     }
 
+    private List<Log> getAllSortedSafely() {
+        try {
+            List<Log> all = logRepo.findAll();
+            // Sort in Java to avoid MongoDB Sort failure when timestamp is null/string
+            all.sort((a, b) -> {
+                if (a.getTimestamp() == null && b.getTimestamp() == null) return 0;
+                if (a.getTimestamp() == null) return 1;
+                if (b.getTimestamp() == null) return -1;
+                return b.getTimestamp().compareTo(a.getTimestamp());
+            });
+            return all;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
     private Map<String, Object> buildAnalyticsData() {
-        List<Log> allLogs = logRepo.findAll();
+        List<Log> allLogs = getAllSortedSafely();
         long total = allLogs.size();
         long critical = allLogs.stream().filter(l -> l.getLevel()!=null && l.getLevel().toUpperCase().contains("CRITICAL")).count();
         long errors = allLogs.stream().filter(l -> l.getLevel()!=null && l.getLevel().toUpperCase().contains("ERROR")).count();
@@ -105,14 +121,42 @@ public class LogController {
         return r;
     }
 
-    @GetMapping("/logs/latest") public ResponseEntity<List<Map<String,Object>>> getLatestLogs(){ List<Log> all = logRepo.findAll(Sort.by(Sort.Direction.DESC, "timestamp")); return ResponseEntity.ok(all.stream().limit(50).map(this::toMap).toList()); }
-    @GetMapping("/logs") public ResponseEntity<List<Map<String,Object>>> getLogs(@RequestParam(required=false) String keyword, @RequestParam(required=false) String level){ List<Log> all = logRepo.findAll(Sort.by(Sort.Direction.DESC, "timestamp")); all = applyFilters(all, keyword, level); return ResponseEntity.ok(all.stream().limit(50).map(this::toMap).toList()); }
-    @GetMapping("/logs/search") public ResponseEntity<List<Map<String,Object>>> searchLogsAdvanced(@RequestParam(required=false) String keyword, @RequestParam(required=false) String level){ List<Log> all = logRepo.findAll(Sort.by(Sort.Direction.DESC, "timestamp")); List<Log> filtered = applyFilters(all, keyword, level); boolean noFilter = (keyword==null || keyword.isBlank()) && (level==null || level.equalsIgnoreCase("ALL") || level.isBlank()); if(filtered.isEmpty() && !all.isEmpty() && noFilter) filtered = all; return ResponseEntity.ok(filtered.stream().map(this::toMap).toList()); }
+    @GetMapping("/logs/latest") 
+    public ResponseEntity<List<Map<String,Object>>> getLatestLogs(){ 
+        List<Log> all = getAllSortedSafely(); 
+        return ResponseEntity.ok(all.stream().limit(50).map(this::toMap).toList()); 
+    }
+    
+    @GetMapping("/logs") 
+    public ResponseEntity<List<Map<String,Object>>> getLogs(@RequestParam(required=false) String keyword, @RequestParam(required=false) String level){ 
+        try {
+            List<Log> all = getAllSortedSafely(); 
+            all = applyFilters(all, keyword, level); 
+            return ResponseEntity.ok(all.stream().limit(50).map(this::toMap).toList()); 
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(List.of());
+        }
+    }
+    
+    @GetMapping("/logs/search") 
+    public ResponseEntity<List<Map<String,Object>>> searchLogsAdvanced(@RequestParam(required=false) String keyword, @RequestParam(required=false) String level){ 
+        try {
+            List<Log> all = getAllSortedSafely(); 
+            List<Log> filtered = applyFilters(all, keyword, level); 
+            boolean noFilter = (keyword==null || keyword.isBlank()) && (level==null || level.equalsIgnoreCase("ALL") || level.isBlank());
+            if(filtered.isEmpty() && !all.isEmpty() && noFilter) filtered = all; 
+            return ResponseEntity.ok(filtered.stream().map(this::toMap).toList()); 
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(List.of());
+        }
+    }
+    
     @GetMapping({"/stats","/logs/stats","/dashboard/stats"}) public ResponseEntity<Map<String,Object>> getDashboardStats(){ return ResponseEntity.ok(buildAnalyticsData()); }
     @GetMapping("/analytics") public ResponseEntity<Map<String,Object>> analytics(){ return ResponseEntity.ok(buildAnalyticsData()); }
     @GetMapping("/analytics/trends") public ResponseEntity<Map<String,Object>> getTrends(){ Map<String, Object> a = buildAnalyticsData(); return ResponseEntity.ok(Map.of("errorTrend", a.get("errorTrend"), "responseTrend", a.get("responseTrend"))); }
 
-    // --- FIXED UPLOAD: NOW CREATES NOTIFICATIONS + EMAIL ---
     @PostMapping(value="/upload", consumes="multipart/form-data")
     public ResponseEntity<Map<String,Object>> upload(HttpServletRequest request){
         try{
@@ -127,7 +171,6 @@ public class LogController {
                     if(parsed.getTimestamp()==null) parsed.setTimestamp(LocalDateTime.now());
                     Log saved = logRepo.save(parsed);
                     count++;
-                    // Trigger Alert + Notification + Email
                     try{ alertService.checkAndAlert(saved); if(saved.getLevel()!=null && saved.getLevel().toUpperCase().contains("CRITICAL")) notifCount++; } catch(Exception e){ System.out.println("Alert trigger fail: "+e.getMessage()); }
                 }
             }
@@ -135,7 +178,7 @@ public class LogController {
         }catch(Exception e){ e.printStackTrace(); return ResponseEntity.status(500).body(Map.of("error", e.getMessage())); }
     }
 
-    @GetMapping({"/alerts-legacy"}) public ResponseEntity<List<Map<String,Object>>> alerts(){ return ResponseEntity.ok(logRepo.findByLevel("CRITICAL").stream().limit(20).map(this::toMap).toList()); }
+    @GetMapping({"/alerts-legacy"}) public ResponseEntity<List<Map<String,Object>>> alerts(){ return ResponseEntity.ok(getAllSortedSafely().stream().filter(l -> l.getLevel()!=null && l.getLevel().toUpperCase().contains("CRITICAL")).limit(20).map(this::toMap).toList()); }
     @DeleteMapping({"/logs","/logs/clear"}) public ResponseEntity<Map<String,Object>> deleteAllLogs(){ long c=logRepo.count(); logRepo.deleteAll(); notificationRepo.deleteAll(); return ResponseEntity.ok(Map.of("message","Deleted "+c+" logs and notifications")); }
     @GetMapping("/health") public Map<String,String> health(){ return Map.of("status","Java Backend Running"); }
 }
