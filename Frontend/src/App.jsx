@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { getLatestLogs, getAnalytics } from './services/api';
-import socket from './socket';
+import socket from './services/socket'; // FIXED path: services/socket
 import AlertToast from './components/AlertToast';
 import Dashboard from './components/DashBoard';
 import Login from './components/Login';
@@ -26,30 +26,34 @@ function MainApp() {
     setIsLoading(true);
     try {
       const res = await getLatestLogs();
-      if (Array.isArray(res.data)) {
-        setLogs(res.data);
-        setRefreshKey(prev => prev + 1);
-      } else if (res.data?.logs) {
-        setLogs(res.data.logs);
-        setRefreshKey(prev => prev + 1);
-      }
+      const data = Array.isArray(res.data)? res.data : (res.data.logs || res.data.data || []);
+      setLogs(data);
+      setRefreshKey(k => k + 1);
     } catch (err) { console.error("fetchLogs failed", err); }
     finally { setIsLoading(false); }
   }, []);
 
   const fetchAnalytics = useCallback(async () => {
-    try { const res = await getAnalytics(); setAnalyticsData(res.data); }
-    catch (err) { console.error("fetchAnalytics failed", err); }
+    try {
+      const res = await getAnalytics();
+      console.log("Analytics:", res.data);
+      setAnalyticsData(res.data);
+    } catch (err) { console.error("fetchAnalytics failed", err); }
   }, []);
 
-  const handleRefreshAll = useCallback(() => { fetchLogs(); fetchAnalytics(); }, [fetchLogs, fetchAnalytics]);
-  useEffect(() => { handleRefreshAll(); }, [handleRefreshAll]);
+  const handleRefreshAll = useCallback(async () => {
+    await Promise.all([fetchLogs(), fetchAnalytics()]);
+  }, [fetchLogs, fetchAnalytics]);
+
+  useEffect(() => { handleRefreshAll(); }, []); // Only once on mount
+
   useEffect(() => {
-    const onNewLog = () => handleRefreshAll();
-    socket.on('new_log', onNewLog); socket.on('new_alert', onNewLog);
-    socket.on('connect', () => console.log("Socket Connected"));
-    socket.on('disconnect', () => console.log("Socket Disconnected"));
-    return () => { socket.off('new_log', onNewLog); socket.off('new_alert', onNewLog); };
+    // Socket is mocked for Vercel, but keep safe
+    try {
+      const onNewLog = () => handleRefreshAll();
+      socket?.on?.('new_log', onNewLog);
+      return () => { socket?.off?.('new_log', onNewLog); };
+    } catch {}
   }, [handleRefreshAll]);
 
   return (
@@ -74,7 +78,9 @@ function MainApp() {
     </div>
   );
 }
+
 function ProtectedRoute({ children }) { const token = localStorage.getItem('token'); return token? children : <Navigate to="/login" />; }
+
 export default function App() {
   return (
     <BrowserRouter><AuthProvider><SocketProvider>

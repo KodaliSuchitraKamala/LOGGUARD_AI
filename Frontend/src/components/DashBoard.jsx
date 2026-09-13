@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
 
 function Dashboard({ data, logs, onRefresh }) {
-  const stats = data || { criticals: 0, errors: 0, warnings: 0, health: 100, totalLogs: 0 };
-  const { criticals, errors, warnings, health, totalLogs } = stats;
+  // FIX: Map both backend shapes -> UI shape
+  const stats = data || {};
+  const criticals = stats.criticals?? stats.critical?? 0;
+  const errors = stats.errors?? stats.error?? stats.criticals?? 0;
+  const warnings = stats.warnings?? stats.warning?? 0;
+  const totalLogs = stats.totalLogs?? stats.total?? logs?.length?? 0;
+  const health = stats.health?? (totalLogs > 0? Math.max(0, 100 - (criticals*20 + errors*10)) : 100);
+
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isPolling, setIsPolling] = useState(true);
 
-  // DAY 45 FIX: Pause now actually works
   useEffect(() => {
-    if (!onRefresh ||!isPolling) return; // STOP when paused
-
+    if (!onRefresh ||!isPolling) return;
     const interval = setInterval(() => {
       onRefresh();
       setLastUpdated(new Date());
     }, 30000);
-
     return () => clearInterval(interval);
-  }, [onRefresh, isPolling]); // Added isPolling dependency
+  }, [onRefresh, isPolling]);
 
   return (
     <div className="mb-8">
@@ -37,10 +40,10 @@ function Dashboard({ data, logs, onRefresh }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-red-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Critical</p><p className="text-2xl font-bold text-white">{criticals?? 0}</p><p className="text-xs text-white/70">Total: {totalLogs?? 0}</p></div>
-        <div className="bg-orange-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Errors</p><p className="text-2xl font-bold text-white">{errors?? 0}</p></div>
-        <div className="bg-yellow-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Warnings</p><p className="text-2xl font-bold text-white">{warnings?? 0}</p></div>
-        <div className={`p-4 rounded-lg shadow ${health > 80? 'bg-green-600' : health > 50? 'bg-yellow-600' : 'bg-red-600'}`}><p className="text-sm text-white/80">Health</p><p className="text-2xl font-bold text-white">{health?? 98}%</p><p className="text-xs text-white/70">{health > 80? 'Healthy' : health > 50? 'Degraded' : 'Critical'}</p></div>
+        <div className="bg-red-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Critical</p><p className="text-2xl font-bold text-white">{criticals}</p><p className="text-xs text-white/70">Total: {totalLogs}</p></div>
+        <div className="bg-orange-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Errors</p><p className="text-2xl font-bold text-white">{errors}</p></div>
+        <div className="bg-yellow-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Warnings</p><p className="text-2xl font-bold text-white">{warnings}</p></div>
+        <div className={`p-4 rounded-lg shadow ${health > 80? 'bg-green-600' : health > 50? 'bg-yellow-600' : 'bg-red-600'}`}><p className="text-sm text-white/80">Health</p><p className="text-2xl font-bold text-white">{health}%</p><p className="text-xs text-white/70">{health > 80? 'Healthy' : health > 50? 'Degraded' : 'Critical'}</p></div>
       </div>
     </div>
   );
