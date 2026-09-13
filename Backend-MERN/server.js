@@ -1,49 +1,60 @@
-import express from "express";
-import cors from "cors";
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import { initDB } from './db.js';
+import authRoute from './routes/auth.js';
+import uploadRoute from './routes/upload.js';
+import analyticsRoutes from './routes/analytics.js';
+import logRoutes from './routes/logRoutes.js';
+import alertRoutes from './routes/alerts.js';
+import userRoutes from './routes/users.js';
+import notificationRoutes from './routes/notification.js';
+import aiAnalysisRoute from './routes/aiAnalysis.js';
 
+dotenv.config();
+process.removeAllListeners('warning');
 const app = express();
 
-// FIX: Allow both your frontend domains
-const allowedOrigins = [
-  "https://logguardai.vercel.app",
-  "https://logguard-ai-frontend.vercel.app",
-  "http://localhost:5173",
-  "http://localhost:3000"
-];
-
+// FINAL CORS - WORKS WITH VERCEL
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith(".vercel.app")) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Allow all for demo - change to false in prod
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+  origin: "*",
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["*"],
+  credentials: true
 }));
-
-// IMPORTANT: Handle preflight for all routes
 app.options("*", cors());
 
-app.use(express.json({ limit: "20mb" }));
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// ... your routes
-import logRoutes from "./routes/logs.js";
-import analyticsRoutes from "./routes/analytics.js";
-import uploadRoutes from "./routes/upload.js";
-import aiAnalysisRoutes from "./routes/aiAnalysis.js";
+try { 
+  await initDB(); 
+  console.log("✅ MongoDB Connected"); 
+} catch(e){ console.log("DB Error:", e.message); }
 
-app.use("/api/logs", logRoutes);
-app.use("/api/analytics", analyticsRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/ai", aiAnalysisRoutes);
-app.use("/api/notifications", (await import("./routes/notification.js")).default || (await import("./routes/notifications.js")).default);
+app.get("/", (req,res)=>res.send("LogGuard API Running ✅"));
+app.get("/api/health", (req,res)=>res.json({ 
+  status: "LogGuard AI Running 🚀", 
+  db: mongoose.connection.readyState === 1,
+  time: new Date() 
+}));
 
-app.get("/", (req, res) => res.json({ status: "LogGuard MERN API Running", cors: "enabled" }));
+app.use('/api/auth', authRoute);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/logs', logRoutes);
+app.use('/api/alerts', alertRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/ai/analze', aiAnalysisRoute);
+app.use('/api', uploadRoute);
+
+// REMOVE this line: app.listen(5000...)
+// ADD THIS:
+
+const PORT = process.env.PORT || 5000;
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`Local MERN on ${PORT}`));
+}
 
 export default app;
