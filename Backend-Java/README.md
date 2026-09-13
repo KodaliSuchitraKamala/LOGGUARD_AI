@@ -132,6 +132,8 @@ LOGGUARD_AI/
 │ ├── mvnw.cmd
 │ ├── pom.xml
 │ └── README.md
+├── render/
+├── .env
 ├── .gitignore
 ├── docker-compose.yml
 ├── package.json
@@ -139,6 +141,9 @@ LOGGUARD_AI/
 ├── start.sh
 ├── vercel.json
 ├── LICENSE
+├── render.exe
+├── render.yaml
+├── render.zip
 ├── README.md
 ├── sample.log
 └── test.log 

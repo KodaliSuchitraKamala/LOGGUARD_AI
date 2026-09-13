@@ -109,7 +109,9 @@ LOGGUARD_AI/
 │ ├── README.md
 │ ├── vercel.json
 │ ├── server-minimal.js
-│ └── server.js # Express API + Anomaly Detection
+│ └── server.js 
+├── render/
+├── .env
 ├── .gitignore
 ├── docker-compose.yml
 ├── package.json
@@ -117,6 +119,9 @@ LOGGUARD_AI/
 ├── start.sh
 ├── vercel.json
 ├── LICENSE
+├── render.exe
+├── render.yaml
+├── render.zip
 ├── README.md
 ├── sample.log
 └── test.log 

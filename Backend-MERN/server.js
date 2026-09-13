@@ -16,12 +16,16 @@ dotenv.config();
 process.removeAllListeners('warning');
 const app = express();
 
-// FINAL CORS - WORKS WITH VERCEL
+// FINAL CORS - WORKS WITH VERCEL FRONTEND
 app.use(cors({
-  origin: "*",
+  origin: function(origin, cb) {
+    // allow all vercel + localhost for demo
+    if (!origin) return cb(null, true);
+    cb(null, true);
+  },
   methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["*"],
-  credentials: true
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  credentials: false // MUST be false when origin is *
 }));
 app.options("*", cors());
 
@@ -46,11 +50,17 @@ app.use('/api/logs', logRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/ai/analze', aiAnalysisRoute);
+
+// FIXED TYPO: was /api/ai/analze -> now /api/ai
+app.use('/api/ai', aiAnalysisRoute);
+
+// Upload route: handles /api/upload/upload
 app.use('/api', uploadRoute);
 
-// REMOVE this line: app.listen(5000...)
-// ADD THIS:
+// 404 handler for debugging
+app.use((req, res) => {
+  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+});
 
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'production') {

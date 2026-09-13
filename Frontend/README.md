@@ -106,6 +106,8 @@ LOGGUARD_AI/
 │ ├── README.md
 │ ├── tailwind.config.js
 │ └── vite.config.js
+├── render/
+├── .env
 ├── .gitignore
 ├── docker-compose.yml
 ├── package.json
@@ -113,6 +115,9 @@ LOGGUARD_AI/
 ├── start.sh
 ├── vercel.json
 ├── LICENSE
+├── render.exe
+├── render.yaml
+├── render.zip
 ├── README.md
 ├── sample.log
 └── test.log 
