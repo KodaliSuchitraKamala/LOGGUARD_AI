@@ -1,9 +1,10 @@
 import axios from 'axios';
 
-// Use env var first, fallback to Render Java backend
-const JAVA_BASE = import.meta.env.VITE_API_URL || "https://logguard-backend.onrender.com/api";
-// Force MERN to same Java backend to kill CORS error forever
+// --- BASE URLS ---
+// MERN is now fixed and live on Vercel
 const MERN_BASE = import.meta.env.VITE_API_URL || "https://logguard-mern-api.vercel.app/api";
+// Java on Render (keep as fallback, but Render sleeps)
+const JAVA_BASE = "https://logguard-backend.onrender.com/api";
 
 const createInstance = (baseURL) => {
   const instance = axios.create({ baseURL, timeout: 30000 });
@@ -12,32 +13,43 @@ const createInstance = (baseURL) => {
     if (token) req.headers.Authorization = `Bearer ${token}`;
     return req;
   });
+  instance.interceptors.response.use(
+    (res) => res,
+    (err) => {
+      console.error(`API Error [${err.config?.baseURL}${err.config?.url}]:`, err.response?.data || err.message);
+      return Promise.reject(err);
+    }
+  );
   return instance;
 };
 
 export const MERN_API = createInstance(MERN_BASE);
 export const JAVA_API = createInstance(JAVA_BASE);
 
-// Auth - FIXED: Now uses JAVA (Render) not MERN
-export const login = (data) => JAVA_API.post('/auth/login', data);
-export const register = (data) => JAVA_API.post('/auth/register', data);
-export const getCurrentUser = () => JAVA_API.get('/auth/me');
+// --- AUTH - USE MERN (fixed) ---
+export const login = (data) => MERN_API.post('/auth/login', data);
+export const register = (data) => MERN_API.post('/auth/register', data);
+export const getCurrentUser = () => MERN_API.get('/auth/me');
 
-// Java - Logs
-export const uploadLogFile = (formData) => JAVA_API.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-export const getAnalytics = () => JAVA_API.get('/analytics');
-export const getLatestLogs = () => JAVA_API.get('/logs/latest');
-export const getLogs = (params) => JAVA_API.get('/logs', { params });
-export const searchLogs = (params) => JAVA_API.get('/logs/search', { params });
-export const clearLogs = () => JAVA_API.delete('/logs/clear');
+// --- LOGS & ANALYTICS - USE MERN ---
+export const uploadLogFile = (formData) => MERN_API.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const getAnalytics = () => MERN_API.get('/analytics');
+export const getLatestLogs = () => MERN_API.get('/logs/latest');
+export const getLogs = (params) => MERN_API.get('/logs', { params });
+export const searchLogs = (params) => MERN_API.get('/logs/search', { params });
+export const clearLogs = () => MERN_API.delete('/logs/clear');
 
-// Other - all now on Java
-export const getNotifications = () => JAVA_API.get('/notifications');
-export const analyzeLogsAI = (logs) => JAVA_API.post('/logs/analyze', { logs });
-export const checkMernHealth = () => JAVA_API.get('/health');
+// --- OTHER ---
+export const getNotifications = () => MERN_API.get('/notifications');
+export const getAlerts = () => MERN_API.get('/alerts');
+export const getUsers = () => MERN_API.get('/users');
+export const analyzeLogsAI = (logs) => MERN_API.post('/ai/analyze', { logs });
+
+// --- HEALTH ---
+export const checkMernHealth = () => MERN_API.get('/health');
 export const checkJavaHealth = () => JAVA_API.get('/health');
 
-// Default export for old imports
-const api = JAVA_API;
+// Default export for old code
+const api = MERN_API;
 export default api;
 export { api };
