@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { uploadLogFile } from '../services/api';
-import { UploadCloud, FileText, X } from 'lucide-react';
+import { UploadCloud, FileText } from 'lucide-react';
 
 export default function FileUpload({ onLogsLoaded }) {
   const [uploading, setUploading] = useState(false);
@@ -11,40 +11,39 @@ export default function FileUpload({ onLogsLoaded }) {
   const handleFile = async (file) => {
     if (!file) return;
 
-    // Validate
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("File too large (max 10MB)");
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("File too large (max 20MB)");
       return;
     }
 
     setUploading(true);
     const formData = new FormData();
-    // Java reads any key via fileMap.values().next(), but use 'file' for standard
+    // Backend uses upload.any() - so any key works. Use 'file' to match your backend log
     formData.append('file', file);
-    formData.append('logFile', file); // keep both for safety
 
     try {
+      toast.loading('Uploading & parsing...');
       const res = await uploadLogFile(formData);
-      toast.success(res.data.message || `Uploaded ${res.data.count} logs ✅`);
-      if (onLogsLoaded) onLogsLoaded();
+      toast.dismiss();
+      toast.success(res.data.message || `Uploaded ${res.data.count} logs ✅`, { duration: 4000 });
+
+      // FIX: Reset input + Delay refresh for Mongo commit (Vercel serverless is cold)
       if (fileInputRef.current) fileInputRef.current.value = "";
+
+      // This was the bug in your video - you called onLogsLoaded instantly
+      // DB didn't commit yet, so fetch returned 0
+      setTimeout(() => {
+        if (onLogsLoaded) onLogsLoaded();
+      }, 1000);
+
     } catch(err) {
-      console.error("UPLOAD ERROR FULL:", err);
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message || 'Upload failed - CORS or backend down';
+      toast.dismiss();
+      console.error("UPLOAD ERROR FULL:", err, err.response?.data);
+      const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Upload failed';
       toast.error(msg);
     } finally {
       setUploading(false);
     }
-  };
-
-  const handleFileChange = (e) => {
-    handleFile(e.target.files[0]);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setDragOver(false);
-    handleFile(e.dataTransfer.files[0]);
   };
 
   return (
@@ -54,28 +53,28 @@ export default function FileUpload({ onLogsLoaded }) {
       </h2>
 
       <div
-        onClick={() =>!uploading && fileInputRef.current.click()}
+        onClick={() =>!uploading && fileInputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
         className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
-          ${dragOver? 'border-blue-500 bg-blue-500/10' : 'border-gray-600 hover:border-gray-500 hover:bg-gray-800/50'}
-          ${uploading? 'opacity-50 pointer-events-none' : ''}`}
+          ${dragOver? 'border-blue-500 bg-blue-500/10 scale-[1.01]' : 'border-gray-600 hover:border-gray-500 hover:bg-gray-800/50'}
+          ${uploading? 'opacity-60 pointer-events-none' : ''}`}
       >
-        <UploadCloud className="mx-auto mb-3 text-gray-400" size={36} />
-        <p className="text-md font-semibold">{uploading? "Parsing logs..." : "Drag & Drop Log File Here"}</p>
-        <p className="text-gray-400 text-sm mt-1">or click to choose (.log,.txt)</p>
+        <UploadCloud className={`mx-auto mb-3 ${uploading? 'animate-bounce text-blue-400' : 'text-gray-400'}`} size={36} />
+        <p className="text-md font-semibold">{uploading? "Parsing logs... Uploading to MongoDB..." : "Drag & Drop Log File Here"}</p>
+        <p className="text-gray-400 text-sm mt-1">or click to choose (.log,.txt,.csv)</p>
         <input
           type="file"
           ref={fileInputRef}
           className="hidden"
-          onChange={handleFileChange}
-          accept=".log,.txt,.csv"
+          onChange={(e) => handleFile(e.target.files[0])}
+          accept=".log,.txt,.csv,.json"
         />
       </div>
 
       <button
-        onClick={() => fileInputRef.current.click()}
+        onClick={() => fileInputRef.current?.click()}
         disabled={uploading}
         type="button"
         className="mt-4 w-full bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg font-semibold disabled:bg-gray-700 disabled:cursor-not-allowed transition"
@@ -84,7 +83,7 @@ export default function FileUpload({ onLogsLoaded }) {
       </button>
 
       <p className="text-[11px] text-gray-500 mt-3 text-center">
-        Java Backend: /api/upload → Auto creates alerts & notifications
+        Backend: POST /api/upload/upload → Alerts & Email auto-triggered for CRITICAL
       </p>
     </div>
   );
