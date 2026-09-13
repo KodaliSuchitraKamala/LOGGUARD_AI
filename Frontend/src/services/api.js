@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-const MERN_BASE = "https://logguard-mern-api.vercel.app/api";
-const JAVA_BASE = "https://logguard-java.up.railway.app/api";
+// Use env var first, fallback to Render Java backend
+const JAVA_BASE = import.meta.env.VITE_API_URL || "https://logguard-backend.onrender.com/api";
+// Force MERN to same Java backend to kill CORS error forever
+const MERN_BASE = import.meta.env.VITE_API_URL || "https://logguard-backend.onrender.com/api";
 
 const createInstance = (baseURL) => {
   const instance = axios.create({ baseURL, timeout: 30000 });
@@ -16,10 +18,10 @@ const createInstance = (baseURL) => {
 export const MERN_API = createInstance(MERN_BASE);
 export const JAVA_API = createInstance(JAVA_BASE);
 
-// Auth
-export const login = (data) => MERN_API.post('/auth/login', data);
-export const register = (data) => MERN_API.post('/auth/register', data);
-export const getCurrentUser = () => MERN_API.get('/auth/me');
+// Auth - FIXED: Now uses JAVA (Render) not MERN
+export const login = (data) => JAVA_API.post('/auth/login', data);
+export const register = (data) => JAVA_API.post('/auth/register', data);
+export const getCurrentUser = () => JAVA_API.get('/auth/me');
 
 // Java - Logs
 export const uploadLogFile = (formData) => JAVA_API.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -29,13 +31,13 @@ export const getLogs = (params) => JAVA_API.get('/logs', { params });
 export const searchLogs = (params) => JAVA_API.get('/logs/search', { params });
 export const clearLogs = () => JAVA_API.delete('/logs/clear');
 
-// MERN - Other
-export const getNotifications = () => MERN_API.get('/notifications');
-export const analyzeLogsAI = (logs) => MERN_API.post('/logs/analyze', { logs });
-export const checkMernHealth = () => MERN_API.get('/health');
+// Other - all now on Java
+export const getNotifications = () => JAVA_API.get('/notifications');
+export const analyzeLogsAI = (logs) => JAVA_API.post('/logs/analyze', { logs });
+export const checkMernHealth = () => JAVA_API.get('/health');
 export const checkJavaHealth = () => JAVA_API.get('/health');
 
-// For components that do "import api from..."
-const api = MERN_API;
+// Default export for old imports
+const api = JAVA_API;
 export default api;
 export { api };
