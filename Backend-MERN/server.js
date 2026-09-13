@@ -46,7 +46,9 @@ app.use('/api/logs', logRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api', aiAnalysisRoute);
+app.use("/api/ai", aiAnalysisRoutes);
+app.use("/api/ai/analyze", aiAnalysisRoutes); // extra safety
+app.use("/api", aiAnalysisRoutes); // for /api/logs/analyze fallback
 app.use('/api', uploadRoute);
 
 // REMOVE this line: app.listen(5000...)
