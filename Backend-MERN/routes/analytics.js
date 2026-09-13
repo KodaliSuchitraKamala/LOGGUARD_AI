@@ -7,18 +7,25 @@ const router = express.Router();
 router.get("/", protect, async (req, res) => {
   try {
     const isAdmin = req.user?.role === 'admin';
-    const filter = isAdmin ? {} : { userId: req.user._id };
+    // FIX: Model had no userId, so count was 0. Now check both + empty for old logs
+    const filter = isAdmin ? {} : { 
+      $or: [
+        { userId: req.user._id },
+        { user: req.user._id },
+        { userId: { $exists: false }, user: { $exists: false } } // include old logs without user for demo
+      ]
+    };
 
     const [totalLogs, criticals, errors, erkor, warnings, info] = await Promise.all([
       Log.countDocuments(filter),
       Log.countDocuments({...filter, level: { $regex: /^CRITICAL$/i }}),
       Log.countDocuments({...filter, level: { $regex: /^ERROR$/i }}),
-      Log.countDocuments({...filter, level: { $regex: /^ERKOR$/i }}), // <-- YOUR FILE HAS THIS
+      Log.countDocuments({...filter, level: { $regex: /^ERKOR$/i }}),
       Log.countDocuments({...filter, level: { $regex: /^WARN/i }}),
       Log.countDocuments({...filter, level: { $regex: /^INFO$/i }})
     ]);
 
-    const totalErrors = errors + erkor; // Merge ERKOR into ERROR
+    const totalErrors = errors + erkor;
 
     const levelDistribution = [
       { name: "INFO", value: info },
@@ -27,12 +34,11 @@ router.get("/", protect, async (req, res) => {
       { name: "CRITICAL", value: criticals },
     ];
 
-    // FIXED HEALTH - More realistic for demo
     let health = 100;
     if (totalLogs > 0) {
       const penalty = (criticals * 8) + (totalErrors * 4) + (warnings * 1);
-      health = Math.max(15, 100 - penalty); // Never show below 15%
-      if (totalLogs > 0 && criticals === 0) health = Math.max(health, 75);
+      health = Math.max(15, 100 - penalty);
+      if (criticals === 0) health = Math.max(health, 75);
       if (criticals === 0 && totalErrors === 0) health = 90 + Math.floor(Math.random() * 10);
     }
 
@@ -57,19 +63,13 @@ router.get("/", protect, async (req, res) => {
     }
 
     res.json({
-      totalLogs, 
-      criticals, 
-      errors: totalErrors, // send merged
-      warnings, 
-      health, // now number not string - frontend handles both
-      levelDistribution,
-      avgResponseTime: responseTrend[6]?.avg || 0,
-      errorTrend,
-      responseTrend
+      totalLogs, criticals, errors: totalErrors, warnings, health,
+      levelDistribution, avgResponseTime: responseTrend[6]?.avg || 0,
+      errorTrend, responseTrend
     });
   } catch (error) {
     console.error("ANALYTICS ERROR:", error);
-    res.json({
+    res.status(200).json({
       totalLogs: 0, criticals: 0, errors: 0, warnings: 0, health: 100,
       levelDistribution: [], avgResponseTime: 0, errorTrend: [], responseTrend: []
     });

@@ -1,39 +1,46 @@
 import express from 'express';
 import Log from '../models/Log.js';
 import Notification from '../models/Notification.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get('/latest', authMiddleware, async (req, res) => {
+router.get('/latest', protect, async (req, res) => {
   try {
-    const logs = await Log.find().sort({ timestamp: -1 }).limit(50);
-    res.json(logs);
+    const isAdmin = req.user?.role === 'admin';
+    const filter = isAdmin ? {} : { 
+      $or: [
+        { userId: req.user._id },
+        { user: req.user._id },
+        { userId: { $exists: false } } // show old logs too
+      ]
+    };
+    const logs = await Log.find(filter).sort({ createdAt: -1, timestamp: -1 }).limit(100);
+    res.json(logs); // frontend expects array
   } catch (error) {
     console.error("LOGS ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// This is called from upload route to create notifications
-router.post('/create-notifs', authMiddleware, async (req, res) => {
+router.post('/create-notifs', protect, async (req, res) => {
   try {
     const { logs } = req.body;
-    const criticalLogs = logs.filter(l => l.level === 'CRITICAL');
-    
+    const criticalLogs = logs.filter(l => l.level === 'CRITICAL' || l.level === 'ERROR');
     if(criticalLogs.length > 0){
       const notifs = criticalLogs.map(log => ({
         userId: req.user._id,
+        user: req.user._id,
         type: 'CRITICAL',
         message: log.message || log.raw,
         logId: log._id,
         isRead: false
       }));
       await Notification.insertMany(notifs);
-      
-      // Emit socket
-      const io = req.app.get('io');
-      io.emit('newNotification');
+      try {
+        const io = req.app.get('io');
+        if(io) io.emit('newNotification');
+      } catch {}
     }
     res.json({ success: true });
   } catch(err) {

@@ -10,13 +10,13 @@ import { sendAlert } from "../services/alertService.js";
 
 const router = express.Router();
 
-// ✅ VERCEL FIX: memoryStorage instead of diskStorage
 const storage = multer.memoryStorage();
 const upload = multer({
-  storage: storage,
+  storage,
   limits: { fileSize: 20 * 1024 * 1024 }
 });
 
+// Keep.any() to match your frontend FormData key
 router.post("/upload", protect, upload.any(), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
@@ -24,39 +24,47 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
     }
 
     const file = req.files[0];
-    // ✅ VERCEL FIX: use buffer, not file.path
     const content = file.buffer.toString("utf-8");
     const lines = content.split("\n").filter(l => l.trim());
+
+    if (lines.length === 0) {
+      return res.status(400).json({ message: "File is empty" });
+    }
 
     const parsedLogs = lines.map(line => {
       try {
         const j = JSON.parse(line);
         return {
-          message: j.message || line,
+          message: (j.message || line).substring(0, 1000),
           level: (j.level || "INFO").toUpperCase(),
           timestamp: j.timestamp? new Date(j.timestamp) : new Date(),
-          source: j.source || "upload",
-          userId: req.user._id
+          source: j.source || file.originalname || "upload",
+          userId: req.user._id,
         };
       } catch {
-        let level = "INFO";
         const low = line.toLowerCase();
-        if (low.includes("critical") || low.includes("crash") || low.includes("down")) level = "CRITICAL";
-        else if (low.includes("error") || low.includes("erkor") || low.includes("fail")) level = "ERROR";
+        let level = "INFO";
+        if (low.includes("critical") || low.includes("crash") || low.includes("down") || low.includes("fatal")) level = "CRITICAL";
+        else if (low.includes("error") || low.includes("fail") || low.includes("exception")) level = "ERROR";
         else if (low.includes("warn")) level = "WARNING";
-        return { message: line, level, timestamp: new Date(), source: "upload", userId: req.user._id };
+        return {
+          message: line.substring(0, 1000),
+          level,
+          timestamp: new Date(),
+          source: file.originalname || "upload",
+          userId: req.user._id
+        };
       }
     });
 
-    let savedLogs = [];
-    if (parsedLogs.length > 0) {
-      savedLogs = await Log.insertMany(parsedLogs);
-    }
-    // ❌ REMOVED: fs.unlinkSync - not needed with memoryStorage
+    // 1. Save logs
+    const savedLogs = await Log.insertMany(parsedLogs, { ordered: false });
 
-    // --- CREATE ALERTS + NOTIFICATIONS FOR CRITICAL ---
+    // 2. Criticals
     const criticals = savedLogs.filter(l => l.level === "CRITICAL" || l.level === "ERROR");
+
     if (criticals.length > 0) {
+      // Alerts
       const alertsToInsert = criticals.map(l => ({
         message: l.message,
         level: l.level,
@@ -64,61 +72,69 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
         logId: l._id,
         timestamp: l.timestamp
       }));
-      await Alert.insertMany(alertsToInsert);
+      await Alert.insertMany(alertsToInsert).catch(e => console.error("Alert save fail", e));
 
+      // Notifications - FIX: Added userId + user field for frontend filter
       const notifsToInsert = criticals.map(l => ({
         message: l.message,
         level: l.level,
         type: "CRITICAL_LOG",
         isRead: false,
+        userId: req.user._id, // <-- THIS WAS MISSING, cause of 0 count
+        user: req.user._id,
         timestamp: l.timestamp,
         createdAt: new Date()
       }));
-      await Notification.insertMany(notifsToInsert);
-      console.log(`✅ Saved ${notifsToInsert.length} to notifications collection`);
+      await Notification.insertMany(notifsToInsert).catch(e => console.error("Notif save fail", e));
 
-      await sendAlert('CRITICAL_LOG', 'CRITICAL', `${criticals.length} critical log(s) found`, criticals.length);
+      // Socket - don't crash if no io
+      try {
+        const io = req.app.get('io');
+        if (io) {
+          io.emit("new_log", savedLogs);
+          io.emit("newNotification", { count: criticals.length });
+        }
+      } catch {}
+
+      // Email + External Alert - async, don't block response
+      setImmediate(async () => {
+        try {
+          const recipients = new Set([req.user.email]);
+          const admins = await User.find({ role: 'admin' }).select('email');
+          admins.forEach(a => { if(a.email) recipients.add(a.email) });
+
+          const htmlTable = `
+            <div style="font-family: Arial;">
+              <h2 style="color:#dc2626;">🚨 LogGuard AI - Critical Logs Detected</h2>
+              <p>You uploaded <b>${parsedLogs.length} logs</b> with <b style="color:red;">${criticals.length} CRITICAL/ERROR</b> at ${new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'})}</p>
+              <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                <tr style="background:#111; color:white;"><th>Time</th><th>Level</th><th>Message</th></tr>
+                ${criticals.slice(0, 10).map(c => `
+                  <tr><td>${new Date(c.timestamp).toLocaleString('en-IN')}</td><td style="color:${c.level==='CRITICAL'?'red':'orange'}"><b>${c.level}</b></td><td>${c.message}</td></tr>
+                `).join('')}
+              </table>
+              <p><a href="https://logguardai.vercel.app" style="background:#a3ff12; padding:10px 20px; text-decoration:none; color:black; border-radius:8px; font-weight:bold;">Open Dashboard</a></p>
+            </div>`;
+
+          for (const email of recipients) {
+            if(email) await sendEmail(email, `🚨 LogGuard: ${criticals.length} Critical Logs Found`, htmlTable).catch(()=>{});
+          }
+          await sendAlert('CRITICAL_LOG', 'CRITICAL', `${criticals.length} critical log(s) found`, criticals.length).catch(()=>{});
+        } catch (err) { console.error("Email/Alert background fail", err); }
+      });
     }
 
-    // --- INSTANT EMAIL ---
-    if (criticals.length > 0) {
-      const recipients = new Set();
-      recipients.add(req.user.email);
-      const admins = await User.find({ role: 'admin' }).select('email');
-      admins.forEach(a => recipients.add(a.email));
-
-      const htmlTable = `
-        <div style="font-family: Arial;">
-          <h2 style="color:#dc2626;">🚨 LogGuard AI - Critical Logs Detected</h2>
-          <p>You uploaded <b>${parsedLogs.length} logs</b> with <b style="color:red;">${criticals.length} CRITICAL/ERROR</b> logs at ${new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'})}</p>
-          <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-            <tr style="background:#111; color:white;"><th>Time</th><th>Level</th><th>Message</th></tr>
-            ${criticals.slice(0, 10).map(c => `
-              <tr><td>${new Date(c.timestamp).toLocaleString('en-IN')}</td><td style="color:${c.level==='CRITICAL'?'red':'orange'}"><b>${c.level}</b></td><td>${c.message}</td></tr>
-            `).join('')}
-          </table>
-          <p style="margin-top:15px;"><a href="https://logguardai.vercel.app" style="background:#a3ff12; padding:10px 20px; text-decoration:none; color:black; border-radius:8px; font-weight:bold;">Open Dashboard</a></p>
-        </div>
-      `;
-
-      for (const email of recipients) {
-        if(email) await sendEmail(email, `🚨 LogGuard: ${criticals.length} Critical Logs Found in Upload`, htmlTable);
-      }
-    }
-
-    try {
-      const io = req.app.get('io');
-      if (io) {
-        io.emit("new_log", savedLogs);
-        if (criticals.length > 0) io.emit("newNotification", { count: criticals.length });
-      }
-    } catch (e) {}
-
-    res.json({ message: `${parsedLogs.length} logs uploaded, ${criticals.length} critical`, count: parsedLogs.length, criticals: criticals.length });
+    // 3. RETURN logs to frontend so it can update instantly
+    return res.status(200).json({
+      message: `${parsedLogs.length} logs uploaded, ${criticals.length} critical`,
+      count: parsedLogs.length,
+      criticals: criticals.length,
+      logs: savedLogs.slice(-50) // send back for immediate UI update
+    });
 
   } catch (e) {
     console.error("UPLOAD ERROR:", e);
-    res.status(500).json({ message: e.message });
+    return res.status(500).json({ message: e.message, stack: e.stack });
   }
 });
 
