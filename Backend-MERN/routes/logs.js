@@ -8,15 +8,15 @@ const router = express.Router();
 router.get('/latest', protect, async (req, res) => {
   try {
     const isAdmin = req.user?.role === 'admin';
-    const filter = isAdmin ? {} : { 
+    // FIXED: Strict user isolation - removed { $exists: false } leak
+    const filter = isAdmin? {} : {
       $or: [
         { userId: req.user._id },
-        { user: req.user._id },
-        { userId: { $exists: false } } // show old logs too
+        { user: req.user._id }
       ]
     };
     const logs = await Log.find(filter).sort({ createdAt: -1, timestamp: -1 }).limit(100);
-    res.json(logs); // frontend expects array
+    res.json(logs);
   } catch (error) {
     console.error("LOGS ERROR:", error);
     res.status(500).json({ error: error.message });

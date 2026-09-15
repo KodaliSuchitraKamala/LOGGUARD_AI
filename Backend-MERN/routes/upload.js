@@ -16,7 +16,6 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 }
 });
 
-// Keep.any() to match your frontend FormData key
 router.post("/upload", protect, upload.any(), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
@@ -40,6 +39,7 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
           timestamp: j.timestamp? new Date(j.timestamp) : new Date(),
           source: j.source || file.originalname || "upload",
           userId: req.user._id,
+          user: req.user._id, // FIXED: Add both fields for compatibility
         };
       } catch {
         const low = line.toLowerCase();
@@ -52,42 +52,38 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
           level,
           timestamp: new Date(),
           source: file.originalname || "upload",
-          userId: req.user._id
+          userId: req.user._id,
+          user: req.user._id,
         };
       }
     });
 
-    // 1. Save logs
     const savedLogs = await Log.insertMany(parsedLogs, { ordered: false });
-
-    // 2. Criticals
     const criticals = savedLogs.filter(l => l.level === "CRITICAL" || l.level === "ERROR");
 
     if (criticals.length > 0) {
-      // Alerts
       const alertsToInsert = criticals.map(l => ({
         message: l.message,
         level: l.level,
         userId: req.user._id,
+        user: req.user._id,
         logId: l._id,
         timestamp: l.timestamp
       }));
       await Alert.insertMany(alertsToInsert).catch(e => console.error("Alert save fail", e));
 
-      // Notifications - FIX: Added userId + user field for frontend filter
       const notifsToInsert = criticals.map(l => ({
         message: l.message,
         level: l.level,
         type: "CRITICAL_LOG",
         isRead: false,
-        userId: req.user._id, // <-- THIS WAS MISSING, cause of 0 count
+        userId: req.user._id,
         user: req.user._id,
         timestamp: l.timestamp,
         createdAt: new Date()
       }));
       await Notification.insertMany(notifsToInsert).catch(e => console.error("Notif save fail", e));
 
-      // Socket - don't crash if no io
       try {
         const io = req.app.get('io');
         if (io) {
@@ -96,7 +92,6 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
         }
       } catch {}
 
-      // Email + External Alert - async, don't block response
       setImmediate(async () => {
         try {
           const recipients = new Set([req.user.email]);
@@ -124,17 +119,16 @@ router.post("/upload", protect, upload.any(), async (req, res) => {
       });
     }
 
-    // 3. RETURN logs to frontend so it can update instantly
     return res.status(200).json({
       message: `${parsedLogs.length} logs uploaded, ${criticals.length} critical`,
       count: parsedLogs.length,
       criticals: criticals.length,
-      logs: savedLogs.slice(-50) // send back for immediate UI update
+      logs: savedLogs.slice(-50)
     });
 
   } catch (e) {
     console.error("UPLOAD ERROR:", e);
-    return res.status(500).json({ message: e.message, stack: e.stack });
+    return res.status(500).json({ message: e.message });
   }
 });
 
