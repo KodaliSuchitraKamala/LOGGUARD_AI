@@ -1,46 +1,63 @@
-# LOGGUARD AI - Frontend Folder
-**Detective for Server Logs - Find root in 10 seconds**
+# LogGuard AI - Frontend
 
-LogGuard AI Frontend is a React-based dashbboard UI to upload, filter, search, and visualize server logs.
-This folder contains only the client-side application. The backend API handles parsing and storage.
+React + Vite Dashboard - LIVE at https://logguardai.vercel.app
 
----
+**Backend APIs:**
+- MERN: https://logguard-mern-api.vercel.app/api
 
-## ✨ Features 
+- Java: https://logguard-backend.onrender.com/api
 
-### Dashboard Overview
-- **Critical Errors count** - Live count of ERROR level logs
-- **Average Response Time** - Calculated from log timestamps
-- **System Health percentage** - Based on ERROR/WARN ratio
+## Features - 100% LIVE Day 46 (12 Sep 2026)
+- Dashboard: Critical 9, Total 20, Health 13%, 30s auto-refresh Pause/Refresh Now
+- File Upload: Drag & Drop, Supports.log/.txt, Toast "Uploaded 20 logs", POST https://logguard-mern-api.vercel.app/api/upload
+- Live Log Stream: TIME LEVEL MESSAGE, Color-coded, Filter ALL LEVELS, GET /api/logs/latest
+- AI Insight Card: Root Cause DB Connection Lost, Fix Restart DB pool, Confidence 92%, POST /api/ai/analyze
+- Analytics: KPI, Error Timeline 7 Days, Response Time Trend, Level Distribution Pie (Recharts)
+- Alerts: Real-time cards, Acknowledge, Bell 11 unread, Fallback for empty /api/alerts
+- Admin Panel: AdminUsersTable role dropdown + delete
 
-### Log Upload
-- **Drag & Drop or Click to upload**
-- **Supports**: `.log`, `.txt`, `.zip` files up to 50GB
-- Uploads directly to backend via `POST /api/upload`
+## Tech Stack
+- React 18 + Vite, Tailwind, Recharts, Axios, Socket.io-client, React-Toastify
 
-### Log Analysis Table
-- **Colums:** Time, Level, Message
-- **Color-coded levels:** `ERROR` = Red, `WARN` = Yellow, `INFO` = Blue
-- **Auto "ROOT CAUSE" badge** on critical error patterns
+## Setup
+```bash
+cd Frontend
+npm install
+```
 
-### Controls
-- **Filters logs by level:** `ALL`, `ERROR`, `WARN`, `INFO`
-- **Search logs by keyword** - Real-time search
-- **Clear Filters button**
-- **Download filtered logs as CSV**
+### .env - Production
+```ENV
+VITE_API_URL_MERN = https://logguard-mern-api.vercel.app/api
+VITE_API_URL_JAVA = https://logguard-backend.onrender.com/api
+VITE_API_URL = https://logguard-mern-api.vercel.app/api
+```
 
----
+### .env - Local
+```ENV
+VITE_API_URL_MERN = http://localhost:5000/api
+VITE_API_URL_JAVA = http://localhost:8080/api
+VITE_API_URL = http://localhost:5000/api
+```
 
-## 🛠️ Tech Stack
-- **Framework**: React 18 + Vite
-- **Styling**: Tailwind CSS + Custom CSS
-- **State Management**: React hooks `useState`, `useEffect`
-- **HTTP Client**: Axios
-- **Charts**: ReCharts
-- **Notifications**: React-Toastify
-- **Real-time**: Socket.io-clien
+## BASH
+```bash
+npm run dev
+```
 
----
+**App:** http://localhost:5173
+
+**Live:** https://logguardai.vercel.app
+
+## API Integration
+| Method | Endpoint | Live URL |
+| --- | --- | --- |
+| POST | /api/upload | https://logguard-mern-api.vercel.app/api/upload |
+| GET | /api/logs/latest | https://logguard-mern-api.vercel.app/api/logs/latest |
+| GET | /api/stats | https://logguard-mern-api.vercel.app/api/stats |
+| GET | /api/analytics | https://logguard-mern-api.vercel.app/api/analytics |
+| POST | /api/ai/analyze | https://logguard-mern-api.vercel.app/api/ai/analyze  |
+| GET | /api/health | https://logguard-backend.onrender.com/api/health |
+
 
 ## Folder Sturcture
 ```
@@ -122,65 +139,3 @@ LOGGUARD_AI/
 ├── sample.log
 └── test.log 
 ```
-
-----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js v18+
-- Backend server running on `http://localhost:5000`
-
-### 1. Install Dependencies
-Install all required packages:
-```bash
-npm install
-npm install socket.io-client axios
-```
-### 2. Setup Environment Variables
-Create a .env file inside the /Frontend folder:
-```bash
-VITE_API_URL=https://localhost:5000
-```
-This tells the frontend where your backend API is running
-### 3. Run Development Server
-Start the app:
-```bash 
-npm run dev
-```
-App will run on http://localhost:5173
-### 4. API Integration 
-The Frontend connects to the backend using Axios. Base URL comes from .env.
-| Method | EndPoint | Purpose |
-| --- | --- | ---|
-| `POST` | `/api/upload` | Upload log file. FormDate key: `file` |
-| `GET` | `/api/logs/` | Fetch logs. Query: `level`, `search`, `page` |
-| `GET` | `/api/stats` | Fetch dashboard stats |
-**Example:**
-```
-import axios from 'axios';
-const API = import.meta.env.VITE_API_URL;
-
-// Upload log
-const formData = new FormData();
-formData.append("file", file);
-await axios.post(`${API}/api/upload`, formData);
-
-// Get logs
-const res = await axios.get(`${API}/api/logs?level=ERROR`);
-```
-### 5. Clone the repository
-```bash
-git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
-cd LOGGUARD_AI/Frontend
-```
-
----
-
-### **What I fixed**
-1. **Port mismatch**: Backend was 3001 in code but 5000 in docs. Set everything to 5000.
-2. **API paths**: Made them consistent: `/api/upload`, `/api/logs`, `/api/stats`
-3. **Day 8 status**: Marked current features as done, Day 9 as next
-4. **Typos**: Fixed "Sturcture", "Colums", "oxlintrc" etc
- 
----

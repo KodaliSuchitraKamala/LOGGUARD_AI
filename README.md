@@ -1,72 +1,46 @@
-# LogGuard AI
+# LogGuard AI - Intelligent Log Analysis & Monitoring Platform
 
-### An Intelligent Log Analysis and Monitoring Platform
+**🚀 LIVE Project:** https://logguardai.vercel.app
 
----
+**📦 MERN Backend API:** https://logguard-mern-api.vercel.app/api
+
+**☕ Java Backend API:** https://logguard-backend.onrender.com/api
+
+**💻 GitHub:** https://github.com/KodaliSuchitraKamala/LOGGUARD_AI
 
 ## Abstract
-LogGuard AI is a full-stack web application designed to help developers and admins upload, parse, filter, and visualize server/application logs in real-time. It provides a clean dashboard to monitor errors, trends, and download filtered results, making log debugging faster and easier.
+LogGuard AI is a full-stack hybrid (MERN + Java Spring Boot) platform to upload, parse, filter, visualize logs in real-time with AI Root Cause Analysis (92% confidence), real-time Socket.IO alerts, and automated email notifications. 100% LIVE as of Day 46 (12 Sep 2026).
 
----
+## Architecture - Hybrid LIVE
+```
+            Frontend (Vercel) https://logguardai.vercel.app
+                            ↓ Axios + Socket.IO
+    MERN Backend (Vercel) https://logguard-mern-api.vercel.app/api 
+    - Auth, Upload, Analytics, AI Fallback, Alerts, Notifications
+                            ↓ REST + Fallback
+ Java Backend (Render Docker) https://logguard-backend.onrender.com/api 
+                - Log Parsing, Stats, AI Analysis, Email
+                            ↓
+    MongoDB Atlas (4 collections: logs, users, alerts, notifications)
+```
 
-## Introduction
-Managing large log files manually is time-consuming and error-prone. LogGuard AI solves this by providing a centralized platform where users can upload log files, search by keywords/levels, and visualize error trends with charts. The project is built with a React + Vite frontend and Node.js + Express backend.
-
----
-
-## Overview
-The system has 2 main parts:
-1. **Backend**: Handles file uploads, log parsing, filtering, and serves REST APIs + WebSocket for real-time logs.
-2. **Frontend**: Interactive UI to upload files, view logs in a table, apply filters, see charts, and download CSV.
-
----
-
-## Motivation
-- Reduce manual effort in searching through GBs of log files
-- Give developers instant visibility into ERROR/WARN/INFO trends
-- Provide a single dashboard for teams to monitor application health
-
----
 
 ## Tech Stack
+Frontend: React 18 + Vite + Tailwind + Recharts + Axios + Socket.io-client
+Backend-MERN: Node.js + Express + Mongoose + Multer + JWT + Nodemailer + node-cron + Socket.IO + Vercel
+Backend-Java: Java 21 + Spring Boot 3.5.0 + Spring Security + MongoDB Atlas + Spring Mail + Maven + Render Docker
 
-**Frontend**
-- React + Vite
-- Axios for API calls
-- Recharts/Chart.js for data visualization
-- CSS for styling
-
-**Backend**
-- Node.js + Express
-- Multer for file uploads
-- CORS
-- Socket.io for real-time logs
-
-**Other**
-- Git & GitHub for version control
-- Docker for deployment prep
-
----
-
-## Features
-- [x] Upload log files via `POST /api/upload`
-- [x] Fetch and filter logs: `GET /api/logs?level=ERROR&search=keyword`
-- [x] Loading spinners + Toast error notifications
-- [x] Pagination for large log files
-- [x] Error Trends Chart
-- [x] Download filtered results as CSV
-- [x] JWT Authentication
-- [x] Real-time log streaming 
-- [x] Dark mode toggle
-- [x] **Live Dashboard**: Dark theme UI with Tailwind CSS + React
-- [x] **Real-time Log Streaming**: Socket.io pushes logs instantly
-- [x] **Anomaly Highlighting**: ERROR/WARN/INFO color-coded + "ROOT CAUSE" badge
-- [x] **Stat Cards**: Critical Errors, Avg Response Time, System Health %
-- [x] **File Upload UI**: Drag & Drop ready
-- [ ] **Log Filtering + Search**: Coming in Day 9
-- [ ] **CSV Export + Charts**: Coming in Day 10
-
----
+## Features - 100% Working Day 46 LIVE
+- [x] Upload: Drag & Drop.log/.txt - Verified 20 logs toast at https://logguardai.vercel.app
+- [x] Dashboard: Critical 9, Errors 2, Warnings 3, Total 20, Health 13%, 30s auto-refresh Pause/Refresh Now - GET /api/stats
+- [x] Live Log Stream: 20 logs, TIME LEVEL MESSAGE, Color-coded, ALL LEVELS filter - GET https://logguard-mern-api.vercel.app/api/logs/latest
+- [x] AI Insight: Root Cause DB Connection Lost, Fix Restart DB pool, Confidence 92% - POST https://logguard-mern-api.vercel.app/api/ai/analyze (Fallback to https://logguard-backend.onrender.com/api/ai/analyze)
+- [x] Analytics: Total Logs, Error Trend 7 Days, Response Time, Level Pie - GET /api/analytics
+- [x] Alerts: 11 unread, Acknowledge, Toast + Alarm.mp3 - GET /api/alerts
+- [x] Notifications: Bell, unread badge 10s polling, mark-all-read - GET /api/notifications
+- [x] Email: Instant CRITICAL + Daily 9PM IST cron via Nodemailer
+- [x] RBAC + Admin Panel: Role dropdown, delete, per-user stats
+- [x] JWT Auth + Socket.IO + CORS Fixed for 3 LIVE domains
 
 ## Folder Structure
 ```
@@ -285,51 +259,6 @@ LOGGUARD_AI/
 └── test.log 
 ```
 
----
-
-## Workflow
-1. **User** uploads a log file from Frontend
-2. **Frontend** sends file to `POST /api/upload` using FormData
-3. **Backend** parses and stores logs
-4. **Frontend** fetches logs with filters via `GET /api/logs`
-5. Data is displayed in table + charts. User can paginate or download CSV
-6. Real-time logs pushed via WebSocket
-
----
-
-## Getting Started
-
-### 1. Clone the repo
-```bash
-git clone https://github.com/your-username/LogGuard-AI.git
-cd LOGGUARD-AI
-```
-
-### 2. Backend Setup
-```bash
-cd Backend
-npm install
-node server.js
-```
-Server runs on http://localhost:5000
-
-### 3. Frontend Setup
-```bash
-cd Frontend
-npm install
-npm run dev
-```
-Frontend runs on http://localhost:5173
-
-### 4. Environment Variables
-Create .env in Frontend:
-```bash
-VITE_API_URL=http://localhost:5000
-```
-Open http://localhost:5173 to see the dashboard.
-
----
-
 ## Daily Work Progress
 
 | Day | Title | Key Tasks Completed | Tech Used | Outcome / Deliverables |
@@ -381,23 +310,29 @@ Open http://localhost:5173 to see the dashboard.
 | **Day 45** | **Final Integration & Alerts Bug Fix - End-to-End Verification** | 1. Fixed Alerts.jsx blank issue by passing logs prop from App.jsx and filtering CRITICAL/ERROR logs<br>2. Added fallback logic for empty /api/alerts API to prevent blank screen<br>3. Verified file upload flow with success toast and dashboard stats update<br>4. Tested Dashboard cards: Total Logs, Error Rate, Anomaly %<br>5. Validated Analytics charts: Error Timeline, Response Time Trend, Log Level Pie<br>6. Confirmed Alerts tab showing real-time critical alert cards with Acknowledge feature<br>7. Tested socket live update and auto-refresh 30s flow | React.js, Node.js, Express, MongoDB, Socket.io, Tailwind CSS, Chart.js | **Deliverable:**<br>complete LogGuard AI workflow working on localhost:5173, Day 45 marked as 100% complete and ready for deployment |
 | **Day 46** | **LogGuard AI - Production Deployment & Critical Bug Fixing** | 1. Fixed CORS policy error in Backend-MERN/index.js for logguardai.vercel.app<br>2. Fixed totalLogs: 0 bug by adding userId filter in Log model & analytics routes<br>3. Fixed 404 /api/ai/analyze typo (analze → analyze) in server.js<br>4. Implemented Hybrid AI fallback (Java Railway → Node aiService.js) in aiAnalysis.js<br>5. Deployed backend to Vercel production with vercel --prod<br>6. Tested full flow: Upload 20 logs, Dashboard, Live Stream, AI Insight, Alerts | MERN Stack, Java Spring Boot (Railway), Node.js, MongoDB, Vercel, CORS, JWT, AI Root Cause Analysis | **Deliverable:**<br>Live site working at logguardai.vercel.app with Dashboard (Critical 9, Total 20, Health 13%), Live Log Stream (20 logs), AI Insight (DB Connection Lost - 92% confidence), Analytics Graphs & Real-time Alerts |
 
----
+
+## Getting Started
+```bash
+git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
+# Java
+cd Backend-Java &&./mvnw spring-boot:run # :8080 or https://logguard-backend.onrender.com/api
+# MERN
+cd Backend-MERN && npm install && node server.js # :5000 or https://logguard-mern-api.vercel.app/api
+# Frontend
+cd Frontend && npm install && echo "VITE_API_URL=https://logguard-mern-api.vercel.app/api" >.env && npm run dev # :5173 or https://logguardai.vercel.app
+```
 
 ## Advantages
-1. Centralized log viewing instead of SSH + grep
-2. Real-time updates and visual trends
-3. Easy filtering and CSV export for reporting
-4. Scalable React + Node architecture
-5. AI-powered anomaly detection, Email/Slack alerts, JSON/Syslog support, Docker deployment
-
----
+- Centralized log viewing instead of SSH + grep
+- Real-time updates and visual trends
+- Easy filtering and CSV export for reporting
+- Scalable React + Node architecture
+- AI-powered anomaly detection, Email/Slack alerts, JSON/Syslog support, Docker deployment
 
 ## Disadvantages
-1. Large file uploads may take time without streaming
-2. Currently supports text-based logs only
-3. No bulit-in alerting system yet
-
----
+- Large file uploads may take time without streaming
+- Currently supports text-based logs only
+- No bulit-in alerting system yet
 
 ## Future Scope
 - AI-powered anomaly detection in logs
@@ -406,12 +341,8 @@ Open http://localhost:5173 to see the dashboard.
 - Role-based access control for teams
 - Deploy to AWS/GCP with Docker + CI/CD
 
----
-
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## Conclusion
 LogGuard AI streamlines log monitoring for developers by combining a fast React frontend with a robust Node backend. With Day 6 integration complete and Day 7 adding auth + real-time, the platform is ready to scale into a production log monitoring tool.

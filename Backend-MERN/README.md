@@ -1,63 +1,46 @@
-# LogGuard AI - Backend
+# LogGuard AI - Backend-MERN (Node.js)
 
-Backend server with MERN for LogGuard AI. Handles log file uploads, parsing, filtering and API endpoints.
+Production Backend on Vercel - Handles Auth, Upload, Analytics, AI Fallback, Alerts, Notifications.
 
---- 
+**Live MERN API:** https://logguard-mern-api.vercel.app/api
+
+**Live Java API:** https://logguard-backend.onrender.com/api
+
+**Frontend:** https://logguardai.vercel.app
 
 ## Tech Stack
-- **Node.js + Express**
-- **File Upload**: Multer
-- **Real-time**: Socket.io
-- **CORS** for frontend connection
+- Node.js + Express + Mongoose + MongoDB Atlas
+- Multer, Socket.io, JWT, Nodemailer, node-cron, CORS
 
----
-
-## Setup & Run Locally
-
-1. **Install dependencies**
+## Setup
 ```bash
+cd Backend-MERN
 npm install
-npm install express socket.io cors multer
-```
-
-2. **Start Server**
-```bash
 node server.js
 ```
-Server runs on http://localhost:5000
 
----
+**Local:** http://localhost:5000
 
-## API Endpoints
+**Live:** https://logguard-mern-api.vercel.app/api/health
 
-1. **Upload Log File**
-    POST /api/upload
-    - Uploads a log file using FormData
-    - Body: file: <logfile.txt>
-    - Parses file and emits logs via Socket.io
+## API Endpoints - Production Verified
+- POST /api/upload - Upload file, parse, bulk insert with userId, emit socket new_log
+- GET /api/logs?level=ERROR&search=db - User-scoped logs
+- GET /api/logs/latest - Latest 20 for Live Stream
+- GET /api/analytics - Regex /^WARN/i /^ERROR$/i /^CRITICAL$/i, Health: 100 - (critical_10 + error_5 + warn*2)
+- POST /api/ai/analyze - FIXED Day 46 typo analze->analyze, Hybrid Fallback: Try https://logguard-backend.onrender.com/api/ai/analyze -> fallback aiService.js -> Returns DB Connection Lost 92%
+- GET /api/alerts, POST /api/alerts/acknowledge
+- GET /api/notifications - 3-level fallback
+- GET /api/users - Admin only
 
-2. **Get Logs**
-    GET /api/logs?level=ERROR&search=keyword
-    - Fetch logs with filters
-    - Query Params:
-        * level: INFO, WARN, ERROR
-        * search: keyword to search in log message
-
-3. **Get Stats**
-    GET /api/stats
-    - Returns {criticalErrors, avgResponseTime, systemHealth}
-
-4. **Clone the repository**
-```bash
-git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
-cd LOGGUARD_AI/Backend-MERN
+## CORS Fix
+```JS
+// api/index.js
+app.use(cors({ origin: ["https://logguardai.vercel.app", "https://logguard-backend.onrender.com", "http://localhost:5173"] }))
 ```
-
----
 
 ## Folder Structure
 ```
-
 LOGGUARD_AI/
 ├── .vercel/
 ├── Frontend/
@@ -126,8 +109,3 @@ LOGGUARD_AI/
 ├── sample.log
 └── test.log 
 ```
-
----
-
-## Socket Events
-- newLog: Emit {id: timestamp, level, message, isAnomal}

@@ -1,49 +1,49 @@
-# LogGuard AI - Backend
+# LogGuard AI - Backend-Java (Spring Boot)
 
-Backend server with Java for LogGuard AI. Handles log file uploads, parsing, filtering and API endpoints.
+Core Backend for LogGuard AI - Deployed on Render.
 
----
+**Live Java API:** https://logguard-backend.onrender.com/api
+
+**Frontend Live:** https://logguardai.vercel.app
+
+**MERN API:** https://logguard-mern-api.vercel.app/api
+
+## Tech Stack
+- Java 21 + Spring Boot 3.5.0
+- Spring Security + JWT + CorsConfig
+- MongoDB Atlas + Spring Data MongoDB
+- Spring Mail (Gmail SMTP), Maven, Lombok
 
 ## Setup & Run Locally
-
-1. **Start Server**
 ```bash
-node server.js
-```
-Server runs on http://localhost:8080
-
----
-
-## API Endpoints
-
-1. **Upload Log File**
-    POST /api/upload
-    - Uploads a log file using FormData
-    - Body: file: <logfile.txt>
-    - Parses file and emits logs via Socket.io
-
-2. **Get Logs**
-    GET /api/logs?level=ERROR&search=keyword
-    - Fetch logs with filters
-    - Query Params:
-        * level: INFO, WARN, ERROR
-        * search: keyword to search in log message
-
-3. **Get Stats**
-    GET /api/stats
-    - Returns {criticalErrors, avgResponseTime, systemHealth}
-
-4. **Clone the repository**
-```bash
-git clone https://github.com/KodaliSuchitraKamala/LOGGUARD_AI.git
-cd LOGGUARD_AI/Backend-Java
+cd Backend-Java
+./mvnw spring-boot:run
 ```
 
----
+**Server:** http://localhost:8080
+
+**Live Health:** htpps://logguard-backend.onrender.com/api/health
+
+## API Endpoints - Verified
+- POST /api/upload - Upload.log (FormData: file) -> Parse + Save + Alert
+- GET /api/logs/latest - Top 20 for Live Log Stream
+- GET /api/logs/search?level=ERROR&search=keyword - Filter + Search
+- GET /api/stats, /api/logs/stats, /api/dashboard/stats - { criticals, errors, warnings, totalLogs, health }
+- GET /api/analytics - { totalLogs, criticals, avgResponseTime, levelDistribution, errorTrend, responseTrend }
+- GET /api/alerts/active, PUT /api/alerts/{id}/resolve
+- GET /api/notifications, PUT /api/notifications/read-all
+- GET /api/users, PUT /api/users/:id/role, DELETE /api/users/:id
+- POST /api/ai/analyze - AI Root Cause: DB Connection Lost 92%
+- GET /api/debug/mongo - Atlas verification
+
+## CORS Fix
+```JAVA
+// CorsConfig.java
+.allowedOrigins("https://logguardai.vercel.app", "https://logguard-mern-api.vercel.app", "http://localhost:5173")
+```
 
 ## Folder Structure
 ```
-
 LOGGUARD_AI/
 ├── .vercel/
 ├── Backend-MERN/
@@ -148,8 +148,3 @@ LOGGUARD_AI/
 ├── sample.log
 └── test.log 
 ```
-
----
-
-## Socket Events
-- newLog: Emit {id: timestamp, level, message, isAnomal}
