@@ -7,12 +7,11 @@ const router = express.Router();
 router.get("/", protect, async (req, res) => {
   try {
     const isAdmin = req.user?.role === 'admin';
-    // FIX: Model had no userId, so count was 0. Now check both + empty for old logs
+    // FIXED: Strict user-based filter - no global leak
     const filter = isAdmin ? {} : { 
       $or: [
         { userId: req.user._id },
-        { user: req.user._id },
-        { userId: { $exists: false }, user: { $exists: false } } // include old logs without user for demo
+        { user: req.user._id }
       ]
     };
 
