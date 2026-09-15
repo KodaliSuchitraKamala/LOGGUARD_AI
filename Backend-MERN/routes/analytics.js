@@ -6,9 +6,8 @@ const router = express.Router();
 
 router.get("/", protect, async (req, res) => {
   try {
-    const isAdmin = req.user?.role === 'admin';
-    // FIXED: Strict user-based filter - no global leak
-    const filter = isAdmin ? {} : { 
+    // FINAL FIX: Always per-user, even admin. Admin global stats in /api/admin/* route
+    const filter = {
       $or: [
         { userId: req.user._id },
         { user: req.user._id }
@@ -25,7 +24,6 @@ router.get("/", protect, async (req, res) => {
     ]);
 
     const totalErrors = errors + erkor;
-
     const levelDistribution = [
       { name: "INFO", value: info },
       { name: "WARN", value: warnings },
@@ -57,7 +55,7 @@ router.get("/", protect, async (req, res) => {
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       const found = errorLogs.find(e => e._id === dateStr);
-      errorTrend.push({ date: dateStr.slice(5), count: found ? found.count : 0 });
+      errorTrend.push({ date: dateStr.slice(5), count: found? found.count : 0 });
       responseTrend.push({ date: dateStr.slice(5), avg: Math.floor(Math.random() * 80) + 40 });
     }
 

@@ -7,9 +7,8 @@ const router = express.Router();
 
 router.get('/latest', protect, async (req, res) => {
   try {
-    const isAdmin = req.user?.role === 'admin';
-    // FIXED: Strict user isolation - removed { $exists: false } leak
-    const filter = isAdmin? {} : {
+    // FINAL FIX: Always per-user
+    const filter = {
       $or: [
         { userId: req.user._id },
         { user: req.user._id }
