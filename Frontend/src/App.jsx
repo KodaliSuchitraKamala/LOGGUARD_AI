@@ -67,7 +67,7 @@ function MainApp() {
               <FileUpload onLogsLoaded={handleRefreshAll} />
               {isLoading && <p className="text-center text-sm text-gray-400 mt-4 animate-pulse">Syncing logs...</p>}
               {logs.length > 0 && <div className="mt-6 mb-6"><AIInsightCard logs={logs} key={refreshKey} /></div>}
-              <LogTable initialLogs={logs} />
+              <LogTable initialLogs={logs} onUpdate={handleRefreshAll} />
             </>
           }/>
           <Route path="/analytics" element={<Analytics data={analyticsData} />} />

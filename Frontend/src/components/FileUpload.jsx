@@ -81,10 +81,6 @@ export default function FileUpload({ onLogsLoaded }) {
       >
         {uploading? "Uploading..." : "Choose File"}
       </button>
-
-      <p className="text-[11px] text-gray-500 mt-3 text-center">
-        Backend: POST /api/upload/upload → Alerts & Email auto-triggered for CRITICAL
-      </p>
     </div>
   );
 }
