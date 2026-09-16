@@ -1,6 +1,6 @@
 import express from 'express';
 import Log from '../models/Log.js';
-import { protect } from "./authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js"; // FIXED: ../middleware/
 
 const router = express.Router();
 
@@ -24,11 +24,13 @@ router.get('/me-role', protect, async (req, res) => {
 });
 
 router.put('/:id', protect, async (req, res) => {
-  const { message, level } = req.body;
-  const filter = { _id: req.params.id, $or: [{ userId: req.user._id }, { user: req.user._id }] };
-  const updated = await Log.findOneAndUpdate(filter, { message, level, raw: message }, { new: true });
-  if (!updated) return res.status(404).json({ message: "Not found" });
-  res.json(updated);
+  try {
+    const { message, level } = req.body;
+    const filter = { _id: req.params.id, $or: [{ userId: req.user._id }, { user: req.user._id }] };
+    const updated = await Log.findOneAndUpdate(filter, { message, level: level.toUpperCase(), raw: message }, { new: true });
+    if (!updated) return res.status(404).json({ message: "Not found or not yours" });
+    res.json(updated);
+  } catch(e) { res.status(500).json({ message: e.message }); }
 });
 
 router.delete('/:id', protect, async (req, res) => {
