@@ -23,16 +23,19 @@ app.use(express.json({ limit: "10mb" }));
 let isConnected = false;
 async function initDB() {
   if (isConnected) return;
-  if (!process.env.MONGODB_URI) {
-    console.error("MISSING MONGODB_URI");
-    return;
-  }
+  const uri = process.env.MONGODB_URI;
+  if (!uri) throw new Error("MONGODB_URI missing in Vercel env");
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    // important: set timeout low so it fails fast not 10s
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 10000,
+    });
     isConnected = true;
     console.log("Mongo connected");
   } catch (e) {
-    console.error("Mongo error", e.message);
+    console.error("Mongo connect failed:", e.message);
+    throw e; // throw so frontend sees real error not buffering timeout
   }
 }
 
