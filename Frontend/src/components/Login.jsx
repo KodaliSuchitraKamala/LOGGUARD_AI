@@ -14,16 +14,15 @@ export default function Login({ setAuth }) {
     e.preventDefault();
     try {
       const endpoint = isLogin ? "/auth/login" : "/auth/register";
-      const payload = isLogin ? { email, password } : { name, email, password };
+      const payload = isLogin 
+        ? { email: email.toLowerCase().trim(), password } 
+        : { name, email: email.toLowerCase().trim(), password };
 
       const res = await API.post(endpoint, payload);
-      console.log("SUCCESS:", res.data);
-
+      
       if(isLogin) {
         localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify({
-          _id: res.data._id, name: res.data.name, email: res.data.email, role: res.data.role
-        }));
+        localStorage.setItem("user", JSON.stringify({ _id: res.data._id, name: res.data.name, email: res.data.email, role: res.data.role }));
         if(setAuth) setAuth(true);
         toast.success("Login success!");
         navigate("/");
@@ -32,23 +31,19 @@ export default function Login({ setAuth }) {
         setIsLogin(true);
       }
     } catch (err) {
-      console.log("FULL ERROR:", err.response?.data);
-      // FIXED: Use toast instead of alert that blocks localhost
-      toast.error(err.response?.data?.message || "Authentication failed");
+      toast.error(err.response?.data?.message || "Auth failed");
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
-      <form onSubmit={handleSubmit} className="bg-gray-800 p-8 rounded-lg w-96 shadow-lg">
+      <form onSubmit={handleSubmit} className="bg-gray-800 p-8 rounded-lg w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">{isLogin ? "Login" : "Register"}</h2>
-        {!isLogin && <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-2 mb-4 rounded bg-gray-700" required />}
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-2 mb-4 rounded bg-gray-700" required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 mb-4 rounded bg-gray-700" required />
-        <button type="submit" className="w-full bg-blue-600 p-2 rounded font-semibold hover:bg-blue-700">{isLogin ? "Login" : "Register"}</button>
-        <p onClick={() => setIsLogin(!isLogin)} className="text-blue-400 mt-4 cursor-pointer text-center text-sm">
-          {isLogin ? "No account? Register" : "Already have account? Login"}
-        </p>
+        {!isLogin && <input type="text" placeholder="Name" value={name} onChange={e=>setName(e.target.value)} className="w-full p-2 mb-4 rounded bg-gray-700" required />}
+        <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} className="w-full p-2 mb-4 rounded bg-gray-700" required />
+        <input type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full p-2 mb-4 rounded bg-gray-700" required />
+        <button className="w-full bg-blue-600 p-2 rounded hover:bg-blue-700">{isLogin ? "Login" : "Register"}</button>
+        <p onClick={()=>setIsLogin(!isLogin)} className="text-blue-400 mt-4 cursor-pointer text-center text-sm">{isLogin ? "No account? Register" : "Have account? Login"}</p>
       </form>
     </div>
   );

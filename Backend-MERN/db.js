@@ -1,30 +1,29 @@
 import mongoose from "mongoose";
 
-let isConnected = false;
+let cached = global.mongoose;
+if (!cached) cached = global.mongoose = { conn: null, promise: null };
 
 export const initDB = async () => {
-  if (isConnected && mongoose.connection.readyState === 1) {
-    return mongoose.connection;
-  }
-  const rawUri = process.env.MONGO_URI || process.env.MONGO_URL;
-  if (!rawUri) throw new Error("MONGO_URI not set in Vercel ENV");
+  if (cached.conn) return cached.conn;
+
+  // Support all 3 names - your Vercel has MONGODB_URI
+  const rawUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGO_URL;
+  if (!rawUri) throw new Error("MONGODB_URI not set in Vercel ENV");
 
   let mongoUri = rawUri.trim().replace(/^["']|["']$/g, "");
-  mongoUri = mongoUri.replace(/ssl=true/gi, "tls=true").replace(/ssl=false/gi, "tls=false");
+  mongoUri = mongoUri.replace(/ssl=true/gi, "tls=true");
 
-  try {
-    const conn = await mongoose.connect(mongoUri, {
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 10000,
-      dbName: "LogGuardAI"
+      dbName: "logguard", // SINGLE DB - lowercase always
+    }).then((m) => {
+      console.log(`✅ MongoDB Connected: ${m.connection.host} / ${m.connection.name}`);
+      return m;
     });
-    isConnected = true;
-    console.log(`✅ MongoDB Connected: ${conn.connection.name}`);
-    return conn;
-  } catch (err) {
-    isConnected = false;
-    console.error(`❌ DB Error: ${err.message}`);
-    throw err;
   }
+  cached.conn = await cached.promise;
+  return cached.conn;
 };
 
 export const db = mongoose.connection;
