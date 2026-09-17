@@ -8,7 +8,7 @@ import logRoutes from './routes/logs.js';
 dotenv.config();
 const app = express();
 
-// CRASH PROOF CORS - must be first
+// CORS - first
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
@@ -16,54 +16,63 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS") return res.status(204).end();
   next();
 });
-
 app.use(cors({ origin: "*" }));
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json());
 
+// ---- VERCEL MONGO CACHE ----
 let isConnected = false;
-async function initDB() {
-  if (isConnected) return;
-  const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error("MONGODB_URI missing in Vercel env");
-  try {
-    // important: set timeout low so it fails fast not 10s
-    await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 10000,
-    });
-    isConnected = true;
-    console.log("Mongo connected");
-  } catch (e) {
-    console.error("Mongo connect failed:", e.message);
-    throw e; // throw so frontend sees real error not buffering timeout
-  }
-}
+let cached = global.mongoose;
+if (!cached) cached = global.mongoose = { conn: null, promise: null };
 
-// Lazy DB connect middleware
-app.use(async (req, res, next) => {
-  if (req.method === "OPTIONS") return next();
-  await initDB();
-  next();
-});
+async function initDB() {
+  if (cached.conn) {
+    isConnected = true;
+    return cached.conn;
+  }
+  if (!process.env.MONGODB_URI) {
+    throw new Error("MONGODB_URI is missing in Vercel Env Vars");
+  }
+  if (!cached.promise) {
+    console.log("Connecting to Mongo...");
+    cached.promise = mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+    }).then((mongoose) => {
+      console.log("Mongo connected!");
+      return mongoose;
+    });
+  }
+  cached.conn = await cached.promise;
+  isConnected = true;
+  return cached.conn;
+}
 
 app.get('/api/health', async (req, res) => {
   try {
     await initDB();
-    res.json({ status: "ok", db: isConnected ? "connected" : "not-connected" });
-  } catch (err) {
+    res.json({ status: "ok", db: "connected", hasUri: true });
+  } catch (e) {
+    console.error("Health error:", e.message);
     res.status(500).json({ 
       status: "error", 
       db: "not-connected", 
-      error: err.message,
+      error: e.message,
       hasUri: !!process.env.MONGODB_URI 
     });
   }
 });
 
+app.use(async (req, res, next) => {
+  if (req.method === "OPTIONS") return next();
+  try {
+    await initDB();
+    next();
+  } catch (e) {
+    res.status(500).json({ message: e.message, hasUri: !!process.env.MONGODB_URI });
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api', logRoutes);
+app.get('/', (req,res)=>res.json({message:"MERN API running"}));
 
-app.get('/', (req,res) => res.json({ message: "LogGuard MERN API running" }));
-
-// IMPORTANT FOR VERCEL - don't use app.listen()
 export default app;
