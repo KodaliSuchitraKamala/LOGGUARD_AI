@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import logRoutes from './routes/logs.js';
 import { initDB } from './db.js';
+import debugRoutes from 'routes/debug.js';
 
 dotenv.config();
 const app = express();
@@ -37,6 +38,7 @@ app.use(async (req, res, next) => {
   }
 });
 
+app.use('/api/debug', debugRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', logRoutes);
 app.get('/', (req,res)=>res.json({message:"MERN API running - DB: logguard"}));
