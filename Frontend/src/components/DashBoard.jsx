@@ -40,10 +40,10 @@ function Dashboard({ data, logs, onRefresh }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-red-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Critical</p><p className="text-2xl font-bold text-white">{criticals}</p><p className="text-xs text-white/70">Total: {totalLogs}</p></div>
-        <div className="bg-orange-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Errors</p><p className="text-2xl font-bold text-white">{errors}</p></div>
-        <div className="bg-yellow-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Warnings</p><p className="text-2xl font-bold text-white">{warnings}</p></div>
-        <div className={`p-4 rounded-lg shadow ${health > 80 ? 'bg-green-600' : health > 50 ? 'bg-yellow-600' : 'bg-red-600'}`}><p className="text-sm text-white/80">Health</p><p className="text-2xl font-bold text-white">{health}%</p><p className="text-xs text-white/70">{health > 80 ? 'Healthy' : health > 50 ? 'Degraded' : 'Critical'}</p></div>
+        <div className="bg-red-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Critical</p><p className="text-2xl font-bold text-white">{String(criticals)}</p><p className="text-xs text-white/70">Total: {String(totalLogs)}</p></div>
+        <div className="bg-orange-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Errors</p><p className="text-2xl font-bold text-white">{String(errors)}</p></div>
+        <div className="bg-yellow-600 p-4 rounded-lg shadow"><p className="text-sm text-white/80">Warnings</p><p className="text-2xl font-bold text-white">{String(warnings)}</p></div>
+        <div className={`p-4 rounded-lg shadow ${health > 80 ? 'bg-green-600' : health > 50 ? 'bg-yellow-600' : 'bg-red-600'}`}><p className="text-sm text-white/80">Health</p><p className="text-2xl font-bold text-white">{String(health)}%</p><p className="text-xs text-white/70">{health > 80 ? 'Healthy' : health > 50 ? 'Degraded' : 'Critical'}</p></div>
       </div>
     </div>
   );
