@@ -59,7 +59,10 @@ export default function LogTable({ initialLogs = [], onUpdate }) {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ message: editMsg, level: editLevel })
       });
-      if(res.ok) { setEditingLog(null); await onUpdate(); } // FIX - refresh dashboard cards from 9 to 8 etc
+      if(res.ok) { 
+        setEditingLog(null); 
+        await onUpdate(); 
+      } // FIX - refresh dashboard cards from 9 to 8 etc
       else alert("Edit failed");
     } catch { alert("Edit failed"); }
   };
@@ -70,7 +73,10 @@ export default function LogTable({ initialLogs = [], onUpdate }) {
       const token = localStorage.getItem('token');
       const API = import.meta.env.VITE_API_URL;
       const res = await fetch(`${API}/logs/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if(res.ok) { setLogs(prev => prev.filter(l => l._id!== id)); await onUpdate(); } // FIX - cards update instantly
+      if(res.ok) { 
+        setLogs(prev => prev.filter(l => l._id!== id)); 
+        await onUpdate(); 
+      } // FIX - cards update instantly
     } catch { alert("Delete failed"); }
   };
 
