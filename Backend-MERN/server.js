@@ -8,6 +8,7 @@ import alertRoutes from './routes/alerts.js';
 import notificationRoutes from './routes/notification.js';
 import adminRoutes from './routes/admin.js';
 import debugRoutes from './routes/debug.js';
+import aiRoutes from './routes/aiAnalysis.js'; // <-- ADD THIS
 import { initDB } from './db.js';
 
 dotenv.config();
@@ -23,7 +24,6 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
-// No DB routes
 app.get('/', (req,res)=>res.json({message:"MERN API running - LogGuard AI"}));
 app.use('/api/debug', debugRoutes);
 
@@ -36,7 +36,6 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// DB Middleware
 app.use(async (req, res, next) => {
   try {
     await initDB();
@@ -46,13 +45,13 @@ app.use(async (req, res, next) => {
   }
 });
 
-// ROUTES - correct mounting
 app.use('/api/auth', authRoutes);
-app.use('/api/logs', logRoutes); // /api/logs/latest, /api/logs/analytics, /api/logs/search
-app.use('/api', uploadRoutes); // /api/upload
-app.use('/api/alerts', alertRoutes); // /api/alerts
-app.use('/api/notifications', notificationRoutes); // /api/notifications
-app.use('/api/admin', adminRoutes); // /api/admin/users
-app.use('/api', logRoutes); // backward compat for /api/analytics etc - will remove later
+app.use('/api/logs', logRoutes);
+app.use('/api', uploadRoutes);
+app.use('/api/alerts', alertRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/ai', aiRoutes); // <-- FIX 404 for /api/ai/analyze
+app.use('/api', logRoutes); // for /api/analytics backward compat
 
 export default app;
