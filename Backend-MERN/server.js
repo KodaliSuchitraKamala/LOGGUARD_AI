@@ -6,7 +6,7 @@ import { initDB } from './db.js';
 import authRoute from './routes/auth.js';
 import uploadRoute from './routes/upload.js';
 import analyticsRoutes from './routes/analytics.js';
-import logRoutes from './routes/logs.js'; // FIXED NAME
+import logRoutes from './routes/logs.js';
 import alertRoutes from './routes/alerts.js';
 import userRoutes from './routes/users.js';
 import notificationRoutes from './routes/notification.js';
@@ -15,13 +15,26 @@ import aiAnalysisRoute from './routes/aiAnalysis.js';
 dotenv.config();
 const app = express();
 
-app.use(cors({ origin: true, methods: ["GET","POST","PUT","DELETE","OPTIONS"], allowedHeaders: ["Content-Type", "Authorization"], credentials: false }));
+// CORS FIRST
+app.use(cors({ origin: "*", methods: ["GET","POST","PUT","DELETE","OPTIONS"], allowedHeaders: ["Content-Type","Authorization","X-Requested-With"] }));
+app.use((req,res,next)=>{
+  res.header("Access-Control-Allow-Origin","*");
+  res.header("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers","Content-Type, Authorization");
+  if(req.method==="OPTIONS") return res.sendStatus(200);
+  next();
+});
+
 app.use(express.json({ limit: '10mb' }));
 
-await initDB().catch(e => console.log("DB Error", e.message));
+let isConnected = false;
+app.use(async (req,res,next)=>{
+  if(!isConnected){ try{ await initDB(); isConnected=true; } catch(e){ console.log(e.message); } }
+  next();
+});
 
-app.get("/", (req,res)=>res.send("LogGuard API Running ✅"));
-app.get("/api/health", (req,res)=>res.json({ status: "Running", db: mongoose.connection.readyState === 1 }));
+app.get("/", (req,res)=>res.json({ status:"Running ✅" }));
+app.get("/api/health", (req,res)=>res.json({ status:"Running", db: mongoose.connection.readyState }));
 
 app.use('/api/auth', authRoute);
 app.use('/api/analytics', analyticsRoutes);
@@ -32,8 +45,4 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai', aiAnalysisRoute);
 app.use('/api', uploadRoute);
 
-app.use((req, res) => res.status(404).json({ message: `Route ${req.originalUrl} not found` }));
-
-const PORT = process.env.PORT || 5000;
-if (process.env.NODE_ENV !== 'production') app.listen(PORT, () => console.log(`Local on ${PORT}`));
 export default app;
