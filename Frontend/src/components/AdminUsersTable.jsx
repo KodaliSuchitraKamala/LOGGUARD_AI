@@ -1,46 +1,56 @@
 import React, { useEffect, useState } from 'react';
-import API from '../services/api'; // use your central api instance
+import API from '../services/api';
 import { useAuth } from './AuthContext';
 
 export default function AdminUsersTable() {
   const [users, setUsers] = useState([]);
+  const [allLogs, setAllLogs] = useState([]);
+  const [tab, setTab] = useState('users'); // users | logs
   const { user: me, setUser } = useAuth();
-  const fetchUsers = async () => { 
-    try { 
-      const res = await API.get("/admin/users"); 
-      setUsers(res.data); 
-    } catch(e){ console.log(e.response?.data) } 
+
+  const fetchUsers = async () => {
+    const res = await API.get("/admin/users");
+    setUsers(res.data);
   }
-  useEffect(() => { fetchUsers(); }, []);
-  const updateRole = async (id, role) => {
-    await API.put(`/admin/users/${id}/role`, {role});
-    if (me && (me._id === id || me.id === id)) { 
-      const updated = {...me, role}; 
-      setUser(updated); 
-      localStorage.setItem('user', JSON.stringify(updated)); 
-    }
-    fetchUsers();
+  const fetchAllLogs = async () => {
+    const res = await API.get("/logs/all");
+    setAllLogs(res.data);
   }
-  const deleteUser = async (id) => { 
-    if(!confirm("Delete user and all his logs?")) return; 
-    await API.delete(`/admin/users/${id}`); 
-    fetchUsers(); 
-  }
+
+  useEffect(() => { fetchUsers(); fetchAllLogs(); }, []);
+
   return (
     <div className="bg-gray-800 p-4 rounded-lg mt-6">
-      <h2 className="text-xl font-bold mb-4">Admin Panel - All Users ({users.length})</h2>
-      <table className="w-full text-sm">
-        <thead><tr className="text-left border-b border-gray-600"><th className="p-2">Name</th><th>Email</th><th>Role</th><th>Total Logs</th><th>Critical</th><th>Actions</th></tr></thead>
-        <tbody>{users.map(u => (
-          <tr key={u._id} className="border-b border-gray-700">
-            <td className="p-2 font-semibold">{u.name} {(u._id===me?._id) && "(You)"}</td>
-            <td className="p-2">{u.email}</td>
-            <td><select value={u.role} onChange={e=>updateRole(u._id, e.target.value)} className="bg-gray-700 p-1 rounded"><option value="user">user</option><option value="admin">admin</option></select></td>
-            <td className="p-2 text-center">{u.totalLogs || 0}</td>
-            <td className="text-red-400 text-center">{u.critical || 0}</td>
-            <td><button onClick={()=>deleteUser(u._id)} className="bg-red-600 px-2 py-1 rounded text-xs">Delete</button></td>
-          </tr>))}</tbody>
-      </table>
+      <div className="flex gap-2 mb-4">
+        <button onClick={()=>setTab('users')} className={`px-3 py-1 rounded ${tab==='users'?'bg-blue-600':'bg-gray-700'}`}>All Users ({users.length})</button>
+        <button onClick={()=>setTab('logs')} className={`px-3 py-1 rounded ${tab==='logs'?'bg-blue-600':'bg-gray-700'}`}>All Logs ({allLogs.length}) - 4 Admin + 5 User = 9</button>
+      </div>
+
+      {tab==='users'? (
+        <table className="w-full text-sm">
+          <thead><tr className="text-left border-b border-gray-600"><th className="p-2">Name</th><th>Email</th><th>Role</th><th>Total</th><th>Critical</th></tr></thead>
+          <tbody>{users.map(u => (
+            <tr key={u._id} className="border-b border-gray-700">
+              <td className="p-2">{u.name} {u._id===me?._id && "(You)"}</td>
+              <td className="p-2">{u.email}</td>
+              <td className="p-2">{u.role}</td>
+              <td className="p-2 text-center">{u.totalLogs}</td>
+              <td className="p-2 text-center text-red-400">{u.critical}</td>
+            </tr>))}</tbody>
+        </table>
+      ) : (
+        <table className="w-full text-sm">
+          <thead><tr className="text-left border-b border-gray-600"><th className="p-2">Time</th><th>Level</th><th>Message</th><th>User</th></tr></thead>
+          <tbody>{allLogs.map(l=>(
+            <tr key={l._id} className="border-b border-gray-700">
+              <td className="p-2 text-xs">{new Date(l.timestamp || l.createdAt).toLocaleString()}</td>
+              <td className="p-2"><span className={`px-2 py-0.5 rounded text-xs ${l.level==='CRITICAL'?'bg-red-600': l.level==='ERROR'?'bg-orange-600':'bg-gray-600'}`}>{l.level}</span></td>
+              <td className="p-2 truncate max-w-[300px]">{l.message}</td>
+              <td className="p-2 text-xs text-gray-400">{l.userId?.email || l.user?.email || l.userId?.toString().slice(-4)}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      )}
     </div>
   );
 }

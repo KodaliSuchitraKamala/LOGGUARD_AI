@@ -12,15 +12,14 @@ router.get('/users', async (req,res)=>{
     const withCounts = await Promise.all(users.map(async u=>{
       const totalLogs = await Log.countDocuments({ $or: [{user: u._id},{userId: u._id}] });
       const critical = await Log.countDocuments({ $or: [{user: u._id},{userId: u._id}], level: 'CRITICAL' });
-      return { ...u, totalLogs, critical, stats: { CRITICAL: critical } };
+      return {...u, totalLogs, critical, stats: { CRITICAL: critical } };
     }));
     res.json(withCounts);
   }catch(e){ res.status(500).json({message:e.message}) }
 });
 
 router.put('/users/:id/role', async (req,res)=>{
-  const { role } = req.body;
-  const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-password');
+  const user = await User.findByIdAndUpdate(req.params.id, { role: req.body.role }, { new: true }).select('-password');
   res.json(user);
 });
 
