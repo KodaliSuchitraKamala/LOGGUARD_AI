@@ -7,35 +7,29 @@ import uploadRoutes from './routes/upload.js';
 import alertRoutes from './routes/alerts.js';
 import notificationRoutes from './routes/notification.js';
 import adminRoutes from './routes/admin.js';
+import aiRoutes from './routes/aiAnalysis.js';
 import debugRoutes from './routes/debug.js';
-import aiRoutes from './routes/aiAnalysis.js'; // <-- ADD THIS
 import { initDB } from './db.js';
 
 dotenv.config();
 const app = express();
 
-app.use(cors({ origin: "*" }));
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") return res.status(204).end();
-  next();
-});
-app.use(express.json());
+app.use(cors({ origin: "*", methods: ["GET","POST","PUT","DELETE","OPTIONS"], allowedHeaders: ["Content-Type","Authorization"] }));
+app.use(express.json({ limit: '10mb' }));
 
-app.get('/', (req,res)=>res.json({message:"MERN API running - LogGuard AI"}));
+app.get('/', (req,res)=>res.json({message:"MERN API running - LogGuard AI v3"}));
 app.use('/api/debug', debugRoutes);
 
 app.get('/api/health', async (req, res) => {
   try {
     const conn = await initDB();
-    res.json({ status: "ok", db: conn.connection.name });
+    res.json({ status: "ok", db: conn.connection.name, time: new Date() });
   } catch (e) {
     res.status(500).json({ status: "error", error: e.message });
   }
 });
 
+// DB connect middleware
 app.use(async (req, res, next) => {
   try {
     await initDB();
@@ -45,13 +39,18 @@ app.use(async (req, res, next) => {
   }
 });
 
+// ALL API ROUTES
 app.use('/api/auth', authRoutes);
-app.use('/api/logs', logRoutes);
-app.use('/api', uploadRoutes);
+app.use('/api/logs', logRoutes); // /api/logs/* -> me-role, latest, search, analytics, :id edit/delete
+app.use('/api', uploadRoutes); // /api/upload
 app.use('/api/alerts', alertRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/ai', aiRoutes); // <-- FIX 404 for /api/ai/analyze
-app.use('/api', logRoutes); // for /api/analytics backward compat
+app.use('/api/admin', adminRoutes); // /api/admin/users
+app.use('/api/ai', aiRoutes); // /api/ai/analyze
+
+// Backward compat for frontend that calls /api/analytics directly
+app.get('/api/analytics', async (req,res)=>{
+  res.redirect(307, '/api/logs/analytics');
+});
 
 export default app;

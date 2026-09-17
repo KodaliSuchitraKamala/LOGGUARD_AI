@@ -5,101 +5,96 @@ import { protect } from '../middleware/authMiddleware.js';
 const router = express.Router();
 router.use(protect);
 
-// FIX 1: me-role - this was 404 in your screenshot
+// me-role
 router.get('/me-role', (req,res)=> {
   res.json({ role: req.user.role || 'user', user: req.user });
 });
 
-// FIX 2: latest with correct user filter
+// latest - ADMIN SEES ALL
 router.get('/latest', async (req,res)=>{
   try {
     const isAdmin = req.user.role === 'admin';
-    const filter = isAdmin ? {} : { $or: [{ user: req.user._id }, { userId: req.user._id }] };
+    const filter = isAdmin? {} : { $or: [{ user: req.user._id }, { userId: req.user._id }] };
     const logs = await Log.find(filter).sort({createdAt:-1}).limit(100);
     res.json(logs);
-  } catch(e){ res.status(500).json({message:e.message}) }
+  } catch(e){ res.status(500).json({message:e.message, logs: []}) }
 });
 
+// analytics - ADMIN SEES ALL
+router.get('/analytics', async (req,res)=>{
+  try {
+    const isAdmin = req.user.role === 'admin';
+    const filter = isAdmin? {} : { $or: [{ user: req.user._id }, { userId: req.user._id }] };
+    const allLogs = await Log.find(filter);
+    res.json({
+      total: allLogs.length,
+      critical: allLogs.filter(l=>l.level==='CRITICAL').length,
+      errors: allLogs.filter(l=>l.level==='ERROR').length,
+      warnings: allLogs.filter(l=>['WARNING','WARN'].includes(l.level)).length,
+      info: allLogs.filter(l=>l.level==='INFO').length,
+      health: 100
+    });
+  } catch(e){ res.json({ total:0, critical:0, errors:0, warnings:0, info:0, health:100 }) }
+});
+
+// search
 router.get('/search', async (req,res)=>{
   try {
     const { keyword, q, level } = req.query;
     const search = keyword || q;
     const isAdmin = req.user.role === 'admin';
-    let filter = {};
 
-    if(!isAdmin){
-      filter = { $or: [{ user: req.user._id }, { userId: req.user._id }] };
-    }
+    let filter = isAdmin? {} : { $or: [{ user: req.user._id }, { userId: req.user._id }] };
 
-    if(search){
-      filter = { ...filter, message: { $regex: search, $options:'i' } };
-      if(!isAdmin){
-        // need $and for user filter + search
-        filter = { $and: [{ $or: [{ user: req.user._id }, { userId: req.user._id }] }, { message: { $regex: search, $options:'i' } }] };
-        if(level && level!=='ALL') filter.$and.push({ level: level.toUpperCase() });
-      }
-    } else if(level && level!=='ALL'){
-      if(isAdmin) filter.level = level.toUpperCase();
-      else filter = { $and: [{ $or: [{ user: req.user._id }, { userId: req.user._id }] }, { level: level.toUpperCase() }] };
+    if(search || (level && level!=='ALL')){
+      let conditions = [];
+      if(!isAdmin) conditions.push({ $or: [{ user: req.user._id }, { userId: req.user._id }] });
+      if(search) conditions.push({ message: { $regex: search, $options:'i' } });
+      if(level && level!=='ALL') conditions.push({ level: level.toUpperCase() });
+
+      filter = conditions.length>1? { $and: conditions } : conditions[0] || filter;
     }
 
     const logs = await Log.find(filter).sort({createdAt:-1}).limit(200);
     res.json({ logs, count: logs.length, data: logs });
-  } catch(e){ res.json({ logs: [], count:0, data: [] }) }
+  } catch(e){ res.json({ logs: [], count:0, data:[] }) }
 });
 
-router.get('/analytics', async (req,res)=>{
+// get all logs
+router.get('/', async (req,res)=>{
   try {
     const isAdmin = req.user.role === 'admin';
-    const base = isAdmin ? {} : { $or: [{ user: req.user._id }, { userId: req.user._id }] };
-    const total = await Log.countDocuments(base);
-    const critical = await Log.countDocuments({ $and: [base, { level: 'CRITICAL' }] } .length ? { ...base, level:'CRITICAL'} : base );
-    // simpler counting for user
-    const all = await Log.find(base);
-    const counts = {
-      total: all.length,
-      critical: all.filter(l=>l.level==='CRITICAL').length,
-      errors: all.filter(l=>l.level==='ERROR').length,
-      warnings: all.filter(l=>['WARNING','WARN'].includes(l.level)).length,
-      info: all.filter(l=>l.level==='INFO').length,
-      health: 100
-    };
-    res.json(counts);
-  } catch(e){ res.json({ total:0, critical:0, errors:0, warnings:0, health:100 }); }
+    const filter = isAdmin? {} : { $or: [{ user: req.user._id }, { userId: req.user._id }] };
+    const logs = await Log.find(filter).sort({createdAt:-1}).limit(500);
+    res.json(logs);
+  } catch(e){ res.json([]) }
 });
 
-router.get('/', async (req,res)=>{
-  const isAdmin = req.user.role === 'admin';
-  const filter = isAdmin ? {} : { $or: [{ user: req.user._id }, { userId: req.user._id }] };
-  const logs = await Log.find(filter).sort({createdAt:-1}).limit(500);
-  res.json(logs);
-});
-
-// FIX 3: EDIT - was 404
+// EDIT
 router.put('/:id', async (req,res)=>{
   try{
     const log = await Log.findById(req.params.id);
-    if(!log) return res.status(404).json({message:"Not found"});
+    if(!log) return res.status(404).json({message:"Log not found"});
     const isOwner = log.user?.toString()===req.user._id.toString() || log.userId?.toString()===req.user._id.toString();
-    if(req.user.role!=='admin' && !isOwner) return res.status(403).json({message:"Not allowed"});
-    
-    log.message = req.body.message || log.message;
-    log.level = req.body.level || log.level;
+    if(req.user.role!=='admin' &&!isOwner) return res.status(403).json({message:"Not allowed"});
+
+    if(req.body.message) log.message = req.body.message;
+    if(req.body.level) log.level = req.body.level.toUpperCase();
     await log.save();
     res.json(log);
   }catch(e){ res.status(500).json({message:e.message}) }
 });
 
-// FIX 4: DELETE - was 404
+// DELETE
 router.delete('/:id', async (req,res)=>{
   try{
     const log = await Log.findById(req.params.id);
-    if(!log) return res.status(404).json({message:"Not found"});
+    if(!log) return res.status(404).json({message:"Log not found"});
     const isOwner = log.user?.toString()===req.user._id.toString() || log.userId?.toString()===req.user._id.toString();
-    if(req.user.role!=='admin' && !isOwner) return res.status(403).json({message:"Not allowed"});
-    
+    if(req.user.role!=='admin' &&!isOwner) return res.status(403).json({message:"Not allowed"});
+
     await Log.findByIdAndDelete(req.params.id);
-    res.json({message:"Deleted"});
+    res.json({message:"Deleted", id: req.params.id});
   }catch(e){ res.status(500).json({message:e.message}) }
 });
 
