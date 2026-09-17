@@ -1,41 +1,14 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import { initDB } from './db.js';
-import authRoute from './routes/auth.js';
-import uploadRoute from './routes/upload.js';
-import analyticsRoutes from './routes/analytics.js';
+import authRoutes from './routes/auth.js';
 import logRoutes from './routes/logs.js';
-import alertRoutes from './routes/alerts.js';
-import userRoutes from './routes/users.js';
-import notificationRoutes from './routes/notification.js';
-import aiAnalysisRoute from './routes/aiAnalysis.js';
 
 dotenv.config();
 const app = express();
 
-// FIX CORS - MUST BE BEFORE ALL ROUTES
-app.use(cors({
-  origin: "*",
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  credentials: false
-}));
-app.options("*", cors());
-
-app.use((req,res,next)=>{
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
-  if(req.method === "OPTIONS") return res.status(200).end();
-  next();
-});
-
-app.use(express.json({ limit: '10mb' }));
-
-let isConnected = false;
-
+// CRASH PROOF CORS - must be first
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
@@ -44,18 +17,40 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", (req,res)=>res.json({ status:"LogGuard API Running ✅" }));
-app.get("/api/health", (req,res)=>res.json({ status:"Running", db: mongoose.connection.readyState, cors: "enabled" }));
+app.use(cors({ origin: "*" }));
+app.use(express.json({ limit: "10mb" }));
 
-app.use('/api/auth', authRoute);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/logs', logRoutes);
-app.use('/api/alerts', alertRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/ai', aiAnalysisRoute);
-app.use('/api', uploadRoute);
+let isConnected = false;
+async function initDB() {
+  if (isConnected) return;
+  if (!process.env.MONGODB_URI) {
+    console.error("MISSING MONGODB_URI");
+    return;
+  }
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    isConnected = true;
+    console.log("Mongo connected");
+  } catch (e) {
+    console.error("Mongo error", e.message);
+  }
+}
 
-app.use((req,res)=>res.status(404).json({ message: `Route ${req.originalUrl} not found` }));
+// Lazy DB connect middleware
+app.use(async (req, res, next) => {
+  if (req.method === "OPTIONS") return next();
+  await initDB();
+  next();
+});
 
+app.get('/api/health', (req, res) => {
+  res.json({ status: "ok", db: isConnected ? "connected" : "not-connected", time: new Date() });
+});
+
+app.use('/api/auth', authRoutes);
+app.use('/api', logRoutes);
+
+app.get('/', (req,res) => res.json({ message: "LogGuard MERN API running" }));
+
+// IMPORTANT FOR VERCEL - don't use app.listen()
 export default app;
