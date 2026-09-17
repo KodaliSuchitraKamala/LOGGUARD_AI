@@ -46,8 +46,18 @@ app.use(async (req, res, next) => {
   next();
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: "ok", db: isConnected ? "connected" : "not-connected", time: new Date() });
+app.get('/api/health', async (req, res) => {
+  try {
+    await initDB();
+    res.json({ status: "ok", db: isConnected ? "connected" : "not-connected" });
+  } catch (err) {
+    res.status(500).json({ 
+      status: "error", 
+      db: "not-connected", 
+      error: err.message,
+      hasUri: !!process.env.MONGODB_URI 
+    });
+  }
 });
 
 app.use('/api/auth', authRoutes);
