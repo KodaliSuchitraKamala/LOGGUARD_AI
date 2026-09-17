@@ -3,72 +3,81 @@ import Log from '../models/Log.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
-
-// All routes need auth
 router.use(protect);
 
-// Get role - for App.jsx me-role check
-router.get('/logs/me-role', (req,res)=> res.json({ role: req.user.role || 'user' }));
-router.get('/me-role', (req,res)=> res.json({ role: req.user.role || 'user' }));
-router.get('/users/me-role', (req,res)=> res.json({ role: req.user.role || 'user' }));
-
-// Latest logs
-router.get('/logs/latest', async (req,res)=>{
+// GET /api/logs/latest - user wise
+router.get('/latest', async (req,res)=>{
   try {
-    const logs = await Log.find().sort({createdAt:-1}).limit(50);
-    res.json(logs);
-  } catch(e){ res.json([]) }
-});
-
-router.get('/logs/search', async (req,res)=>{
-  try {
-    const { q } = req.query;
-    const filter = q ? { message: { $regex: q, $options:'i' } } : {};
+    const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+    // fallback for old data that has userId not user
+    if(req.user.role !== 'admin'){
+      filter.$or = [{ user: req.user._id }, { userId: req.user._id }];
+    }
     const logs = await Log.find(filter).sort({createdAt:-1}).limit(100);
     res.json(logs);
-  } catch(e){ res.json([]) }
+  } catch(e){ res.status(500).json({message:e.message}) }
 });
 
-// Analytics
-router.get('/analytics', async (req,res)=>{
+// GET /api/logs/search?keyword=error&level=CRITICAL
+router.get('/search', async (req,res)=>{
   try {
-    const total = await Log.countDocuments();
-    const critical = await Log.countDocuments({ level: 'critical' });
-    const errors = await Log.countDocuments({ level: 'error' });
-    const warnings = await Log.countDocuments({ level: 'warning' });
-    res.json({ total, critical, errors, warnings, health: 100 });
-  } catch(e){
-    res.json({ total:0, critical:0, errors:0, warnings:0, health:100 });
+    const { keyword, level, startDate, endDate } = req.query;
+    const baseFilter = req.user.role === 'admin' ? {} : { user: req.user._id };
+
+    let filter = { ...baseFilter };
+
+    if(keyword){
+      filter.message = { $regex: keyword, $options:'i' };
+    }
+    if(level && level !== 'ALL'){
+      filter.level = level.toUpperCase();
+    }
+    if(startDate || endDate){
+      filter.timestamp = {};
+      if(startDate) filter.timestamp.$gte = new Date(startDate);
+      if(endDate) filter.timestamp.$lte = new Date(endDate);
+    }
+
+    // Handle old userId field
+    if(req.user.role !== 'admin'){
+      const userOr = [{ user: req.user._id }, { userId: req.user._id }];
+      if(filter.message || filter.level || filter.timestamp){
+        // merge user filter with other filters using $and
+        filter = { $and: [{ $or: userOr }, { ...filter, user: undefined }] };
+      } else {
+        filter = { $or: userOr };
+      }
+    }
+
+    const logs = await Log.find(filter).sort({createdAt:-1}).limit(200);
+    res.json({ logs, count: logs.length });
+  } catch(e){ 
+    console.error("SEARCH ERROR", e);
+    res.status(500).json({message:e.message}) 
   }
 });
 
-router.get('/logs/analytics', async (req,res)=>{
-  res.redirect('/api/analytics');
-});
-
-// Alerts / Notifications
-router.get('/alerts', async (req,res)=>{
+// GET /api/logs/analytics + /api/analytics
+router.get('/analytics', async (req,res)=>{
   try {
-    const alerts = await Log.find({ level: { $in: ['critical','error'] } }).sort({createdAt:-1}).limit(20);
-    res.json(alerts);
+    const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+    const total = await Log.countDocuments(filter);
+    const critical = await Log.countDocuments({ ...filter, level: 'CRITICAL' });
+    const errors = await Log.countDocuments({ ...filter, level: 'ERROR' });
+    const warnings = await Log.countDocuments({ ...filter, level: { $in: ['WARNING','WARN'] } });
+    const info = await Log.countDocuments({ ...filter, level: 'INFO' });
+    res.json({ total, critical, errors, warnings, info, health: 100 });
+  } catch(e){
+    res.json({ total:0, critical:0, errors:0, warnings:0, info:0, health:100 });
+  }
+});
+
+router.get('/', async (req,res)=>{
+  try {
+    const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+    const logs = await Log.find(filter).sort({createdAt:-1}).limit(500);
+    res.json(logs);
   } catch(e){ res.json([]) }
-});
-
-router.get('/notifications', async (req,res)=>{
-  res.json([]);
-});
-
-router.get('/logs/notifications', async (req,res)=>{
-  res.json([]);
-});
-
-// Upload
-router.post('/upload', async (req,res)=>{
-  res.json({ message: "Upload endpoint ready - implement multer" });
-});
-
-router.get('/users', async (req,res)=>{
-  res.json([req.user]);
 });
 
 export default router;
