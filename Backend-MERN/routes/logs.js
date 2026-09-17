@@ -1,43 +1,74 @@
 import express from 'express';
 import Log from '../models/Log.js';
-import { protect } from "../middleware/authMiddleware.js"; // FIXED: ../middleware/
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/latest', protect, async (req, res) => {
-  const filter = { $or: [{ userId: req.user._id }, { user: req.user._id }] };
-  const logs = await Log.find(filter).sort({ createdAt: -1 }).limit(100);
-  res.json(logs);
-});
+// All routes need auth
+router.use(protect);
 
-router.get('/search', protect, async (req, res) => {
-  const { keyword, level } = req.query;
-  let filter = { $or: [{ userId: req.user._id }, { user: req.user._id }] };
-  if (keyword) filter.message = { $regex: keyword, $options: 'i' };
-  if (level && level!== 'ALL') filter.level = level;
-  const logs = await Log.find(filter).sort({ createdAt: -1 }).limit(100);
-  res.json(logs);
-});
+// Get role - for App.jsx me-role check
+router.get('/logs/me-role', (req,res)=> res.json({ role: req.user.role || 'user' }));
+router.get('/me-role', (req,res)=> res.json({ role: req.user.role || 'user' }));
+router.get('/users/me-role', (req,res)=> res.json({ role: req.user.role || 'user' }));
 
-router.get('/me-role', protect, async (req, res) => {
-  res.json({ _id: req.user._id, email: req.user.email, role: req.user.role, name: req.user.name });
-});
-
-router.put('/:id', protect, async (req, res) => {
+// Latest logs
+router.get('/logs/latest', async (req,res)=>{
   try {
-    const { message, level } = req.body;
-    const filter = { _id: req.params.id, $or: [{ userId: req.user._id }, { user: req.user._id }] };
-    const updated = await Log.findOneAndUpdate(filter, { message, level: level.toUpperCase(), raw: message }, { new: true });
-    if (!updated) return res.status(404).json({ message: "Not found or not yours" });
-    res.json(updated);
-  } catch(e) { res.status(500).json({ message: e.message }); }
+    const logs = await Log.find().sort({createdAt:-1}).limit(50);
+    res.json(logs);
+  } catch(e){ res.json([]) }
 });
 
-router.delete('/:id', protect, async (req, res) => {
-  const filter = { _id: req.params.id, $or: [{ userId: req.user._id }, { user: req.user._id }] };
-  const deleted = await Log.findOneAndDelete(filter);
-  if (!deleted) return res.status(404).json({ message: "Not found" });
-  res.json({ success: true });
+router.get('/logs/search', async (req,res)=>{
+  try {
+    const { q } = req.query;
+    const filter = q ? { message: { $regex: q, $options:'i' } } : {};
+    const logs = await Log.find(filter).sort({createdAt:-1}).limit(100);
+    res.json(logs);
+  } catch(e){ res.json([]) }
+});
+
+// Analytics
+router.get('/analytics', async (req,res)=>{
+  try {
+    const total = await Log.countDocuments();
+    const critical = await Log.countDocuments({ level: 'critical' });
+    const errors = await Log.countDocuments({ level: 'error' });
+    const warnings = await Log.countDocuments({ level: 'warning' });
+    res.json({ total, critical, errors, warnings, health: 100 });
+  } catch(e){
+    res.json({ total:0, critical:0, errors:0, warnings:0, health:100 });
+  }
+});
+
+router.get('/logs/analytics', async (req,res)=>{
+  res.redirect('/api/analytics');
+});
+
+// Alerts / Notifications
+router.get('/alerts', async (req,res)=>{
+  try {
+    const alerts = await Log.find({ level: { $in: ['critical','error'] } }).sort({createdAt:-1}).limit(20);
+    res.json(alerts);
+  } catch(e){ res.json([]) }
+});
+
+router.get('/notifications', async (req,res)=>{
+  res.json([]);
+});
+
+router.get('/logs/notifications', async (req,res)=>{
+  res.json([]);
+});
+
+// Upload
+router.post('/upload', async (req,res)=>{
+  res.json({ message: "Upload endpoint ready - implement multer" });
+});
+
+router.get('/users', async (req,res)=>{
+  res.json([req.user]);
 });
 
 export default router;

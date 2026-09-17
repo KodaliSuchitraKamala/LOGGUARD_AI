@@ -10,13 +10,17 @@ const generateToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: "30d" })
 router.post("/register", async (req, res) => {
   try {
     let { name, email, password } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ message: "Full Name is required" });
     if (!email || !password) return res.status(400).json({ message: "Email & Password required" });
+    
+    name = name.trim().replace(/\s+/g, ' ');
     email = email.toLowerCase().trim();
     
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: "User already exists - Please Login" });
 
-    const user = await User.create({ name: name?.trim() || email.split('@')[0], email, password });
+    const user = await User.create({ name, email, password });
+    console.log("NEW USER CREATED:", user.name, user.email); // will show in Vercel logs
     res.status(201).json({ _id: user._id, name: user.name, email: user.email, role: user.role, token: generateToken(user._id) });
   } catch (error) {
     console.error("REGISTER ERROR:", error);

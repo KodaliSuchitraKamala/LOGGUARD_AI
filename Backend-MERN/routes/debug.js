@@ -3,6 +3,14 @@ import mongoose from "mongoose";
 import express from "express";
 const router = express.Router();
 
+// MUST be first, before :email routes
+router.get('/users', async (req,res)=>{
+  try{
+    const users = await User.find({}, {name:1, email:1, role:1, createdAt:1}).lean();
+    res.json({ dbName: mongoose.connection.name, count: users.length, users });
+  }catch(e){ res.status(500).json({error:e.message}) }
+});
+
 const handler = async (req, res) => {
   try {
     const email = req.params.email ? req.params.email.toLowerCase().trim() : null;
@@ -12,10 +20,9 @@ const handler = async (req, res) => {
     } else {
       result = await User.deleteMany({});
     }
-    const all = await User.find({}, {email:1}).lean();
-    res.json({ dbName: mongoose.connection.name, deletedCount: result.deletedCount, remainingEmails: all.map(u=>u.email) });
+    const all = await User.find({}, {name:1, email:1}).lean();
+    res.json({ dbName: mongoose.connection.name, deletedCount: result.deletedCount, remaining: all });
   } catch(e){ 
-    console.error(e);
     res.status(500).json({error: e.message, stack: e.stack}) 
   }
 };
