@@ -23,7 +23,7 @@ export default function AdminUsersTable() {
     <div className="bg-gray-800 p-4 rounded-lg mt-6">
       <div className="flex gap-2 mb-4">
         <button onClick={()=>setTab('users')} className={`px-3 py-1 rounded ${tab==='users'?'bg-blue-600':'bg-gray-700'}`}>All Users ({users.length})</button>
-        <button onClick={()=>setTab('logs')} className={`px-3 py-1 rounded ${tab==='logs'?'bg-blue-600':'bg-gray-700'}`}>All Logs ({allLogs.length}) - 4 Admin + 5 User = 9</button>
+        <button onClick={()=>setTab('logs')} className={`px-3 py-1 rounded ${tab==='logs'?'bg-blue-600':'bg-gray-700'}`}>All Logs ({allLogs.length}) </button>
       </div>
 
       {tab==='users'? (
