@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://logguard-mern-api.vercel.app/api/:path*" },
+    { "source": "/api/(.*)", "destination": "https://logguard-mern-api.vercel.app/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
