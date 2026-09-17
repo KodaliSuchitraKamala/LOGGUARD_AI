@@ -1,4 +1,4 @@
-2026-09-13 08:00:00 ERROR Database connection failed at auth service
-2026-09-13 08:01:00 WARN High memory usage 85%
-2026-09-13 08:02:00 INFO User login successful
-2026-09-13 08:03:00 CRITICAL Payment service down - transaction failed
+2026-09-13 08:00:00 | ERROR | Database connection failed at auth service | 12oms
+2026-09-13 08:01:00 | WARN | High memory usage 85% | 200ms
+2026-09-13 08:02:00 | INFO | User login successful | 300ms
+2026-09-13 08:03:00 | CRITICAL | Payment service down - transaction failed |
