@@ -1,3 +1,13 @@
+# LogGuard AI - 94% AI Anomaly Detection
+> Dual-backend | Spring Boot + FastAPI + React + MongoDB Atlas | 12 identical APIs
+
+**Live:** https://logguardai.vercel.app
+**Key Fixes:** Resolved AI/CRUD 404, Empty analytics, 15 emails → 1 batched HTML report
+**Parsing:** TIMESTAMP|LEVEL|MESSAGE|RESPONSE_TIME
+**Auth:** JWT + RBAC + Per-user isolation
+
+![Java](https://img.shields.io/badge/Java-%23ED8B00.svg) ![SpringBoot](https://img.shields.io/badge/SpringBoot-6DB33F) ![React](https://img.shields.io/badge/React-61DAFB) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248)
+
 # LogGuard AI - Intelligent Log Analysis & Monitoring Platform
 
 **🚀 LIVE Project:** https://logguardai.vercel.app
