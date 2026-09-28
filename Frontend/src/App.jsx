@@ -71,7 +71,7 @@ function MainApp() {
   return (
     <div className="min-h-screen bg-[#0a0e1a] text-white">
       <Navbar />
-      <div className="p-8 pt-5 max-w-[1600px] mx-auto">
+      <div className="p-4 md:p-8 pt-4 md:pt-5 max-w-[1600px] mx-auto">
         <Routes>
           <Route path="/" element={
             <>

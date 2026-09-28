@@ -5,16 +5,29 @@ import { protect } from '../middleware/authMiddleware.js';
 const router = express.Router();
 router.use(protect);
 
+// Central garbage checker
+const isGarbage = (msg) => {
+  if (!msg) return true;
+  const t = msg.trim();
+  if (t.length < 5) return true;
+  if (/^0+\s*n+/i.test(t)) return true;
+  if (/^0{5,}/.test(t.replace(/\s/g,''))) return true;
+  if (/^(.)\1{5,}$/.test(t.replace(/\s/g,''))) return true;
+  if (t === "00000 n" || t.includes("00000 n")) return true;
+  return false;
+};
+
 router.get('/latest', async (req,res)=>{
   try {
-    const filter = {
-      $or: [{ user: req.user._id }, { userId: req.user._id }],
-      message: { $nin: [/00000 n/, /^0+ n$/], $ne: "" },
-    };
-    const logs = await Log.find(filter).sort({createdAt:-1}).limit(100);
-    // Filter in JS too for safety
-    const clean = logs.filter(l => l.message && l.message.length > 10 &&!l.message.includes("00000 n"));
-    res.json(clean);
+    const filter = { $or: [{ user: req.user._id }, { userId: req.user._id }] };
+    const logs = await Log.find(filter).sort({createdAt:-1}).limit(200);
+    const clean = logs.filter(l =>!isGarbage(l.message) &&!isGarbage(l.raw || l.message));
+
+    // Auto-delete garbage in background
+    const garbageIds = logs.filter(l => isGarbage(l.message)).map(l=>l._id);
+    if(garbageIds.length>0) Log.deleteMany({_id: {$in: garbageIds}}).catch(()=>{});
+
+    res.json(clean.slice(0,100));
   } catch(e){ res.status(500).json({message:e.message}) }
 });
 
@@ -22,13 +35,13 @@ router.get('/analytics', async (req,res)=>{
   try {
     const filter = { $or: [{ userId: req.user._id }, { user: req.user._id }] };
     const allLogs = await Log.find(filter).sort({createdAt:-1});
-    const cleanLogs = allLogs.filter(l => l.message && l.message.length > 10 &&!l.message.includes("00000 n"));
+    const cleanLogs = allLogs.filter(l =>!isGarbage(l.message));
 
     const total = cleanLogs.length;
     const critical = cleanLogs.filter(l=>l.level==='CRITICAL').length;
     const errors = cleanLogs.filter(l=>['ERROR','ERKOR'].includes(l.level)).length;
     const warnings = cleanLogs.filter(l=>['WARN','WARNING'].includes(l.level)).length;
-    const info = total - critical - errors - warnings;
+    const info = Math.max(0, total - critical - errors - warnings);
 
     const errorTrend = [];
     const responseTrend = [];
@@ -44,13 +57,13 @@ router.get('/analytics', async (req,res)=>{
     }
 
     const levelDistribution = [
-      { name:"INFO", value: Math.max(0,info) },
+      { name:"INFO", value: info },
       { name:"WARN", value: warnings },
       { name:"ERROR", value: errors },
       { name:"CRITICAL", value: critical },
     ].filter(x=>x.value>0);
 
-    res.json({ total, totalLogs: total, errors, critical, criticals: critical, warnings, info: Math.max(0,info), health: 100 - (critical*3 + errors), errorTrend, responseTrend, levelDistribution });
+    res.json({ total, totalLogs: total, errors, critical, criticals: critical, warnings, info, health: total? Math.max(0, 100 - (critical*10 + errors*2 + warnings)) : 100, errorTrend, responseTrend, levelDistribution });
   } catch(e){ res.json({ total:0, errors:0, health:100, errorTrend:[], responseTrend:[], levelDistribution:[] }) }
 });
 
@@ -59,7 +72,7 @@ router.get('/me-role', (req,res)=> res.json({ role: req.user.role || 'user', use
 router.get('/all', async (req,res)=>{
   if(req.user.role!== 'admin') return res.status(403).json({message:"Admin only"});
   const logs = await Log.find({}).sort({createdAt:-1}).limit(500).populate('userId','name email').populate('user','name email');
-  res.json(logs);
+  res.json(logs.filter(l=>!isGarbage(l.message)));
 });
 
 router.get('/search', async (req,res)=>{
@@ -72,14 +85,15 @@ router.get('/search', async (req,res)=>{
     if(level && level!=='ALL') conditions.push({ level: level.toUpperCase() });
     const filter = conditions.length>1? { $and: conditions } : base;
     const logs = await Log.find(filter).sort({createdAt:-1}).limit(200);
-    res.json({ logs, count: logs.length, data: logs });
+    const clean = logs.filter(l=>!isGarbage(l.message));
+    res.json({ logs: clean, count: clean.length, data: clean });
   } catch(e){ res.json({ logs: [], count:0, data:[] }) }
 });
 
 router.get('/', async (req,res)=>{
   const filter = { $or: [{ user: req.user._id }, { userId: req.user._id }] };
   const logs = await Log.find(filter).sort({createdAt:-1}).limit(500);
-  res.json(logs);
+  res.json(logs.filter(l=>!isGarbage(l.message)));
 });
 
 router.put('/:id', async (req,res)=>{
@@ -104,6 +118,14 @@ router.delete('/:id', async (req,res)=>{
     await Log.findByIdAndDelete(req.params.id);
     res.json({message:"Deleted"});
   }catch(e){ res.status(500).json({message:e.message}) }
+});
+
+// NEW: Clean all garbage at once
+router.delete('/clean-garbage', async (req,res)=>{
+  const all = await Log.find({ $or: [{ user: req.user._id }, { userId: req.user._id }] });
+  const garbageIds = all.filter(l=> isGarbage(l.message)).map(l=>l._id);
+  await Log.deleteMany({_id: {$in: garbageIds}});
+  res.json({ deleted: garbageIds.length });
 });
 
 export default router;

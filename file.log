@@ -1,4 +1,2 @@
-2026-09-09T17:00:00Z | CRITICAL | DB Connection Lost | 20ms
-2026-09-09T17:01:00Z | ERROR | login failed for user admin | 150ms
-2026-09-09T17:02:00Z | INFO | User login successful | 200ms
-2026-09-09T17:03:00Z | CRITICAL | Server crash - OutOfMemory | 500ms
+2026-09-28 10:12:35 | ERROR | Database connection failed
+2026-09-28 10:12:36 | CRITICAL | Server crashed

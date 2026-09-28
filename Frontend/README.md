@@ -1,6 +1,6 @@
 # LogGuard AI - Frontend
 
-React + Vite Dashboard - LIVE at https://logguardai.vercel.app
+React + Vite Dashboard - LIVE at https://log-guard-ai.vercel.app
 
 **Backend APIs:**
 - MERN: https://logguard-mern-api.vercel.app/api
@@ -46,7 +46,7 @@ npm run dev
 
 **App:** http://localhost:5173
 
-**Live:** https://logguardai.vercel.app
+**Live:** https://log-guard-ai.vercel.app
 
 ## API Integration
 | Method | Endpoint | Live URL |
@@ -57,85 +57,3 @@ npm run dev
 | GET | /api/analytics | https://logguard-mern-api.vercel.app/api/analytics |
 | POST | /api/ai/analyze | https://logguard-mern-api.vercel.app/api/ai/analyze  |
 | GET | /api/health | https://logguard-backend.onrender.com/api/health |
-
-
-## Folder Sturcture
-```
-LOGGUARD_AI/
-├── .vercel/
-├── Backend-Java/
-├── Backend-MERN/
-├── Frontend/
-│ ├── .vercel/
-│ │ ├── project.json
-│ │ ├── README.txt
-│ ├── dist/
-│ │ ├── assets/
-| │ | ├── index-DufBVQMF.css
-| │ | ├── index-eYx7h8pX.js
-│ │ ├── alarm.mp3
-│ │ ├── index.html
-│ ├── node_modules/
-│ ├── public/
-│ │ ├── alarm.mp3
-│ ├── src/
-│ │ ├── components/
-| │ | ├── admin/
-| | │ | ├── AdminStats.jsx
-| │ | ├── AdminUsersTable.jsx
-| │ | ├── AdvancedLogSearch.jsx
-| │ | ├── AIInsightCard.jsx
-| │ | ├── Alerts.jsx # Alerts dashoboard
-| │ | ├── AlertsToast.jsx
-│ │ │ ├── Analytics.jsx # Analytics dashboard with charts
-| │ | ├── AuthContext.jsx
-│ │ │ ├── Dashboard.jsx # Health cards + Test Alert button
-| │ | ├── EmptyState.jsx
-| │ | ├── ErrorTrenChart.jsx
-│ │ │ ├── FileUpload.jsx # Drag & Drop log upload
-| │ | ├── Login.jsx
-| │ | ├── LogLevelPie.jsx
-| │ | ├── LogList.jsx
-│ │ │ ├── LogTable.jsx # Filterable log table
-| │ | ├── Navbar.jsx
-| │ | ├── NotificationBell.jsx
-│ │ │ ├── ResponseTimeChart.jsx# Bar chart: Avg response time
-| │ | ├── SocketContext.jsx
-│ │ │ └── Upload.jsx 
-│ │ ├── services/
-│ │ │ ├── api.js # All axios API calls
-│ │ │ ├── auth.js # Auth helpers
-│ │ │ └── socket.js # Socket.io client for real-time alerts
-│ │ ├── App.jsx # Main app with Dashboard/Analytics tabs
-│ │ ├── App.css
-│ │ ├── index.css
-│ │ ├── main.jsx
-│ │ └── socket.js
-│ ├──.env
-│ ├──.gitignore
-│ ├──.oxlintrc.json
-│ ├── Dockerfile
-│ ├── index.html
-│ ├── nginx.conf
-│ ├── package.json
-│ ├── package-lock.json
-│ ├── postcss.config.js
-│ ├── README.md
-│ ├── tailwind.config.js
-│ └── vite.config.js
-├── render/
-├── .env
-├── .gitignore
-├── docker-compose.yml
-├── package.json
-├── file.log
-├── start.sh
-├── vercel.json
-├── LICENSE
-├── render.exe
-├── render.yaml
-├── render.zip
-├── README.md
-├── sample.log
-└── test.log 
-```
