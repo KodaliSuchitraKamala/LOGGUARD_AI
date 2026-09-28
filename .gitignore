@@ -1,0 +1,17 @@
+
+node_modules/
+target/
+*.exe
+*.zip
+*.mp3
+*.mp4
+*.pptx
+*.docx
+~$*
+~WRL*
+*.mv.db
+*.trace.db
+.env
+dist/
+build/
+

@@ -1,0 +1,1 @@
+export { protect, admin, authMiddleware, adminMiddleware } from "./authMiddleware.js";
