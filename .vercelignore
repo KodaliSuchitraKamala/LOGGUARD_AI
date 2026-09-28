@@ -1,0 +1,10 @@
+*.mp4
+*.pptx
+*.docx
+*.exe
+Backend-MERN/node_modules
+Backend-Java/target
+Frontend/node_modules
+Frontend/dist
+.git
+.env
