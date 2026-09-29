@@ -26,7 +26,7 @@ export default function Navbar() {
   const displayName = user.name?.trim() || user.email?.split('@')[0] || "User";
 
   return (
-    <nav className="bg-gray-900 text-white px-4 md:px-6 py-3 flex items-center justify-between shadow-lg border-b border-gray-700 sticky top-0 z-50">
+    <nav className="bg-gray-900 text-white px-4 md:px-6 py-3 flex items-center justify-between shadow-lg border-b border-gray-700 sticky top-0 z-50 w-full">
       <Link to="/" className="text-xl md:text-3xl font-bold tracking-wide shrink-0">
         LogGuard AI
       </Link>
